@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+import 'package:scrolltv_frontend_mobile_flutter/screens/home/home_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
+
+import '../screens/login/login_page.dart';
+
+class Routes {
+  //static const String splashRoute = '/';
+  static const String loginRoute = 'login';
+  static const String principalRoute = 'principal';
+
+  static const String homeRoute = 'home';
+}
+
+class RouteGenerator {
+  static Route<dynamic> getRoute(RouteSettings routeSettings) {
+    switch (routeSettings.name) {
+      case Routes.loginRoute:
+        //initLoginDependencies();
+        return MaterialPageRoute(builder: (_) => const LoginPage());
+
+      case Routes.homeRoute:
+        return MaterialPageRoute(builder: (_) => const HomePage());
+
+      // case Routes.drawerRoute:
+      //   initDrawerDependencies();
+      //   return MaterialPageRoute(builder: (_) => const DrawerPage());
+
+      // return MaterialPageRoute(
+      //     builder: (_) => const NoAssociatedProjectPage());
+      // return MaterialPageRoute(
+      //   //child: const NotificationsPage(),
+      // );
+
+      //initNextPaimentDependencies();
+      // final int? id = routeSettings.arguments as int?;
+      // if (id == null) {
+      //   return unDefinedRoute();
+      // }
+      // return CustomAnimationPageTransitionFadeSlide(
+      //   child: DetailNextPaimentPage(
+      //     id: id,
+      //   ),
+      // )
+
+      default:
+        return unDefinedRoute();
+    }
+  }
+
+  static Route<dynamic> unDefinedRoute() {
+    return MaterialPageRoute(
+        builder: (_) => Scaffold(
+              appBar: AppBar(title: const Text(AppString.noRouteFound)),
+              body: const Center(child: Text(AppString.noRouteFound)),
+            ));
+  }
+}
+
+class TemplateForAnimationBase extends PageRouteBuilder {
+  final Widget child;
+
+  TemplateForAnimationBase({
+    required this.child,
+  }) : super(
+            transitionDuration: const Duration(milliseconds: 400),
+            pageBuilder: (context, animation, secondaryAnimation) => child);
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    return ScaleTransition(scale: animation, child: child);
+  }
+}
+
+class CustomAnimationPageTransitionFadeSlide extends PageRouteBuilder {
+  final Widget child;
+  final RouteSettings? routeSettings;
+
+  CustomAnimationPageTransitionFadeSlide(
+      {required this.child, this.routeSettings})
+      : super(
+            transitionDuration: const Duration(milliseconds: 500),
+            pageBuilder: (context, animation, secondaryAnimation) => child,
+            settings: routeSettings);
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    // ScaleTransition(scale: animation, child: child);
+    return FadeTransition(
+      opacity: Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOut,
+      )),
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(1.0, 0.0), // Slide in from the right
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOut,
+        )),
+        child: child,
+      ),
+    );
+  }
+}
+
+class AnimationRouteTransitionBelow extends PageRouteBuilder {
+  final Widget child;
+  final RouteSettings? settingsRoute;
+
+  AnimationRouteTransitionBelow({required this.child, this.settingsRoute})
+      : super(
+            transitionDuration: const Duration(milliseconds: 300),
+            pageBuilder: (context, animation, secondaryAnimation) => child,
+            settings: settingsRoute);
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    const begin = Offset(0.0, 1.0);
+    const end = Offset.zero;
+    const curve = Curves.ease;
+    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+    return SlideTransition(position: animation.drive(tween), child: child);
+  }
+}

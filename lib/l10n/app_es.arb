@@ -1,0 +1,21 @@
+{
+  "@@locale": "es",
+  "language": "Español",
+  "@language": {
+    "description": "Descripción del lenguage"
+  },
+  "login_screen_welcome": "¡Bienvenido a Paku!",
+  "@login_screen_welcome": {
+    "description": "Mensaje de bienvenida en la pantalla de login"
+  },
+  "home_screen_welcome": "Hola {username}!",
+  "@home_screen_welcome": {
+    "description": "Mensaje de Bienvenida",
+    "placeholders": {
+      "username": {
+        "type": "String",
+        "example": "Juan"
+      }
+    }
+  }
+}
