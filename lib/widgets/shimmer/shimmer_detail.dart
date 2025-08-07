@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 
 const shimmerGradient = LinearGradient(
   colors: [

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/colors_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/home/home_page.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.dart';
 
+import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart'
+    as mobile;
+import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
 import '../screens/login/login_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/typography_page.dart';
 
 class Routes {
   //static const String splashRoute = '/';
@@ -10,6 +15,11 @@ class Routes {
   static const String principalRoute = 'principal';
 
   static const String homeRoute = 'home';
+  static const String mobileHomeRoute = 'mobileHome';
+  static const String componentsRoute = 'components';
+
+  static const String typographyRoute = 'typography';
+  static const String colorsRoute = 'colors';
 }
 
 class RouteGenerator {
@@ -21,6 +31,18 @@ class RouteGenerator {
 
       case Routes.homeRoute:
         return MaterialPageRoute(builder: (_) => const HomePage());
+
+      case Routes.mobileHomeRoute:
+        return MaterialPageRoute(builder: (_) => const mobile.HomePage());
+
+      case Routes.componentsRoute:
+        return MaterialPageRoute(builder: (_) => const ComponentsPage());
+
+      case Routes.typographyRoute:
+        return MaterialPageRoute(builder: (_) => const TypographyPage());
+
+      case Routes.colorsRoute:
+        return MaterialPageRoute(builder: (_) => const ColorsPage());
 
       // case Routes.drawerRoute:
       //   initDrawerDependencies();

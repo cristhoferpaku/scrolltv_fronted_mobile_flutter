@@ -3,9 +3,29 @@ const String iconsPath = 'assets/icons';
 const String animationsPath = 'assets/animations';
 
 class ImageAssets {
+  static const String logoMovieHome = '$imagePath/logo_movie_home.png';
+  static const String logoScrollTv = '$imagePath/logo_scroll_tv.png';
+  //
   static const String logoAppPng = '$imagePath/logo_login.png';
   static const String iconLogoAppPng = '$imagePath/logo_paku.png';
   static const String iconBackNavSvg = '$iconsPath/icon_back_arrow_paku.svg';
+
+  //Icons
+  static const String iconAnime = '$iconsPath/icon_anime.svg';
+  static const String iconAnimeFill = '$iconsPath/icon_anime_fill.svg';
+  static const String iconDrama = '$iconsPath/icon_drama.svg';
+  static const String iconDramaFill = '$iconsPath/icon_drama_fill.svg';
+  static const String iconHome = '$iconsPath/icon_home.svg';
+  static const String iconHomeFill = '$iconsPath/icon_home_fill.svg';
+  static const String iconKid = '$iconsPath/icon_kid.svg';
+  static const String iconKidFill = '$iconsPath/icon_kid_fill.svg';
+  static const String iconLive = '$iconsPath/icon_live.svg';
+  static const String iconLiveFill = '$iconsPath/icon_live_fill.svg';
+  static const String iconMovie = '$iconsPath/icon_movie.svg';
+  static const String iconMovieFill = '$iconsPath/icon_movie_fill.svg';
+  static const String iconPlay = '$iconsPath/icon_play.svg';
+  static const String iconUser = '$iconsPath/icon_user.svg';
+  static const String iconUserFill = '$iconsPath/icon_user_fill.svg';
 
   // Login Elements
   static const String iconEmail = '$iconsPath/icon_paku_email.svg';

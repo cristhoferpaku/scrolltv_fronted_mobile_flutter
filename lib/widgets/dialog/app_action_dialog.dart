@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/font_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/style_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
@@ -40,7 +40,9 @@ class AppActionDialog extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineLarge,
               textAlign: TextAlign.center,
             ),
-            const Divider(color: ColorManager.primary,).withPadding(vertical: AppPadding.p8),
+            const Divider(
+              color: ColorManager.primary,
+            ).withPadding(vertical: AppPadding.p8),
             // Descripción
             Text(
               description,
@@ -53,7 +55,9 @@ class AppActionDialog extends StatelessWidget {
               ElevatedButton(
                 onPressed: onPrimaryButtonPressed,
                 style: Theme.of(context).elevatedButtonTheme.style,
-                child: Text(primaryButtonText!, style: getRegularStyle(color: ColorManager.white, fontsize: FontSize.s16)),
+                child: Text(primaryButtonText!,
+                    style: getRegularStyle(
+                        color: ColorManager.white, fontsize: FontSize.s16)),
               ),
             if (primaryButtonText != null && onPrimaryButtonPressed != null)
               const SizedBox(height: 12.0),
@@ -62,7 +66,9 @@ class AppActionDialog extends StatelessWidget {
               OutlinedButton(
                 onPressed: onSecondaryButtonPressed,
                 style: Theme.of(context).outlinedButtonTheme.style,
-                child: Text(secondaryButtonText!, style: getRegularStyle(color: ColorManager.primary, fontsize: FontSize.s16)),
+                child: Text(secondaryButtonText!,
+                    style: getRegularStyle(
+                        color: ColorManager.primary, fontsize: FontSize.s16)),
               ),
           ],
         ),

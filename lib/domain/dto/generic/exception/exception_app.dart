@@ -3,13 +3,9 @@ part 'exception_app.freezed.dart';
 part 'exception_app.g.dart';
 
 @freezed
-class ExceptionApp with _$ExceptionApp{
+abstract class ExceptionApp with _$ExceptionApp {
+  factory ExceptionApp(int statusCode, String message) = _ExceptionApp;
 
-  factory ExceptionApp(
-    int statusCode,
-    String message
-  ) = _ExceptionApp;
-
-  factory ExceptionApp.fromJson(Map<String, dynamic> json) => _$ExceptionAppFromJson(json);
-
+  factory ExceptionApp.fromJson(Map<String, dynamic> json) =>
+      _$ExceptionAppFromJson(json);
 }

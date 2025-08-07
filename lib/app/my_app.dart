@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/l10n/l10n.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/utils/utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/theme_manager.dart';
 
 class MyApp extends StatefulWidget {
-  final bool logUser; 
+  final bool logUser;
 
-  const MyApp(
-      {super.key,
-      required this.logUser,});
+  const MyApp({
+    super.key,
+    required this.logUser,
+  });
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -23,13 +25,15 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     initialRouteApp = getRouteByUserLogged(
-      // widget.logUser,
-      // widget.idCompany,
-      // widget.nameCompany,
-      // widget.idProject,
-      // widget.nameProject,
-    );
+        // widget.logUser,
+        // widget.idCompany,
+        // widget.nameCompany,
+        // widget.idProject,
+        // widget.nameProject,
+        );
   }
+
+  final bool isTv = PlatformUtils.isTV;
 
   @override
   Widget build(BuildContext context) {
@@ -39,35 +43,34 @@ class _MyAppState extends State<MyApp> {
       onGenerateRoute: RouteGenerator.getRoute,
       initialRoute: initialRouteApp,
       debugShowCheckedModeBanner: false,
-      theme: getApplicationTheme(),
-      darkTheme: getApplicationDarkTheme(),
+      theme: getApplicationTheme(isTv),
       supportedLocales: L10n.all,
     );
   }
 
-  String getRouteByUserLogged(){
-    return Routes.loginRoute;
-  //   bool logUser,
-  //   String? idCompany,
-  //   String? nameCompany,
-  //   String? idProject,
-  //   String? nameProject,
-  // ) {
-  //   if (!logUser) {
-  //     // Si el usuario no está logueado, redirigir a login
-  //     return Routes.loginRoute;
-  //   } else if ((idCompany == null || idCompany.isEmpty) &&
-  //       (nameCompany == null || nameCompany.isEmpty)) {
-  //     return Routes.associatedCompaniesRoute;
-  //   } else if ((idProject == null || idProject.isEmpty) &&
-  //       (idCompany == null || idCompany.isEmpty)) {
-  //     return Routes.associatedCompaniesRoute;
-  //   } else if ((idProject == null || idProject.isEmpty) &&
-  //       (idCompany != null && idCompany.isNotEmpty)) {
-  //     return Routes.associatedCompaniesRoute;
-  //   } else {
-  //     return Routes.homeRoute;
-  //   }
-  // }
+  String getRouteByUserLogged() {
+    return Routes.componentsRoute;
+    //   bool logUser,
+    //   String? idCompany,
+    //   String? nameCompany,
+    //   String? idProject,
+    //   String? nameProject,
+    // ) {
+    //   if (!logUser) {
+    //     // Si el usuario no está logueado, redirigir a login
+    //     return Routes.loginRoute;
+    //   } else if ((idCompany == null || idCompany.isEmpty) &&
+    //       (nameCompany == null || nameCompany.isEmpty)) {
+    //     return Routes.associatedCompaniesRoute;
+    //   } else if ((idProject == null || idProject.isEmpty) &&
+    //       (idCompany == null || idCompany.isEmpty)) {
+    //     return Routes.associatedCompaniesRoute;
+    //   } else if ((idProject == null || idProject.isEmpty) &&
+    //       (idCompany != null && idCompany.isNotEmpty)) {
+    //     return Routes.associatedCompaniesRoute;
+    //   } else {
+    //     return Routes.homeRoute;
+    //   }
+    // }
   }
 }

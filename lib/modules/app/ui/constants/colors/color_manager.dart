@@ -1,13 +1,84 @@
 import 'package:flutter/material.dart';
 
 class ColorManager {
-  static const Color primary = Color(0xFF3B7CF6);
-  static const Color principal_200 = Color(0xFFBFD9FE);
+  static const Color principal100 = Color(0xFFDBF4F9);
+  static const Color principal200 = Color(0xFFBCECF5);
+  static const Color principal300 = Color(0xFF80D5DD);
+  static const Color principal400 = Color(0xFF4BBEC9);
+  static const Color principal500 = Color(0xFF2AA8B3);
+  static const Color principal600 = Color(0xFF178A91);
+  static const Color principal700 = Color(0xFF0E7077);
+  static const Color principal800 = Color(0xFF0A5B62);
+  static const Color principal900 = Color(0xFF053C45);
+
+  static const Color neutro50 = Color(0xFFFAFAFA);
+  static const Color neutro100 = Color(0xFFF0F0F0);
+  static const Color neutro200 = Color(0xFFDBD7D7);
+  static const Color neutro300 = Color(0xFFB8B4B4);
+  static const Color neutro400 = Color(0xFFA0A0A0);
+  static const Color neutro500 = Color(0xFF919191);
+  static const Color neutro600 = Color(0xFF5E5E5E);
+  static const Color neutro700 = Color(0xFF3C3C3C);
+  static const Color neutro800 = Color(0xFF262626);
+  static const Color neutro900 = Color(0xFF000000);
+
+  static const Color errorPrimary = Color(0xFFDE0000);
+  static const Color errorSecondary = Color(0xFFBD0000);
+  static const Color errorTertiary = Color(0xFFE96D6D);
+
+  static const Color successPrimary = Color(0xFF44BF29);
+  static const Color successSecondary = Color(0xFF2EA11D);
+  static const Color successTertiary = Color(0xFF1B8712);
+
+  static const Color extraPrimary = Color(0xFFFF8621);
+
+  static const Color primary = Color(0xFF2AA8B3);
+  static const Color onPrimary = Color(0xFFFAFAFA);
+
+  static const Color secondary = Color(0xFF2AA8B3);
+  static const Color onSecondary = Color(0xFF053C45);
+
+  static const Color error = Color(0xFFDE0000);
+  static const Color onError = Color(0xFFFAFAFA);
+
+  static const Color primaryContainer = Color(0xFF0E7077);
+  static const Color onPrimaryContainer = Color(0xFFDBF4F9);
+
+  static const Color errorContainer = Color(0xFFBD0000);
+  static const Color onErrorContainer = Color(0xFFFAFAFA);
+
+  static const Color surface = Color(0xFF000000);
+  static const Color onSurface = Color(0xFFFAFAFA);
+
+  static const Color onSurfaceVariant = Color(0xFFA0A0A0);
+
+  static const Color outline = Color(0xFF5E5E5E);
+  static const Color outlineVariant = Color(0xFF4BBEC9);
+
+  static const Color surfaceContainerLowest = Color(0xFF000000);
+  static const Color surfaceContainer = Color(0xFF262626);
+
+  static const Color surfaceDim = Color(0xFF1A1A1A);
+  static const Color surfaceBright = Color(0xFF3C3C3C);
+
+  static const Color shadow = Color(0xFF000000);
+
+  static const Color inverseSurface = Color(0xFFF0F0F0);
+  static const Color onInverseSurface = Color(0xFF053C45);
+  static const Color inversePrimary = Color(0xFF80D5DD);
+
+  static const Color primaryFixed = Color(0xFF80D5DD);
+  static const Color onPrimaryFixed = Color(0xFF000000);
+
+  static const Color primaryDimFixed = Color(0xFF2AA8B3);
+  static const Color onPrimaryDimFixed = Color(0xFF053C45);
+
+  // static const Color principal_200 = Color(0xFFBFD9FE);
 
   static const Color primaryColorLightShadeLight = Color(0xFF3B7CF6);
   static const Color primaryColorDarkShadeLight = Color(0xFF3B7CF6);
   static const Color primaryLight = Color(0xFFF57F20);
-  static const Color secondary = Color(0xFFF72585);
+  // static const Color secondary = Color(0xFFF72585);
   static const Color accent = Color(0xFFDBE9FE);
   static const Color buttonColor = Color(0xFFFF6B35);
   static const Color textLinkColor = Color.fromARGB(255, 48, 39, 168);
@@ -61,7 +132,7 @@ class ColorManager {
   static const Color lightgray = Color(0xFF303030);
   static const Color success = Color(0xFF00C897);
   static const Color warning = Color(0xFFFFD365);
-  static const Color error = Color(0xFFDE0000);
+  // static const Color error = Color(0xFFDE0000);
 
   /*
   static Color primary = HexColor.fromHex('#2c1911');

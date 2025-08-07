@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/enum_widgets.dart';
 
 class AppInfoDialog extends StatelessWidget {
@@ -110,7 +110,7 @@ class AppInfoDialog extends StatelessWidget {
         return SvgPicture.asset(iconPath, width: 24.0, height: 24.0);
       case TypeImageAsset.JSON:
         return Lottie.asset(iconPath, width: 24.0, height: 24.0);
-      }
+    }
   }
 }
 

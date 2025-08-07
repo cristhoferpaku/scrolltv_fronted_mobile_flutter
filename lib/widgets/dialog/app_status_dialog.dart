@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/font_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/style_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';

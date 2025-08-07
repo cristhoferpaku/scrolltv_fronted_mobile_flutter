@@ -1,7 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 
@@ -76,16 +76,14 @@ class _HomePageState extends State<HomePage> {
             Icons.search,
             color: ColorManager.white,
           ),
-          onPressed: () {
-          },
+          onPressed: () {},
         ),
         IconButton(
           icon: Icon(
             Icons.person,
             color: ColorManager.white,
           ),
-          onPressed: () {
-          },
+          onPressed: () {},
         ),
         const SizedBox(width: AppSize.s8),
       ],
@@ -99,15 +97,15 @@ class _HomePageState extends State<HomePage> {
         children: [
           // Categorías horizontales
           if (PlatformUtils.isTV) _buildTVCategories(),
-          
+
           // Contenido destacado
           _buildFeaturedSection(),
-          
+
           // Secciones de contenido
           _buildContentSection('Continuar viendo'),
           _buildContentSection('Recomendado para ti'),
           _buildContentSection('Tendencias'),
-          
+
           const SizedBox(height: AppSize.s80), // Espacio para bottom nav
         ],
       ),
@@ -133,8 +131,8 @@ class _HomePageState extends State<HomePage> {
                 });
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isSelected 
-                    ? ColorManager.primary 
+                backgroundColor: isSelected
+                    ? ColorManager.primary
                     : ColorManager.containerDarkBackground,
                 foregroundColor: ColorManager.white,
                 shape: RoundedRectangleBorder(
@@ -176,7 +174,6 @@ class _HomePageState extends State<HomePage> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-               
                   Colors.black.withOpacity(0.7),
                 ],
               ),
@@ -232,8 +229,7 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           children: [
                             ElevatedButton.icon(
-                              onPressed: () {
-                              },
+                              onPressed: () {},
                               icon: Icon(Icons.play_arrow),
                               label: Text('Reproducir'),
                               style: ElevatedButton.styleFrom(
@@ -243,8 +239,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             const SizedBox(width: AppSize.s12),
                             OutlinedButton.icon(
-                              onPressed: () {
-                              },
+                              onPressed: () {},
                               icon: Icon(Icons.info_outline),
                               label: Text('Más info'),
                               style: OutlinedButton.styleFrom(
@@ -372,8 +367,7 @@ class _HomePageState extends State<HomePage> {
           label: 'Perfil',
         ),
       ],
-      onTap: (index) {
-      },
+      onTap: (index) {},
     );
   }
 }

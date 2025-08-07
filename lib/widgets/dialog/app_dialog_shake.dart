@@ -4,14 +4,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/style_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/buttons/small_rounded_button.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/enum_widgets.dart';
 
 class AppDialogShake extends StatelessWidget {
-
   final AppDialogType typeDialog;
   final String title;
   final String description;
@@ -22,24 +21,22 @@ class AppDialogShake extends StatelessWidget {
   final String pathImageDialog;
   final TypeImageAsset imageType;
 
-  const AppDialogShake({
-    this.typeDialog = AppDialogType.SUCCESS,
-    this.title = '',
-    this.description = '',
-    this.labelCancel = 'Cancelar',
-    this.labelAction = 'Hecho',
-    this.pathImageDialog = '',
-    this.imageType = TypeImageAsset.IMAGE,
-    required this.functionOk,
-    required this.functionCancel,
-    super.key
-  });
+  const AppDialogShake(
+      {this.typeDialog = AppDialogType.SUCCESS,
+      this.title = '',
+      this.description = '',
+      this.labelCancel = 'Cancelar',
+      this.labelAction = 'Hecho',
+      this.pathImageDialog = '',
+      this.imageType = TypeImageAsset.IMAGE,
+      required this.functionOk,
+      required this.functionCancel,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
-
-    var funcOk = functionOk ?? (){};
-    var funcCancel = functionCancel ?? (){};
+    var funcOk = functionOk ?? () {};
+    var funcCancel = functionCancel ?? () {};
 
     return Dialog(
       elevation: 2,
@@ -48,14 +45,14 @@ class AppDialogShake extends StatelessWidget {
         padding: AppEdgeInsets.all(AppMargin.m24),
         width: MediaQuery.of(context).size.width / 1.5,
         decoration: BoxDecoration(
-          color: ColorManager.blueGrey,
-          borderRadius: BorderRadius.circular(15.0),
+            color: ColorManager.blueGrey,
+            borderRadius: BorderRadius.circular(15.0),
             boxShadow: [
               BoxShadow(
-                offset: const Offset(12, 26),
-                blurRadius: 50,
-                spreadRadius: 0,
-                color: Colors.grey.withOpacity(.1)),
+                  offset: const Offset(12, 26),
+                  blurRadius: 50,
+                  spreadRadius: 0,
+                  color: Colors.grey.withOpacity(.1)),
             ]),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -64,43 +61,65 @@ class AppDialogShake extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(title, style: getRegularStyle(color: ColorManager.primary, fontWeight: FontWeight.bold, fontsize: AppSize.s18),),
+                  child: Text(
+                    title,
+                    style: getRegularStyle(
+                        color: ColorManager.primary,
+                        fontWeight: FontWeight.bold,
+                        fontsize: AppSize.s18),
+                  ),
                 ),
                 InkWell(
                   onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.cancel, color: ColorManager.primaryLight),
+                  child: const Icon(Icons.cancel,
+                      color: ColorManager.primaryLight),
                 )
               ],
             ),
             Container(
-              padding: const EdgeInsets.fromLTRB(AppPadding.p12, AppPadding.p20, AppPadding.p12, AppPadding.p12),
-              child: imageType == TypeImageAsset.IMAGE ? Image(
-                  height: AppSize.s120,
-                  image: AssetImage(getImageByType(typeDialog, pathImageDialog)),
-                  fit: BoxFit.fitWidth,
-                ).animate(
-                    onPlay: (controller) => controller.repeat(reverse: true),
-                    effects: const [
-                      ShakeEffect(delay: Duration(milliseconds: 1000), duration: Duration(milliseconds: 3000), hz: 2, offset: Offset(10, 0), curve: Curves.easeInOutCubic),
-                    ]
-                ) : SvgPicture.asset(
-                  pathImageDialog,
-                  height: AppSize.s120,
-                  width: AppSize.s120,
-                  fit: BoxFit.fitWidth,
-                ).animate(
-                    onPlay: (controller) => controller.repeat(reverse: true),
-                    effects: const [
-                      ShakeEffect(delay: Duration(milliseconds: 1000), duration: Duration(milliseconds: 3000), hz: 2, offset: Offset(10, 0), curve: Curves.easeInOutCubic),
-                    ]
-                ),
+              padding: const EdgeInsets.fromLTRB(AppPadding.p12, AppPadding.p20,
+                  AppPadding.p12, AppPadding.p12),
+              child: imageType == TypeImageAsset.IMAGE
+                  ? Image(
+                      height: AppSize.s120,
+                      image: AssetImage(
+                          getImageByType(typeDialog, pathImageDialog)),
+                      fit: BoxFit.fitWidth,
+                    ).animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                      effects: const [
+                          ShakeEffect(
+                              delay: Duration(milliseconds: 1000),
+                              duration: Duration(milliseconds: 3000),
+                              hz: 2,
+                              offset: Offset(10, 0),
+                              curve: Curves.easeInOutCubic),
+                        ])
+                  : SvgPicture.asset(
+                      pathImageDialog,
+                      height: AppSize.s120,
+                      width: AppSize.s120,
+                      fit: BoxFit.fitWidth,
+                    ).animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                      effects: const [
+                          ShakeEffect(
+                              delay: Duration(milliseconds: 1000),
+                              duration: Duration(milliseconds: 3000),
+                              hz: 2,
+                              offset: Offset(10, 0),
+                              curve: Curves.easeInOutCubic),
+                        ]),
             ),
             const SizedBox(
               height: 5,
             ),
             Container(
-              padding: const EdgeInsets.fromLTRB(AppPadding.p10, 0, AppPadding.p10, 0),
-              child: Text(description, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
+              padding: const EdgeInsets.fromLTRB(
+                  AppPadding.p10, 0, AppPadding.p10, 0),
+              child: Text(description,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium),
             ),
             const SizedBox(
               height: 15,
@@ -109,17 +128,22 @@ class AppDialogShake extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                functionCancel != null && labelCancel.isNotEmpty ? 
-                SmallRoundedButton(
-                  color: ColorManager.grayDisabled, 
-                  text: labelCancel, 
-                  press: () { funcCancel(); },
-                ) : Container(),
+                functionCancel != null && labelCancel.isNotEmpty
+                    ? SmallRoundedButton(
+                        color: ColorManager.grayDisabled,
+                        text: labelCancel,
+                        press: () {
+                          funcCancel();
+                        },
+                      )
+                    : Container(),
                 const SizedBox(width: 8),
                 SmallRoundedButton(
-                  color: getColorByType(typeDialog), 
-                  text: labelAction, 
-                  press: () { funcOk(); },
+                  color: getColorByType(typeDialog),
+                  text: labelAction,
+                  press: () {
+                    funcOk();
+                  },
                 )
               ],
             )
@@ -130,7 +154,7 @@ class AppDialogShake extends StatelessWidget {
   }
 }
 
-Color getColorByType(AppDialogType dialogType){
+Color getColorByType(AppDialogType dialogType) {
   switch (dialogType) {
     case AppDialogType.SUCCESS:
       return ColorManager.success;
@@ -138,16 +162,16 @@ Color getColorByType(AppDialogType dialogType){
       return ColorManager.warning;
     case AppDialogType.ERROR:
       return ColorManager.error;
-    default: return ColorManager.primary;
+    default:
+      return ColorManager.primary;
   }
 }
 
-
-String getImageByType(AppDialogType dialogType, String pathIcon){
+String getImageByType(AppDialogType dialogType, String pathIcon) {
   var customIconPath = ImageAssets.iconAlert;
   if (pathIcon.isNotEmpty) {
     customIconPath = pathIcon;
-  } 
+  }
   switch (dialogType) {
     case AppDialogType.SUCCESS:
       return ImageAssets.iconSuccess;
@@ -157,7 +181,7 @@ String getImageByType(AppDialogType dialogType, String pathIcon){
       return ImageAssets.iconError;
     case AppDialogType.CUSTOM:
       return customIconPath;
-    default: 
+    default:
       return ImageAssets.iconSuccess;
   }
 }

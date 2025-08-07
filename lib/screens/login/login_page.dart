@@ -1,13 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 
 class LoginPage extends StatefulWidget {
- const LoginPage({super.key});
+  const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-    
+
     _animationController.forward();
   }
 
@@ -71,12 +71,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: AppSize.s60),
-              
+
               // Logo
               _buildLogo(120),
-              
+
               const SizedBox(height: AppSize.s40),
-              
+
               // Formulario
               _buildLoginForm(),
             ],
@@ -99,12 +99,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: AppSize.s20),
-                  
+
                   // Logo más compacto para TV
                   _buildLogo(120),
-                  
+
                   const SizedBox(height: AppSize.s16),
-                  
+
                   // Título para TV
                   Text(
                     'ScrollTV',
@@ -115,9 +115,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: AppSize.s8),
-                  
+
                   Text(
                     'Experiencia TV Premium',
                     style: TextStyle(
@@ -126,12 +126,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: AppSize.s24),
-                  
+
                   // Formulario
                   _buildLoginForm(),
-                  
+
                   const SizedBox(height: AppSize.s20),
                 ],
               ),
@@ -182,7 +182,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget _buildLoginForm() {
     final double formSpacing = PlatformUtils.isTV ? AppSize.s16 : AppSize.s24;
     final double buttonSpacing = PlatformUtils.isTV ? AppSize.s24 : AppSize.s40;
-    
+
     return Form(
       key: _formKey,
       child: Column(
@@ -198,7 +198,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: AppSize.s8),
-          
+
           // Campo Email
           _buildTextField(
             controller: _emailController,
@@ -214,9 +214,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               return null;
             },
           ),
-          
+
           SizedBox(height: formSpacing),
-          
+
           // Label Contraseña
           Text(
             'Contraseña',
@@ -227,7 +227,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: AppSize.s8),
-          
+
           // Campo Password
           _buildTextField(
             controller: _passwordController,
@@ -243,9 +243,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               return null;
             },
           ),
-          
+
           SizedBox(height: buttonSpacing),
-          
+
           // Login Button
           _buildLoginButton(),
         ],
@@ -266,11 +266,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     final double fontSize = PlatformUtils.isTV ? 18 : 16;
     final double iconSize = PlatformUtils.isTV ? 24 : 20;
     final double padding = PlatformUtils.isTV ? AppPadding.p20 : AppPadding.p16;
-    
+
     // Configuraciones específicas para TV
     final bool enableSuggestions = !PlatformUtils.isTV;
     final bool autocorrect = !PlatformUtils.isTV;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: ColorManager.darkGray.withOpacity(0.8),
@@ -299,7 +299,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
-                    _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                    _isPasswordVisible
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                     color: ColorManager.lightHintColorText,
                     size: iconSize,
                   ),
@@ -352,7 +354,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     final double buttonHeight = PlatformUtils.isTV ? 64 : 56;
     final double fontSize = PlatformUtils.isTV ? 18 : 16;
     final double loadingSize = PlatformUtils.isTV ? 24 : 20;
-    
+
     return SizedBox(
       width: double.infinity,
       height: buttonHeight,
@@ -386,8 +388,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       ),
     );
   }
-
-
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
