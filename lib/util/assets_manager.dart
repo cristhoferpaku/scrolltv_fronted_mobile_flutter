@@ -3,9 +3,12 @@ const String iconsPath = 'assets/icons';
 const String animationsPath = 'assets/animations';
 
 class ImageAssets {
-  static const String logoMovieHome = '$imagePath/logo_movie_home.png';
-  static const String logoScrollTv = '$imagePath/logo_scroll_tv.png';
+  static const String logoMovieHome = '$imagePath/img_logo_movie_home.png';
+  static const String logoScrollTv = '$imagePath/img_logo_scroll_tv.png';
   //
+  static const String backgroundMobile = '$imagePath/img_background_mobile.png';
+  static const String backgroundTv = '$imagePath/img_background_tv.png';
+
   static const String logoAppPng = '$imagePath/logo_login.png';
   static const String iconLogoAppPng = '$imagePath/logo_paku.png';
   static const String iconBackNavSvg = '$iconsPath/icon_back_arrow_paku.svg';

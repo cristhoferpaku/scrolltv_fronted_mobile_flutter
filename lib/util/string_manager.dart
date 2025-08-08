@@ -11,6 +11,7 @@ class AppString {
   static const String bottomNavAnalyticsLabel = 'Analíticas';
   static const String bottomNavProfileLabel = 'Perfil';
 
+//
   // Onboarind Page
   static const String onBoardingPageOneTitle = 'Desde tu celular';
   static const String onBoardingPageOneDescription =
@@ -136,7 +137,6 @@ class AppString {
   static const String loginEmailToVerification =
       'Por favor verificar su correo en su bandeja principal o en su bandeja de spam';
 
-
   // Sign Up Page
   static const String signUpPageTitleLabel = 'Registrate';
   static const String signUpPageDescriptionLabel =
@@ -202,7 +202,6 @@ class AppString {
   static const String rememberPageRememberlverificationEN =
       'Mail sent, check in your main tray or in your spam tray';
 
-
   // Dialog Messages
   static const String dialogLabelButtonOk = 'Ok';
   static const String dialogLabelButtonAccept = 'Aceptar';
@@ -218,4 +217,6 @@ class AppString {
   static const String separatorSlash = '/';
   static const String separatorGuide = '-';
   static const String backButton = 'Regresar';
+  static const String iniciarSesion = 'Iniciar sesión';
+  static const String loginButton = 'Ingresar';
 }

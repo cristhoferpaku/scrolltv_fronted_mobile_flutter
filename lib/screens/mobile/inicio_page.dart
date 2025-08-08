@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/buttons/elevated_button.dart';
+
+class InicioPage extends StatefulWidget {
+  const InicioPage({super.key});
+
+  @override
+  State<InicioPage> createState() => _InicioPageState();
+}
+
+class _InicioPageState extends State<InicioPage> {
+  @override
+  Widget build(BuildContext context) {
+    return AppScaffold(
+      backgroundImage: ImageAssets.backgroundMobile,
+      linearGradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.black.withValues(alpha: 0.85),
+          Colors.black.withValues(alpha: 0.80),
+          Colors.black.withValues(alpha: 0.7),
+        ],
+        stops: [0.0, 0.5, 1.0],
+      ),
+      body: Center(
+        child: SizedBox(
+          width: AppSize.s220,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image(image: AssetImage(ImageAssets.logoScrollTv)),
+              ElevatedButtonApp(
+                isExpanded: false,
+                textButton: AppString.iniciarSesion,
+                colorButton: ColorManager.primaryContainer,
+                textStyleButton:
+                    Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: ColorManager.onPrimaryContainer,
+                        ),
+                roundedButton: AppSize.s10,
+                press: () {
+                  Navigator.pushNamed(context, Routes.loginRoute);
+                },
+              ).withPadding(top: AppPadding.p20)
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

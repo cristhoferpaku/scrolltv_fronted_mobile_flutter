@@ -5,8 +5,9 @@ import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.
 
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart'
     as mobile;
+import 'package:scrolltv_frontend_mobile_flutter/screens/tv/tv.dart' as tv;
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
-import '../screens/login/login_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/typography_page.dart';
 
 class Routes {
@@ -19,15 +20,21 @@ class Routes {
   static const String componentsRoute = 'components';
 
   static const String typographyRoute = 'typography';
+
   static const String colorsRoute = 'colors';
+
+  static const String inicioRoute = 'inicio';
 }
 
 class RouteGenerator {
+  static bool isTv = PlatformUtils.isTV;
   static Route<dynamic> getRoute(RouteSettings routeSettings) {
     switch (routeSettings.name) {
       case Routes.loginRoute:
         //initLoginDependencies();
-        return MaterialPageRoute(builder: (_) => const LoginPage());
+        return MaterialPageRoute(
+            builder: (_) =>
+                isTv ? const tv.LoginPage() : const mobile.LoginPage());
 
       case Routes.homeRoute:
         return MaterialPageRoute(builder: (_) => const HomePage());
@@ -43,6 +50,11 @@ class RouteGenerator {
 
       case Routes.colorsRoute:
         return MaterialPageRoute(builder: (_) => const ColorsPage());
+
+      case Routes.inicioRoute:
+        return MaterialPageRoute(
+            builder: (_) =>
+                isTv ? const tv.InicioPage() : const mobile.InicioPage());
 
       // case Routes.drawerRoute:
       //   initDrawerDependencies();

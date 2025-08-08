@@ -49,7 +49,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   String getRouteByUserLogged() {
-    return Routes.componentsRoute;
+    return Routes.inicioRoute;
     //   bool logUser,
     //   String? idCompany,
     //   String? nameCompany,

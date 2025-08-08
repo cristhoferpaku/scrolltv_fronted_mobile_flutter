@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class ColorManager {
-  static const Color principal100 = Color(0xFFDBF4F9);
-  static const Color principal200 = Color(0xFFBCECF5);
-  static const Color principal300 = Color(0xFF80D5DD);
-  static const Color principal400 = Color(0xFF4BBEC9);
-  static const Color principal500 = Color(0xFF2AA8B3);
-  static const Color principal600 = Color(0xFF178A91);
-  static const Color principal700 = Color(0xFF0E7077);
-  static const Color principal800 = Color(0xFF0A5B62);
-  static const Color principal900 = Color(0xFF053C45);
+  static const Color primary100 = Color(0xFFDBF4F9);
+  static const Color primary200 = Color(0xFFBCECF5);
+  static const Color primary300 = Color(0xFF80D5DD);
+  static const Color primary400 = Color(0xFF4BBEC9);
+  static const Color primary500 = Color(0xFF2AA8B3);
+  static const Color primary600 = Color(0xFF178A91);
+  static const Color primary700 = Color(0xFF0E7077);
+  static const Color primary800 = Color(0xFF0A5B62);
+  static const Color primary900 = Color(0xFF053C45);
 
   static const Color neutro50 = Color(0xFFFAFAFA);
   static const Color neutro100 = Color(0xFFF0F0F0);
@@ -72,6 +72,8 @@ class ColorManager {
 
   static const Color primaryDimFixed = Color(0xFF2AA8B3);
   static const Color onPrimaryDimFixed = Color(0xFF053C45);
+
+  static const Color disabled = Color(0xFF1E1E1E);
 
   // static const Color principal_200 = Color(0xFFBFD9FE);
 
