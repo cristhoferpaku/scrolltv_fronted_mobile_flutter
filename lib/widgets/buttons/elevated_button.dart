@@ -21,6 +21,7 @@ class ElevatedButtonApp extends StatelessWidget {
   final Alignment alignmentButton;
   final bool isExpanded;
   final bool hasShadow;
+  final bool enabled;
 
   const ElevatedButtonApp(
       {required this.press,
@@ -41,6 +42,7 @@ class ElevatedButtonApp extends StatelessWidget {
       this.alignmentButton = Alignment.center,
       this.isExpanded = true,
       this.hasShadow = false,
+      this.enabled = true,
       super.key});
 
   // Función por defecto para longPress
@@ -56,7 +58,7 @@ class ElevatedButtonApp extends StatelessWidget {
           child: SizedBox(
               height: heightButton,
               child: ElevatedButton(
-                onPressed: press,
+                onPressed: enabled ? press : null,
                 style: ButtonStyle(
                     backgroundColor:
                         WidgetStateProperty.all<Color?>(colorButton),
@@ -96,7 +98,7 @@ class ElevatedButtonApp extends StatelessWidget {
           height: heightButton,
           decoration: hasShadow ? getBoxDecorationShadow() : null,
           child: ElevatedButton.icon(
-            onPressed: press,
+            onPressed: enabled ? press : null,
             icon: iconData ?? const SizedBox.shrink(),
             style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all<Color?>(colorButton),

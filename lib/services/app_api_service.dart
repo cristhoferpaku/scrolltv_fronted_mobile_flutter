@@ -40,7 +40,14 @@ class HttpDioService {
         },
         allowPostMethod: false);
 
-    _dio = Dio(BaseOptions(baseUrl: baseApiUrl, headers: header()))
+    _dio = Dio(BaseOptions(
+      baseUrl: baseApiUrl,
+      headers: header(),
+      validateStatus: (status) {
+        // Acepta cualquier status < 500 para que llegue al try/catch
+        return status != null && status < 500;
+      },
+    ))
       ..interceptors.addAll([
         DioCacheInterceptor(options: optionsCache),
         InterceptorsWrapper(
@@ -91,19 +98,27 @@ class HttpDioService {
     required String url,
     required Method method,
     Map<String, dynamic>? params,
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? requestOptions,
     //bool? isAutorizated ,
   }) async {
     Response response;
 
     try {
       if (method == Method.post) {
-        response = await _dio!.post(url, data: params);
+        response = await _dio!.post(
+          url,
+          data: data,
+          queryParameters: queryParameters,
+          options: requestOptions,
+        );
       } else if (method == Method.delete) {
         response = await _dio!.delete(url);
       } else if (method == Method.patch) {
         response = await _dio!.patch(url);
       } else if (method == Method.put) {
-        response = await _dio!.put(url, data: params);
+        response = await _dio!.put(url, data: data, options: requestOptions);
       } else {
         response = await _dio!.get(url, queryParameters: params);
       }
@@ -142,7 +157,5 @@ class HttpDioService {
     return await userRepository.getTokenRefresh();
   }
 
-  Future<void> refreshToken() async {
-   
-  }
+  Future<void> refreshToken() async {}
 }

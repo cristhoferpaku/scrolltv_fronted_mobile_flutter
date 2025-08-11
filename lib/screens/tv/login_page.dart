@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/colors.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/components/organisms/login_form.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
-import 'package:scrolltv_frontend_mobile_flutter/widgets/input/input_icon_form_field_small.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,7 +16,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController tcUsername = TextEditingController();
+  final TextEditingController tcPassword = TextEditingController();
+  final loginBloc = instance<LoginBloc>();
+  final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -30,46 +35,31 @@ class _LoginPageState extends State<LoginPage> {
         stops: [0.0, 0.5, 1.0],
       ),
       body: SingleChildScrollView(
-        child: Column(
+        child: Row(
+          spacing: AppSize.s90,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              spacing: AppSize.s90,
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 620,
-                    decoration: BoxDecoration(
-                      color: ColorManager.surfaceDim,
-                    ),
-                    child: Center(
-                      child: Text('Login Page'),
-                    ),
-                  ),
+            Expanded(
+              child: Container(
+                height: 620,
+                decoration: BoxDecoration(
+                  color: ColorManager.surfaceDim,
                 ),
-                Expanded(
-                  child: Column(
-                    spacing: AppSize.s24,
-                    children: [
-                      TextFormFieldIconSmall(
-                        onChanged: (value) {},
-                        controller: controller,
-                        validatorFunction: (value) {},
-                        label: "Cuenta",
-                        hint: "Uisesxs31",
-                      ),
-                      TextFormFieldIconSmall(
-                        onChanged: (value) {},
-                        controller: controller,
-                        validatorFunction: (value) {},
-                        label: "Contraseña",
-                        hint: "••••••••••••",
-                        isPassword: true,
-                      ),
-                    ],
-                  ),
+                child: Center(
+                  child: Text('Login Page'),
                 ),
-              ],
-            )
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: LoginForm(
+                  formKey: formKey,
+                  loginBloc: loginBloc,
+                  tcUsername: tcUsername,
+                  tcPassword: tcPassword,
+                ),
+              ),
+            ),
           ],
         ).withPadding(all: AppPadding.p24),
       ),

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/buttons/elevated_button.dart';
 
