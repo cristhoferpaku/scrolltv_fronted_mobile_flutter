@@ -5,7 +5,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/dtos/respon
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/entities/auth_user_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/entities/login_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/mappers/from-dto/auth_user_response_to_model.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/mappers/from-entity/login-to-login-request.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/mappers/from-entity/login_to_login_request.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/outbound/auth_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 

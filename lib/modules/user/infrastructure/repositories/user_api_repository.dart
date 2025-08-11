@@ -2,7 +2,7 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/dtos/response/user_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/entities/user_model.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/mappers/from-dto/user-response-to-model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/mappers/from-dto/user_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/outbound/user_repository_port.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 
