@@ -9,6 +9,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/auth/infrastructure/rep
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
 
 final instance = GetIt.instance;
 
@@ -18,6 +19,7 @@ Future<void> initAppModule() async {
   initInfoVersion();
   initRepositoryModule();
   initAuthDependencies();
+  initHomeDependencies();
 }
 
 Future<void> listAppModule() async {
@@ -67,6 +69,10 @@ initAuthDependencies() {
   initAuthModule();
 }
 
+initHomeDependencies() {
+  initTabBarModule();
+}
+
 initAuthModule() {
   if (!GetIt.I.isRegistered<LoginBloc>()) {
     instance.registerLazySingleton<LoginBloc>(() => LoginBloc());
@@ -89,5 +95,11 @@ initAuthRepositoryPort() {
 initUserRepository() {
   if (!GetIt.I.isRegistered<UserRepository>()) {
     instance.registerFactory<UserRepository>(() => UserRepositoryImpl());
+  }
+}
+
+initTabBarModule() {
+  if (!GetIt.I.isRegistered<CustomTabBarBloc>()) {
+    instance.registerLazySingleton<CustomTabBarBloc>(() => CustomTabBarBloc());
   }
 }

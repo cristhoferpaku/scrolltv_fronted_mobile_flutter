@@ -22,6 +22,7 @@ class ElevatedButtonApp extends StatelessWidget {
   final bool isExpanded;
   final bool hasShadow;
   final bool enabled;
+  final Size minimumSize;
 
   const ElevatedButtonApp(
       {required this.press,
@@ -43,6 +44,7 @@ class ElevatedButtonApp extends StatelessWidget {
       this.isExpanded = true,
       this.hasShadow = false,
       this.enabled = true,
+      this.minimumSize = Size.zero,
       super.key});
 
   // Función por defecto para longPress
@@ -56,68 +58,67 @@ class ElevatedButtonApp extends StatelessWidget {
       final buttonApp = Container(
           decoration: hasShadow ? getBoxDecorationShadow() : null,
           child: SizedBox(
-              height: heightButton,
               child: ElevatedButton(
-                onPressed: enabled ? press : null,
-                style: ButtonStyle(
-                    backgroundColor:
-                        WidgetStateProperty.all<Color?>(colorButton),
-                    textStyle: WidgetStateProperty.all<TextStyle?>(
-                        textStyleButton ??
-                            Theme.of(context).textTheme.headlineMedium),
-                    alignment: alignmentButton,
-                    elevation: WidgetStateProperty.all<double>(evelationButton),
-                    padding: WidgetStateProperty.all<EdgeInsets>(
-                        EdgeInsets.symmetric(
-                            horizontal: paddingHorizontal,
-                            vertical: paddingVertical)),
-                    side: WidgetStateProperty.all<BorderSide>(
-                        BorderSide(color: colorBorder, width: widthBorder)),
-                    shape: WidgetStateProperty.all<OutlinedBorder>(
-                        RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(roundedButton)))),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min, // Ajuste al contenido
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(textButton,
-                        style: textStyleButton, textAlign: TextAlign.center),
-                    if (rightIconButton != null) ...[
-                      const SizedBox(width: 8),
-                      rightIconButton!,
-                    ],
-                  ],
-                ),
-              )));
-      return isExpanded
-          ? SizedBox(width: double.infinity, child: buttonApp)
-          : IntrinsicWidth(child: buttonApp);
-    } else {
-      return Container(
-          height: heightButton,
-          decoration: hasShadow ? getBoxDecorationShadow() : null,
-          child: ElevatedButton.icon(
             onPressed: enabled ? press : null,
-            icon: iconData ?? const SizedBox.shrink(),
             style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all<Color?>(colorButton),
                 textStyle: WidgetStateProperty.all<TextStyle?>(
-                    textStyleButton ??
-                        Theme.of(context).textTheme.headlineMedium),
+                    textStyleButton ?? Theme.of(context).textTheme.titleSmall),
                 alignment: alignmentButton,
                 elevation: WidgetStateProperty.all<double>(evelationButton),
                 padding: WidgetStateProperty.all<EdgeInsets>(
                     EdgeInsets.symmetric(
                         horizontal: paddingHorizontal,
                         vertical: paddingVertical)),
+                minimumSize: WidgetStateProperty.all<Size>(minimumSize),
                 side: WidgetStateProperty.all<BorderSide>(
                     BorderSide(color: colorBorder, width: widthBorder)),
                 shape: WidgetStateProperty.all<OutlinedBorder>(
                     RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(roundedButton)))),
-            label: Text(textButton, style: textStyleButton),
-          ));
+            child: Row(
+              mainAxisSize: MainAxisSize.min, // Ajuste al contenido
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(textButton,
+                    style: textStyleButton, textAlign: TextAlign.center),
+                if (rightIconButton != null) ...[
+                  const SizedBox(width: 8),
+                  rightIconButton!,
+                ],
+              ],
+            ),
+          )));
+      return isExpanded
+          ? SizedBox(width: double.infinity, child: buttonApp)
+          : IntrinsicWidth(child: buttonApp);
+    } else {
+      return IntrinsicWidth(
+        child: Container(
+            height: heightButton,
+            decoration: hasShadow ? getBoxDecorationShadow() : null,
+            child: ElevatedButton.icon(
+              onPressed: enabled ? press : null,
+              icon: iconData ?? const SizedBox.shrink(),
+              style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all<Color?>(colorButton),
+                  textStyle: WidgetStateProperty.all<TextStyle?>(
+                      textStyleButton ??
+                          Theme.of(context).textTheme.headlineMedium),
+                  alignment: alignmentButton,
+                  elevation: WidgetStateProperty.all<double>(evelationButton),
+                  padding: WidgetStateProperty.all<EdgeInsets>(
+                      EdgeInsets.symmetric(
+                          horizontal: paddingHorizontal,
+                          vertical: paddingVertical)),
+                  side: WidgetStateProperty.all<BorderSide>(
+                      BorderSide(color: colorBorder, width: widthBorder)),
+                  shape: WidgetStateProperty.all<OutlinedBorder>(
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(roundedButton)))),
+              label: Text(textButton, style: textStyleButton),
+            )),
+      );
     }
   }
 }

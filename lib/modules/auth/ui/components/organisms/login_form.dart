@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/constants/schemas/validator_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/constants/string_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
@@ -37,9 +38,7 @@ class LoginForm extends StatelessWidget {
               SnackBar(content: Text(state.message)),
             );
           } else if (state is LoginStateSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Login exitoso")),
-            );
+            Navigator.pushNamed(context, Routes.homeRoute);
           }
         },
         builder: (context, state) {
@@ -71,24 +70,24 @@ class LoginForm extends StatelessWidget {
                   ),
                 ],
               ),
-              if (!isTV)
-                ElevatedButtonApp(
-                  isExpanded: false,
-                  textButton: AppString.loginButton,
-                  colorButton: ColorManager.primaryContainer,
-                  textStyleButton:
-                      Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: ColorManager.onPrimaryContainer,
-                          ),
-                  roundedButton: AppSize.s10,
-                  press: () async {
-                    if (formKey.currentState!.validate()) {
-                      loginBloc.add(
-                        LoginEvent.login(tcUsername.text, tcPassword.text),
-                      );
-                    }
-                  },
-                )
+              ElevatedButtonApp(
+                isExpanded: false,
+                textButton: AppString.loginButton,
+                colorButton: ColorManager.primaryContainer,
+                textStyleButton:
+                    Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: ColorManager.onPrimaryContainer,
+                        ),
+                roundedButton: AppSize.s10,
+                press: () async {
+                  Navigator.pushNamed(context, Routes.homeRoute);
+                  // if (formKey.currentState!.validate()) {
+                  //   loginBloc.add(
+                  //     LoginEvent.login(tcUsername.text, tcPassword.text),
+                  //   );
+                  // }
+                },
+              )
             ],
           );
         },

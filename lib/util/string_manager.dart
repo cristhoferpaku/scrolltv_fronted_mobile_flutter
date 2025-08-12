@@ -219,4 +219,7 @@ class AppString {
   static const String backButton = 'Regresar';
   static const String iniciarSesion = 'Iniciar sesión';
   static const String loginButton = 'Ingresar';
+
+  static const String buttonWatchNow = 'Ver ahora';
+  static const String buttonDetails = 'Detalles';
 }
