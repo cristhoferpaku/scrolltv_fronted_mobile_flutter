@@ -7,6 +7,8 @@ environment:
   sdk: ^3.6.2
 
 dependencies:
+  flutter_localizations:
+    sdk: flutter
   dio: ^5.8.0+1
   dio_cache_interceptor: ^3.4.4
   dio_cache_interceptor_hive_store: ^4.0.0
@@ -18,7 +20,7 @@ dependencies:
   flutter_svg: ^2.2.0
   freezed_annotation: ^3.0.0
   get_it: ^8.2.0
-  intl: ^0.20.2
+  intl: ^0.19.0
   json_annotation: ^4.9.0
   logger: ^2.6.0
   lottie: ^3.3.1
