@@ -15,7 +15,7 @@ class AuthUseCaseImpl implements AuthUseCase {
   Future<ApiResponse<AuthUserModel>> login(LoginModel user) async {
     final response = await _authRepositoryPort.login(user);
     if (response.success == true) {
-      _userRepository.saveToken(response.data.tokens.accessToken!);
+      _userRepository.saveToken(response.data.tokens?.accessToken ?? '');
     }
     return response;
   }

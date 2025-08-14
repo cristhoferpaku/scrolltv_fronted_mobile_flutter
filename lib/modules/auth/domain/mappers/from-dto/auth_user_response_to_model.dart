@@ -4,6 +4,8 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/mappers/fro
 
 AuthUserModel authUserResponseToModel(AuthUserResponse authUserResponse) {
   return AuthUserModel(
-    tokens: tokenResponseToModel(authUserResponse.tokens!),
+    tokens: authUserResponse.tokens != null 
+        ? tokenResponseToModel(authUserResponse.tokens!) 
+        : null,
   );
 }
