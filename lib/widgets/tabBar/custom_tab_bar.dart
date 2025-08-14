@@ -52,12 +52,12 @@ class _CustomTabBarState extends State<CustomTabBar>
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Positioned.fill(
-                    child: TabBarView(
-                      controller: tabController,
-                      children: widget.items.map((item) => item.child).toList(),
-                    ),
-                  ),
+                  // Positioned.fill(
+                  //   child: TabBarView(
+                  //     controller: tabController,
+                  //     children: widget.items.map((item) => item.child).toList(),
+                  //   ),
+                  // ),
                   Positioned(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -72,6 +72,7 @@ class _CustomTabBarState extends State<CustomTabBar>
                           ),
                           padding: EdgeInsets.zero,
                           child: TabBar(
+                            physics: const NeverScrollableScrollPhysics(),
                             splashFactory: NoSplash.splashFactory,
                             tabAlignment: TabAlignment.start,
                             isScrollable: true,
@@ -88,53 +89,54 @@ class _CustomTabBarState extends State<CustomTabBar>
                                 CustomTabBarItem value = entry.value;
                                 bool isCurrentIndex =
                                     position == state.currentIndex;
-                                return Tab(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: isCurrentIndex
-                                          ? ColorManager.primaryContainer
-                                          : ColorManager.transparent,
-                                      borderRadius:
-                                          BorderRadius.circular(AppSize.s10),
-                                    ),
-                                    alignment: Alignment.center,
-                                    height: AppSize.s36,
-                                    child: Row(
-                                      spacing: AppPadding.p8,
-                                      children: [
-                                        if (value.icon != null)
-                                          Icon(value.icon!,
-                                              size: AppSize.s24,
-                                              color: ColorManager
-                                                  .onPrimaryContainer),
-                                        Text(value.title,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelMedium
-                                                ?.copyWith(
-                                                    color: ColorManager
-                                                        .onPrimaryContainer)),
-                                      ],
-                                    ).withPadding(horizontal: AppPadding.p16),
-                                  ).withPadding(
-                                      left: position != 0
-                                          ? AppPadding.p16
-                                          : AppPadding.p16),
-                                );
+                                return SizedBox.shrink();
+                                // return Tab(
+                                //   child: Container(
+                                //     decoration: BoxDecoration(
+                                //       color: isCurrentIndex
+                                //           ? ColorManager.primaryContainer
+                                //           : ColorManager.transparent,
+                                //       borderRadius:
+                                //           BorderRadius.circular(AppSize.s10),
+                                //     ),
+                                //     alignment: Alignment.center,
+                                //     height: AppSize.s36,
+                                //     child: Row(
+                                //       spacing: AppPadding.p8,
+                                //       children: [
+                                //         if (value.icon != null)
+                                //           Icon(value.icon!,
+                                //               size: AppSize.s24,
+                                //               color: ColorManager
+                                //                   .onPrimaryContainer),
+                                //         Text(value.title,
+                                //             style: Theme.of(context)
+                                //                 .textTheme
+                                //                 .labelMedium
+                                //                 ?.copyWith(
+                                //                     color: ColorManager
+                                //                         .onPrimaryContainer)),
+                                //       ],
+                                //     ).withPadding(horizontal: AppPadding.p16),
+                                //   ).withPadding(
+                                //       left: position != 0
+                                //           ? AppPadding.p16
+                                //           : AppPadding.p16),
+                                // );
                               })
                             ],
                           ),
                         ),
-                        // Expanded(
-                        //   child: Container(
-                        //     child: TabBarView(
-                        //       controller: tabController,
-                        //       children: widget.items
-                        //           .map((item) => item.child)
-                        //           .toList(),
-                        //     ),
-                        //   ),
-                        // ),
+                        Expanded(
+                          child: Container(
+                            child: TabBarView(
+                              controller: tabController,
+                              children: widget.items
+                                  .map((item) => item.child)
+                                  .toList(),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),

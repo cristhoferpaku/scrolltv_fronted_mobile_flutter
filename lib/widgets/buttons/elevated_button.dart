@@ -35,7 +35,7 @@ class ElevatedButtonApp extends StatelessWidget {
       this.rightIconButton,
       this.textStyleButton,
       this.evelationButton = 2.0,
-      this.roundedButton = 0.0,
+      this.roundedButton = 12.0,
       this.paddingHorizontal = 24.0,
       this.paddingVertical = 8.0,
       this.colorBorder = ColorManager.transparent,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/top_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/string_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
@@ -26,16 +28,22 @@ class HomeNavbar extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.98,
-                        child: HomeHero()),
-                    Container(
-                      width: 400,
-                      height: 500,
-                      color: Colors.red,
+                    SizedBox(height: AppPadding.p280),
+                    Column(
+                      spacing: AppPadding.p36,
+                      children: [
+                        TopCardList(title: AppStringMultimedia.sectionMovies),
+                        SectionCardList(
+                            title: AppStringMultimedia.sectionSeries),
+                        SectionCardList(
+                            title: AppStringMultimedia.sectionDocumentaries),
+                        SectionCardList(title: AppStringMultimedia.sectionKids),
+                        SectionCardList(
+                            title: AppStringMultimedia.sectionAnimes),
+                      ],
                     ),
                   ],
-                ),
+                ).withPadding(all: AppPadding.p16),
               )),
           CustomTabBarItem(
               title: AppStringMultimedia.sectionSeries,
