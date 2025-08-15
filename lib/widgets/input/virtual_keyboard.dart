@@ -137,6 +137,13 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
    
   final List<String> _actionButtons = ['!#\$','@', '.', '⎵','⌫'];
 
+  List<String> get _filteredActionButtons {
+    if (_isSymbolMode) {
+      return _actionButtons.where((button) => !['!#\$', '@', '.'].contains(button)).toList();
+    }
+    return _actionButtons;
+  }
+
   KeyEventResult _handleRemoteKey(RawKeyEvent event) {
     if (event is RawKeyDownEvent) {
       // Ignorar eventos de navegación si acabamos de procesar una tecla
@@ -154,7 +161,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
             // Volver a los botones de acción desde los botones de navegación
             _setFocusState(actionButton: true);
             setState(() {
-              _focusedActionButton = _actionButtons.length - 1;
+              _focusedActionButton = _filteredActionButtons.length - 1;
             });
           } else if (_isActionButtonFocused) {
             // Si estamos en modo símbolo, saltar las sugerencias y ir directo al teclado
@@ -236,7 +243,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                 _focusedActionButton--;
               } else {
                 // Ir al último botón de acción
-                _focusedActionButton = _actionButtons.length - 1;
+                _focusedActionButton = _filteredActionButtons.length - 1;
               }
             } else if (_isEmailSuggestionFocused) {
               // Navegación entre sugerencias de email
@@ -269,7 +276,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
               }
             } else if (_isActionButtonFocused) {
               // Navegación entre botones de acción
-              if (_focusedActionButton < _actionButtons.length - 1) {
+              if (_focusedActionButton < _filteredActionButtons.length - 1) {
                 _focusedActionButton++;
               } else {
                 _focusedActionButton = 0;
@@ -296,7 +303,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
           if (_isNavigationButtonFocused) {
             _handleActionButtonPress();
           } else if (_isActionButtonFocused) {
-            String actionKey = _actionButtons[_focusedActionButton];
+            String actionKey = _filteredActionButtons[_focusedActionButton];
             _handleActionKeyPress(actionKey);
           } else if (_isEmailSuggestionFocused) {
             String suggestion = _emailSuggestions[_focusedEmailSuggestion];
@@ -441,32 +448,26 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                       margin: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: _actionButtons.where((button) {
-                          // Filter out symbols when in symbol mode
-                          if (_isSymbolMode) {
-                            return !['!#\$', '@', '.'].contains(button);
-                          }
-                          return true;
-                        }).toList().asMap().entries.map((entry) {
-                          int index = entry.key;
-                          String button = entry.value;
-                          bool isFocused = _isActionButtonFocused &&
-                              _focusedActionButton == index;
+                        children: _filteredActionButtons.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              String button = entry.value;
+                              bool isFocused = _isActionButtonFocused &&
+                                  _focusedActionButton == index;
 
-                          return Expanded(
-                            flex: (button == '⎵' || button == '⌫') ? 3 : 1, // Space y backspace más anchos
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 2),
-                              child: _buildActionKey(
-                                key: button,
-                                isFocused: isFocused,
-                                onPressed: () => _handleActionKeyPress(button),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                              return Expanded(
+                                flex: (button == '⎵' || button == '⌫') ? 3 : 1, // Space y backspace más anchos
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                                  child: _buildActionKey(
+                                    key: button,
+                                    isFocused: isFocused,
+                                    onPressed: () => _handleActionKeyPress(button),
+                                  ),
+                                ),
+                              );
+                             }).toList(),
+                           ),
+                         ),
                     
                
                     
@@ -599,49 +600,50 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     if (widget.isPasswordField) {
       // En campo contraseña: mostrar Anterior e Ingresar
       if (widget.onPrevious != null) {
-        buttons.add(_buildActionButton('Anterior', widget.onPrevious!,
-            isFocused:
-                _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex));
+        buttons.add(Expanded(
+          child: _buildActionButton('Anterior', widget.onPrevious!,
+              isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
+        ));
         buttonIndex++;
       }
-      buttons.add(_buildActionButton('Ingresar', widget.onEnter,
-          isPrimary: true,
-          isFocused:
-              _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex));
+      buttons.add(Expanded(
+        child: _buildActionButton('Ingresar', widget.onEnter!,
+            isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
+      ));
     } else {
       // En campo usuario: solo mostrar Siguiente
       if (widget.onNext != null) {
-        buttons.add(_buildActionButton('Siguiente', widget.onNext!,
-            isPrimary: true,
-            isFocused:
-                _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex));
+        buttons.add(Expanded(
+          child: _buildActionButton('Siguiente', widget.onNext!,
+              isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
+        ));
       }
     }
 
     return buttons;
   }
 
-  Widget _buildActionButton(String text, VoidCallback onPressed,
-      {bool isPrimary = false, bool isFocused = false}) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: isFocused
-              ? Colors.white
-              : (isPrimary ? ColorManager.primaryContainer : Colors.grey[700]),
-          borderRadius: BorderRadius.circular(8),
-          border: isFocused ? Border.all(color: Colors.white, width: 2) : null,
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: isFocused
-                ? Colors.black
-                : (isPrimary ? ColorManager.onPrimaryContainer : Colors.white),
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+  Widget _buildActionButton(String text, VoidCallback onPressed, {bool isFocused = false}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: GestureDetector(
+        onTap: onPressed,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          width: double.infinity,
+          
+          decoration: BoxDecoration(
+            color: isFocused ? Colors.white : Colors.grey[800],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isFocused ? Colors.black : Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ),
