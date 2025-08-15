@@ -126,26 +126,34 @@ class HttpDioService {
       if (response.statusCode == 200 || response.statusCode == 304) {
         return response;
       } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized');
+        throw Exception('No autorizado. Verifica tus credenciales.');
       } else if (response.statusCode == 500) {
-        throw Exception('Server Error');
+        throw Exception('Error interno del servidor.');
       } else if (response.statusCode == 400) {
-        throw Exception('Wrong Pass');
+        throw Exception('Datos incorrectos. Verifica la información enviada.');
       } else {
-        throw Exception("Something does wen't wrong");
+        throw Exception('Error inesperado del servidor.');
       }
     } on SocketException catch (e) {
-      throw Exception('Not Internet Connection: $e');
+      throw Exception('Sin conexión a internet: $e');
     } on FormatException catch (e) {
-      throw Exception('Bad response format: $e');
+      throw Exception('Formato de respuesta inválido: $e');
     } on DioException catch (e) {
-      if (e.response!.statusCode == 500) {
-        throw ExceptionApp(500, e.response!.data['message']);
+      if (e.response?.statusCode == 500) {
+        String errorMessage = 'Error interno del servidor';
+        if (e.response?.data is Map<String, dynamic> && 
+            e.response?.data['message'] != null) {
+          errorMessage = e.response?.data['message'].toString() ?? errorMessage;
+        }
+        throw ExceptionApp(500, errorMessage);
+      } else if (e.message?.contains('Connection refused') == true || 
+                 e.message?.contains('connection errored') == true) {
+        throw Exception('No se puede conectar al servidor. Verifica que el servidor esté ejecutándose en la URL configurada.');
       } else {
-        throw Exception('Dio Error: ${e.message}');
+        throw Exception('Error de conexión: ${e.message ?? "Error desconocido"}');
       }
     } catch (e) {
-      throw Exception("Something wen't wrong");
+      throw Exception('Error inesperado: ${e.toString()}');
     }
   }
 
