@@ -3,14 +3,37 @@ import 'package:flutter/material.dart';
 class CustomGridTraversalPolicy extends FocusTraversalPolicy
     with DirectionalFocusTraversalPolicyMixin {
   @override
+  @override
   bool inDirection(FocusNode currentNode, TraversalDirection direction) {
-    super.inDirection(currentNode, direction);
     final next = _findClosest(currentNode, direction);
+
     if (next != null) {
+      _scrollIntoView(next);
       next.requestFocus();
       return true;
     }
-    return false;
+
+    // Si es horizontal y no hay candidato, bloquea
+    if (direction == TraversalDirection.left ||
+        direction == TraversalDirection.right) {
+      return true; // no hacer nada → no salta de fila
+    }
+
+    // Si es vertical y no encontraste, deja que Flutter haga lo suyo
+    return super.inDirection(currentNode, direction);
+  }
+
+  void _scrollIntoView(FocusNode node) {
+    if (node.context != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Scrollable.ensureVisible(
+          node.context!,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          alignment: 0.3, // opcional: 0.5 para centrar
+        );
+      });
+    }
   }
 
   FocusNode? _findClosest(FocusNode currentNode, TraversalDirection direction) {
@@ -39,10 +62,10 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy
       bool isValid;
       switch (direction) {
         case TraversalDirection.up:
-          isValid = nodePos.dy < currentPos.dy - 10; // solo más arriba
+          isValid = nodePos.dy < currentPos.dy - 10;
           break;
         case TraversalDirection.down:
-          isValid = nodePos.dy > currentPos.dy + 10; // solo más abajo
+          isValid = nodePos.dy > currentPos.dy + 10;
           break;
         case TraversalDirection.left:
           isValid = (nodePos.dx < currentPos.dx - 10) &&
@@ -52,8 +75,6 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy
           isValid = (nodePos.dx > currentPos.dx + 10) &&
               (nodePos.dy - currentPos.dy).abs() < toleranceY;
           break;
-        // default:
-        // isValid = false;
       }
 
       if (!isValid) continue;
