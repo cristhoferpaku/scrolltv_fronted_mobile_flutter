@@ -122,12 +122,19 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     ['⇧', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '-'],
   ];
 
+  final List<List<String>> _symbolKeyboardLayout = [
+    ['!', '@', '#', '\$', '%', '^', '&', '*', '(', ')'],
+    ['-', '+', '=', '{', '}', '[', ']', '|', '\\', ':'],
+    [';', '"', "'", '<', '>', '?', '~', '§', '/', '.'],
+    ['ABC', '°', '©', '®', '™', '•', '≤', '≥', ',', 'x'],
+  ];
+
   final List<String> _emailSuggestions = [
     '@hotmail.com',
     '@gmail.com',
     '@outlook.com'
   ];
-
+   
   final List<String> _actionButtons = ['!#\$','@', '.', '⎵','⌫'];
 
   KeyEventResult _handleRemoteKey(RawKeyEvent event) {
@@ -150,16 +157,26 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
               _focusedActionButton = _actionButtons.length - 1;
             });
           } else if (_isActionButtonFocused) {
-            // Volver a las sugerencias de email desde los botones de acción
-            _setFocusState(emailSuggestion: true);
-            setState(() {
-              _focusedEmailSuggestion = _emailSuggestions.length - 1;
-            });
+            // Si estamos en modo símbolo, saltar las sugerencias y ir directo al teclado
+            if (_isSymbolMode) {
+              _setFocusState(keyboard: true);
+              setState(() {
+                List<List<String>> currentLayout = _symbolKeyboardLayout;
+                _focusedRow = currentLayout.length - 1;
+              });
+            } else {
+              // Volver a las sugerencias de email desde los botones de acción
+              _setFocusState(emailSuggestion: true);
+              setState(() {
+                _focusedEmailSuggestion = _emailSuggestions.length - 1;
+              });
+            }
           } else if (_isEmailSuggestionFocused) {
             // Volver al teclado desde las sugerencias de email
             _setFocusState(keyboard: true);
             setState(() {
-              _focusedRow = _keyboardLayout.length - 1;
+              List<List<String>> currentLayout = _isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout;
+              _focusedRow = currentLayout.length - 1;
             });
           } else if (_focusedRow > 0) {
             setState(() {
@@ -168,18 +185,27 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
           }
           return KeyEventResult.handled; // Consumir el evento
         case LogicalKeyboardKey.arrowDown:
+          List<List<String>> currentLayout = _isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout;
           if (!_isEmailSuggestionFocused && !_isActionButtonFocused && !_isNavigationButtonFocused &&
-              _focusedRow < _keyboardLayout.length - 1) {
+              _focusedRow < currentLayout.length - 1) {
             setState(() {
               _focusedRow++;
             });
           } else if (!_isEmailSuggestionFocused && !_isActionButtonFocused && !_isNavigationButtonFocused &&
-              _focusedRow == _keyboardLayout.length - 1) {
-            // Mover a las sugerencias de email desde el teclado
-            _setFocusState(emailSuggestion: true);
-            setState(() {
-              _focusedEmailSuggestion = 0;
-            });
+              _focusedRow == currentLayout.length - 1) {
+            // Si estamos en modo símbolo, saltar las sugerencias y ir directo a los botones de acción
+            if (_isSymbolMode) {
+              _setFocusState(actionButton: true);
+              setState(() {
+                _focusedActionButton = 0;
+              });
+            } else {
+              // Mover a las sugerencias de email desde el teclado
+              _setFocusState(emailSuggestion: true);
+              setState(() {
+                _focusedEmailSuggestion = 0;
+              });
+            }
           } else if (_isEmailSuggestionFocused) {
             // Mover a los botones de acción desde las sugerencias de email
             _setFocusState(actionButton: true);
@@ -222,11 +248,12 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
               }
             } else {
               // Navegación en el teclado
+              List<List<String>> currentLayout = _isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout;
               if (_focusedCol > 0) {
                 _focusedCol--;
               } else {
                 // Ir al final de la fila
-                _focusedCol = _keyboardLayout[_focusedRow].length - 1;
+                _focusedCol = currentLayout[_focusedRow].length - 1;
               }
             }
           });
@@ -255,7 +282,8 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                 _focusedEmailSuggestion = 0;
               }
             } else {
-              if (_focusedCol < _keyboardLayout[_focusedRow].length - 1) {
+              List<List<String>> currentLayout = _isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout;
+              if (_focusedCol < currentLayout[_focusedRow].length - 1) {
                 _focusedCol++;
               } else {
                 _focusedCol = 0;
@@ -280,7 +308,8 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
               _focusedCol = 0;
             });
           } else {
-            String key = _keyboardLayout[_focusedRow][_focusedCol];
+            List<List<String>> currentLayout = _isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout;
+            String key = currentLayout[_focusedRow][_focusedCol];
             _handleKeyPress(key);
           }
           return KeyEventResult.handled; // Consumir el evento
@@ -347,7 +376,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                         maxWidth: 500, // Ancho máximo del teclado
                       ),
                       child: Column(
-                        children: _keyboardLayout.asMap().entries.map((entry) {
+                        children: (_isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout).asMap().entries.map((entry) {
                           int rowIndex = entry.key;
                           List<String> row = entry.value;
                           return Container(
@@ -381,7 +410,8 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                     ),
                     
                     // Email suggestions grid
-                    Container(
+                   
+                    if (!_isSymbolMode) Container(
                       constraints: BoxConstraints(
                         maxWidth: 500, // Mismo ancho que el teclado
                       ),
@@ -411,7 +441,13 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                       margin: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: _actionButtons.asMap().entries.map((entry) {
+                        children: _actionButtons.where((button) {
+                          // Filter out symbols when in symbol mode
+                          if (_isSymbolMode) {
+                            return !['!#\$', '@', '.'].contains(button);
+                          }
+                          return true;
+                        }).toList().asMap().entries.map((entry) {
                           int index = entry.key;
                           String button = entry.value;
                           bool isFocused = _isActionButtonFocused &&
@@ -618,6 +654,12 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         // Cambiar a modo de símbolos/números
         setState(() {
           _isSymbolMode = !_isSymbolMode;
+          // Si estamos cambiando a modo símbolo y el focus está en las sugerencias,
+          // mover el focus a los botones de acción
+          if (_isSymbolMode && _isEmailSuggestionFocused) {
+            _setFocusState(actionButton: true);
+            _focusedActionButton = 0;
+          }
         });
         break;
       case '@':
@@ -689,11 +731,17 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   }
 
   void _handleKeyPress(String key) {
-    if (key == '⇧') {
+    if (key == 'ABC') {
+      setState(() {
+        _isSymbolMode = false;
+        // Al volver al modo normal, si el focus está en los botones de acción,
+        // podemos mantenerlo ahí ya que las sugerencias ahora serán visibles
+      });
+    } else if (key == '⇧') {
       setState(() {
         _isShiftPressed = !_isShiftPressed;
       });
-    } else if (key == '-') {
+    } else if (key == '-' || key == 'x') {
       widget.onBackspace();
 
       // Ignorar navegación automática temporalmente
