@@ -95,7 +95,6 @@ class ElevatedButtonApp extends StatelessWidget {
     } else {
       return IntrinsicWidth(
         child: Container(
-            height: heightButton,
             decoration: hasShadow ? getBoxDecorationShadow() : null,
             child: ElevatedButton.icon(
               onPressed: enabled ? press : null,
@@ -116,7 +115,7 @@ class ElevatedButtonApp extends StatelessWidget {
                   shape: WidgetStateProperty.all<OutlinedBorder>(
                       RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(roundedButton)))),
-              label: Text(textButton, style: textStyleButton),
+              label: Center(child: Text(textButton, style: textStyleButton)),
             )),
       );
     }

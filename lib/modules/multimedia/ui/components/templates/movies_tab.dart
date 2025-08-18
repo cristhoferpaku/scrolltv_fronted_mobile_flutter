@@ -43,11 +43,16 @@ class _MoviesTabState extends State<MoviesTab> {
                   Column(
                     children: [
                       TopCardList(title: AppStringMultimedia.sectionMovies),
-                      SectionCardList(title: AppStringMultimedia.sectionSeries),
                       SectionCardList(
-                          title: AppStringMultimedia.sectionDocumentaries),
+                          title: AppStringMultimedia.sectionSeries,
+                          hasBlurLeft: true),
+                      SectionCardList(
+                          title: AppStringMultimedia.sectionDrama,
+                          hasBlurRight: true),
                       SectionCardList(title: AppStringMultimedia.sectionKids),
-                      SectionCardList(title: AppStringMultimedia.sectionAnimes),
+                      SectionCardList(
+                          title: AppStringMultimedia.sectionAnimes,
+                          hasBlurLeft: true),
                     ],
                   ).withPadding(all: AppPadding.p16),
                 ],

@@ -4,12 +4,13 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
 
 class CustomTabBarItem {
   String title;
-  IconData? icon;
+  Widget? icon;
   Widget child;
 
   CustomTabBarItem({required this.title, this.icon, required this.child});
@@ -30,6 +31,9 @@ class _CustomTabBarState extends State<CustomTabBar>
   final bloc = instance<CustomTabBarBloc>();
 
   bool _showHeader = true; // Para controlar visibilidad
+  final isTv = PlatformUtils.isTV;
+
+  late List<FocusNode> _focusNodes;
 
   @override
   void initState() {
@@ -38,9 +42,15 @@ class _CustomTabBarState extends State<CustomTabBar>
 
     tabController = TabController(length: widget.items.length, vsync: this);
     tabController.addListener(() {
+      _focusNodes[tabController.index].requestFocus();
+
       bloc.add(CustomTabBarEvent.changeTab(tabController.index));
     });
+
+    _focusNodes = List.generate(widget.items.length, (_) => FocusNode());
   }
+
+  int lastItemWithFocus = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +66,7 @@ class _CustomTabBarState extends State<CustomTabBar>
                 children: [
                   Positioned.fill(
                     child: TabBarView(
+                      physics: const NeverScrollableScrollPhysics(),
                       controller: tabController,
                       children: widget.items.map((item) {
                         return NotificationListener<ScrollNotification>(
@@ -94,60 +105,79 @@ class _CustomTabBarState extends State<CustomTabBar>
                               borderRadius: BorderRadius.circular(AppSize.s10),
                             ),
                             padding: EdgeInsets.zero,
-                            child: TabBar(
-                              physics: const NeverScrollableScrollPhysics(),
-                              splashFactory: NoSplash.splashFactory,
-                              tabAlignment: TabAlignment.start,
-                              isScrollable: true,
-                              indicatorColor: ColorManager.transparent,
-                              controller: tabController,
-                              labelPadding: EdgeInsets.zero,
-                              padding: EdgeInsets.zero,
-                              labelStyle:
-                                  Theme.of(context).textTheme.bodyMedium,
-                              unselectedLabelStyle:
-                                  Theme.of(context).textTheme.bodyMedium,
-                              tabs: [
-                                ...widget.items.asMap().entries.map((entry) {
-                                  int position = entry.key;
-                                  CustomTabBarItem value = entry.value;
-                                  bool isCurrentIndex =
-                                      position == state.currentIndex;
-                                  return Tab(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: isCurrentIndex
-                                            ? ColorManager.primaryContainer
-                                            : ColorManager.transparent,
-                                        borderRadius:
-                                            BorderRadius.circular(AppSize.s10),
+                            child: Center(
+                              child: TabBar(
+                                splashFactory: NoSplash.splashFactory,
+                                tabAlignment: isTv
+                                    ? TabAlignment.center
+                                    : TabAlignment.start,
+                                isScrollable: true,
+                                indicatorColor: ColorManager.transparent,
+                                controller: tabController,
+                                labelPadding: EdgeInsets.zero,
+                                padding: EdgeInsets.zero,
+                                labelStyle:
+                                    Theme.of(context).textTheme.bodyMedium,
+                                unselectedLabelStyle:
+                                    Theme.of(context).textTheme.bodyMedium,
+                                tabs: [
+                                  ...widget.items.asMap().entries.map((entry) {
+                                    int position = entry.key;
+                                    CustomTabBarItem value = entry.value;
+                                    bool isCurrentIndex =
+                                        position == state.currentIndex;
+                                    return FocusableActionDetector(
+                                      focusNode: _focusNodes[position],
+                                      onFocusChange: (hasFocus) {
+                                        if (lastItemWithFocus != 0) {
+                                          _focusNodes[lastItemWithFocus]
+                                              .requestFocus();
+                                          lastItemWithFocus = 0;
+                                          return;
+                                        }
+                                        final focusedNode =
+                                            FocusManager.instance.primaryFocus;
+                                        if (_focusNodes.contains(focusedNode)) {
+                                          tabController.animateTo(position);
+                                        } else {
+                                          lastItemWithFocus = position;
+                                        }
+                                      },
+                                      child: Tab(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: isCurrentIndex
+                                                ? ColorManager.primaryContainer
+                                                : ColorManager.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                                AppSize.s10),
+                                          ),
+                                          alignment: Alignment.center,
+                                          height: AppSize.s36,
+                                          child: Row(
+                                            spacing: AppPadding.p8,
+                                            children: [
+                                              if (value.icon != null)
+                                                value.icon!,
+                                              Text(value.title,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .labelMedium
+                                                      ?.copyWith(
+                                                          color: ColorManager
+                                                              .onPrimaryContainer)),
+                                            ],
+                                          ).withPadding(
+                                              horizontal: AppPadding.p16),
+                                        ).withPadding(
+                                            left: position != 0
+                                                ? AppPadding.p16
+                                                : AppPadding.p16),
                                       ),
-                                      alignment: Alignment.center,
-                                      height: AppSize.s36,
-                                      child: Row(
-                                        spacing: AppPadding.p8,
-                                        children: [
-                                          if (value.icon != null)
-                                            Icon(value.icon!,
-                                                size: AppSize.s24,
-                                                color: ColorManager
-                                                    .onPrimaryContainer),
-                                          Text(value.title,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .labelMedium
-                                                  ?.copyWith(
-                                                      color: ColorManager
-                                                          .onPrimaryContainer)),
-                                        ],
-                                      ).withPadding(horizontal: AppPadding.p16),
-                                    ).withPadding(
-                                        left: position != 0
-                                            ? AppPadding.p16
-                                            : AppPadding.p16),
-                                  );
-                                })
-                              ],
+                                    );
+                                  })
+                                ],
+                              ),
                             ),
                           ),
                         ],

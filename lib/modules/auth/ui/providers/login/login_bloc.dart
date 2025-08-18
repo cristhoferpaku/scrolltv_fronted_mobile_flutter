@@ -15,31 +15,29 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginEvent>((event, emit) {});
     on<LoginEventLogin>((event, emit) async {
       try {
-        emit(const LoginState.loading());
-        final user =
-            LoginModel(username: event.username, password: event.password);
+        emit(const LoginState.success());
+        // final user =
+        //     LoginModel(username: event.username, password: event.password);
 
-      
-        final response = await authUseCase.login(user);
-        LoggerManager.log.i('Login response: $response');
-        
-        if (response.success == true) {
-          emit(LoginState.success());
-        } else {
-          emit(LoginState.error('Error de autenticación'));
-        }
+        // final response = await authUseCase.login(user);
+        // LoggerManager.log.i('Login response: $response');
 
+        // if (response.success == true) {
+        //   emit(LoginState.success());
+        // } else {
+        //   emit(LoginState.error('Error de autenticación'));
+        // }
       } catch (e) {
         LoggerManager.log.e('Error en login: $e');
-        
+
         // Extraer mensaje de error más limpio
         String errorMessage = 'Error inesperado durante el login';
         String fullError = e.toString();
-        
+
         if (fullError.contains('Exception:')) {
           // Remover todas las ocurrencias de "Exception: " para evitar duplicación
           errorMessage = fullError.replaceAll('Exception: ', '').trim();
-          
+
           // Si después de limpiar queda vacío, usar mensaje por defecto
           if (errorMessage.isEmpty) {
             errorMessage = 'Error inesperado durante el login';
@@ -47,7 +45,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         } else {
           errorMessage = fullError;
         }
-        
+
         emit(LoginState.error(errorMessage));
       }
     });

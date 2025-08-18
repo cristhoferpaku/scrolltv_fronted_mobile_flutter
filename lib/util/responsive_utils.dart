@@ -17,4 +17,12 @@ class ResponsiveUtils {
     // Evitar que se pase de los límites
     return width.clamp(minSize, maxSize);
   }
+
+  static double getIconSize(
+    BuildContext context, {
+    double minSize = 24,
+    double maxSize = 32,
+  }) {
+    return getSize(context, minSize: minSize, maxSize: maxSize);
+  }
 }

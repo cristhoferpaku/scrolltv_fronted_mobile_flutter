@@ -27,6 +27,7 @@ class ImageAssets {
   static const String iconMovie = '$iconsPath/icon_movie.svg';
   static const String iconMovieFill = '$iconsPath/icon_movie_fill.svg';
   static const String iconPlay = '$iconsPath/icon_play.svg';
+  static const String iconPlayFill = '$iconsPath/icon_play_fill.svg';
   static const String iconUser = '$iconsPath/icon_user.svg';
   static const String iconUserFill = '$iconsPath/icon_user_fill.svg';
   static const String iconSearch = '$iconsPath/icon_search.svg';

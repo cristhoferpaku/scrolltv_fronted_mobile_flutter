@@ -25,10 +25,20 @@ class _LoginPageState extends State<LoginPage> {
       padding: AppPadding.p0,
       color: ColorManager.surfaceContainerLowest,
       body: Stack(children: [
-        BlurBackground(top: 0, left: -MediaQuery.of(context).size.width / 2),
         BlurBackground(
-            top: MediaQuery.of(context).size.height / 2,
-            left: MediaQuery.of(context).size.width / 2),
+          top: 0,
+          left: 0,
+          width: 300,
+          height: 300,
+          offset: Offset(-100, 0),
+        ),
+        BlurBackground(
+          right: 0,
+          bottom: 0,
+          width: 300,
+          height: 300,
+          offset: Offset(100, 0),
+        ),
         Positioned.fill(
           child: LoginForm(
               formKey: formKey,

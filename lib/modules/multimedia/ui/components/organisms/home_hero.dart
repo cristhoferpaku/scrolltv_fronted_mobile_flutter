@@ -5,6 +5,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/video_metadata.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/buttons/elevated_button.dart';
 
 class HomeHero extends StatefulWidget {
@@ -58,7 +59,8 @@ class _HomeHeroState extends State<HomeHero> {
                 spacing: AppPadding.p16,
                 children: [
                   ElevatedButtonApp(
-                    iconData: const Icon(Icons.play_arrow),
+                    iconData: Icon(Icons.play_arrow,
+                        size: ResponsiveUtils.getIconSize(context)),
                     isExpanded: false,
                     textButton: AppString.buttonWatchNow,
                     colorButton: ColorManager.primaryContainer,
@@ -70,7 +72,8 @@ class _HomeHeroState extends State<HomeHero> {
                     press: () async {},
                   ),
                   ElevatedButtonApp(
-                    iconData: const Icon(Icons.info_outline),
+                    iconData: Icon(Icons.info_outline,
+                        size: ResponsiveUtils.getIconSize(context)),
                     isExpanded: false,
                     textButton: AppString.buttonDetails,
                     colorButton: ColorManager.transparent,
