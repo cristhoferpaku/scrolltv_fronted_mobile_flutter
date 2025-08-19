@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/text_drop_shadow.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 
 class TopCard extends StatefulWidget {
   final String title;
   final int topNumber;
-  const TopCard({super.key, required this.title, required this.topNumber});
+  final String coverImage;
+  const TopCard({
+    super.key,
+    required this.title,
+    required this.topNumber,
+    required this.coverImage,
+  });
 
   @override
   State<TopCard> createState() => _TopCardState();
@@ -70,8 +75,8 @@ class _TopCardState extends State<TopCard> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         clipBehavior: Clip.hardEdge,
-                        child: Image.asset(
-                          ImageAssets.backgroundMobile,
+                        child: Image.network(
+                          widget.coverImage,
                           fit: BoxFit.cover,
                         ),
                       ),

@@ -13,7 +13,7 @@ class ScrollToTopOnUp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.of(context).size.height * 3;
 
     return Focus(
       canRequestFocus: false,
@@ -28,6 +28,7 @@ class ScrollToTopOnUp extends StatelessWidget {
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeOut,
             );
+            print("Scroll to top");
             return KeyEventResult.ignored; // no consumir el evento
           }
 

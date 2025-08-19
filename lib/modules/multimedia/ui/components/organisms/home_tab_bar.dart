@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/animes_tab.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/dramas_tab.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/kids_tab.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/live_tv_tab.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/movies_tab.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/series_tab.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/string_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/custom_tab_bar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
@@ -51,7 +53,7 @@ class _HomeTabBarState extends State<HomeTabBar> {
                 fit: BoxFit.contain,
                 width: ResponsiveUtils.getIconSize(context),
               ),
-              child: MoviesTab(scrollController: scrollController)),
+              child: SeriesTab(scrollController: scrollController)),
           CustomTabBarItem(
               title: AppStringMultimedia.sectionKids,
               icon: SvgPicture.asset(
@@ -59,7 +61,7 @@ class _HomeTabBarState extends State<HomeTabBar> {
                 fit: BoxFit.contain,
                 width: ResponsiveUtils.getIconSize(context),
               ),
-              child: MoviesTab(scrollController: scrollController)),
+              child: KidsTab(scrollController: scrollController)),
           CustomTabBarItem(
               title: AppStringMultimedia.sectionAnimes,
               icon: SvgPicture.asset(
@@ -67,7 +69,7 @@ class _HomeTabBarState extends State<HomeTabBar> {
                 fit: BoxFit.contain,
                 width: ResponsiveUtils.getIconSize(context),
               ),
-              child: MoviesTab(scrollController: scrollController)),
+              child: AnimesTab(scrollController: scrollController)),
           CustomTabBarItem(
               title: AppStringMultimedia.sectionDrama,
               icon: SvgPicture.asset(
@@ -75,7 +77,7 @@ class _HomeTabBarState extends State<HomeTabBar> {
                 fit: BoxFit.contain,
                 width: ResponsiveUtils.getIconSize(context),
               ),
-              child: MoviesTab(scrollController: scrollController)),
+              child: DramasTab(scrollController: scrollController)),
         ]);
   }
 }

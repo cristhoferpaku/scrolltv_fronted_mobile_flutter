@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
-import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/colors.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/constants/schemas/validator_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/input/virtual_keyboard.dart';
@@ -25,11 +25,11 @@ class _LoginPageState extends State<LoginPage> {
   final FocusNode _usernameFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
   final FocusNode _keyboardFocus = FocusNode();
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Agregar listeners para detectar cambios de foco
     _usernameFocus.addListener(() {
       if (_usernameFocus.hasFocus && _isPasswordField) {
@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     });
-    
+
     _passwordFocus.addListener(() {
       if (_passwordFocus.hasFocus && !_isPasswordField) {
         setState(() {
@@ -46,9 +46,8 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     });
-    
-    _keyboardFocus.addListener(() {
-    });
+
+    _keyboardFocus.addListener(() {});
   }
 
   @override
@@ -57,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
     _usernameFocus.removeListener(() {});
     _passwordFocus.removeListener(() {});
     _keyboardFocus.removeListener(() {});
-    
+
     _usernameFocus.dispose();
     _passwordFocus.dispose();
     _keyboardFocus.dispose();
@@ -81,33 +80,7 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<LoginBloc, LoginState>(
         bloc: loginBloc,
         listener: (context, state) {
-          if (state is LoginStateLoading) {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => const Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          } else if (state is LoginStateError) {
-            // Cerrar solo el dialog de loading si está abierto
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: const Color.fromARGB(29, 0, 4, 255),
-                duration: const Duration(seconds: 4),
-              ),
-            );
-          } else if (state is LoginStateSuccess) {
-            // Cerrar el dialog de loading si está abierto
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-            Navigator.pushNamed(context, Routes.homeRoute);
-          }
+          loginListener(context, state);
         },
         builder: (context, state) {
           return SafeArea(
@@ -127,7 +100,8 @@ class _LoginPageState extends State<LoginPage> {
                         onBackspace: _handleBackspace,
                         onSpace: _handleSpace,
                         onEnter: _handleLogin,
-                        onPrevious: _isPasswordField ? _goToPreviousField : null,
+                        onPrevious:
+                            _isPasswordField ? _goToPreviousField : null,
                         onNext: !_isPasswordField ? _goToNextField : null,
                       ),
                     ),
@@ -170,7 +144,6 @@ class _LoginPageState extends State<LoginPage> {
                             focusNode: _passwordFocus,
                             isPassword: true,
                           ),
-
                         ],
                       ),
                     ),
@@ -194,7 +167,9 @@ class _LoginPageState extends State<LoginPage> {
         color: Colors.grey[800],
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: focusNode.hasFocus ? ColorManager.primaryContainer : Colors.transparent,
+          color: focusNode.hasFocus
+              ? ColorManager.primaryContainer
+              : Colors.transparent,
           width: 2,
         ),
       ),
@@ -204,7 +179,9 @@ class _LoginPageState extends State<LoginPage> {
         obscureText: isPassword,
         readOnly: true,
         enableInteractiveSelection: false,
-        validator: (value) => isPassword ? ValidatorManager.validatePassword(value ?? '') : ValidatorManager.validateUsername(value ?? ''),
+        validator: (value) => isPassword
+            ? ValidatorManager.validatePassword(value ?? '')
+            : ValidatorManager.validateUsername(value ?? ''),
         style: const TextStyle(
           color: Colors.white,
           fontSize: 16,
@@ -230,7 +207,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _handleKeyPress(String key) {
     final currentController = _isPasswordField ? tcPassword : tcUsername;
-    
+
     setState(() {
       final newText = currentController.text + key;
       currentController.value = TextEditingValue(
@@ -238,7 +215,7 @@ class _LoginPageState extends State<LoginPage> {
         selection: TextSelection.collapsed(offset: newText.length),
       );
     });
-    
+
     // Mantener el foco en el virtual keyboard
     Future.delayed(const Duration(milliseconds: 50), () {
       _keyboardFocus.requestFocus();
@@ -247,17 +224,18 @@ class _LoginPageState extends State<LoginPage> {
 
   void _handleBackspace() {
     final currentController = _isPasswordField ? tcPassword : tcUsername;
-    
+
     if (currentController.text.isNotEmpty) {
       setState(() {
-        final newText = currentController.text.substring(0, currentController.text.length - 1);
+        final newText = currentController.text
+            .substring(0, currentController.text.length - 1);
         currentController.value = TextEditingValue(
           text: newText,
           selection: TextSelection.collapsed(offset: newText.length),
         );
       });
     }
-    
+
     // Mantener el foco en el virtual keyboard
     Future.delayed(const Duration(milliseconds: 50), () {
       _keyboardFocus.requestFocus();
@@ -273,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
         selection: TextSelection.collapsed(offset: newText.length),
       );
     });
-    
+
     // Mantener el foco en el virtual keyboard
     Future.delayed(const Duration(milliseconds: 50), () {
       _keyboardFocus.requestFocus();

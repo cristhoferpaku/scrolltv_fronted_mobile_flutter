@@ -14,19 +14,18 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     final authUseCase = instance<AuthUseCase>();
     on<LoginEvent>((event, emit) {});
     on<LoginEventLogin>((event, emit) async {
+      emit(LoginState.loading());
       try {
-        emit(const LoginState.success());
-        // final user =
-        //     LoginModel(username: event.username, password: event.password);
+        final user =
+            LoginModel(username: event.username, password: event.password);
 
-        // final response = await authUseCase.login(user);
-        // LoggerManager.log.i('Login response: $response');
+        final response = await authUseCase.login(user);
 
-        // if (response.success == true) {
-        //   emit(LoginState.success());
-        // } else {
-        //   emit(LoginState.error('Error de autenticación'));
-        // }
+        if (response.success == true) {
+          emit(LoginState.success());
+        } else {
+          emit(LoginState.error('Error de autenticación'));
+        }
       } catch (e) {
         LoggerManager.log.e('Error en login: $e');
 

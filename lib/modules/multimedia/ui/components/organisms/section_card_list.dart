@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/components/molecules/blur_background.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/section_card.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
@@ -13,11 +14,13 @@ class SectionCardList extends StatefulWidget {
   final String title;
   final bool hasBlurLeft;
   final bool hasBlurRight;
+  final List<VideoModel> videos;
   const SectionCardList({
     super.key,
     required this.title,
     this.hasBlurLeft = false,
     this.hasBlurRight = false,
+    required this.videos,
   });
 
   @override
@@ -79,8 +82,10 @@ class _SectionCardListState extends State<SectionCardList> {
                 child: Row(
                   spacing: isTV ? AppPadding.p36 : AppPadding.p16,
                   children: List.generate(
-                    10,
-                    (index) => SectionCard(title: index.toString()),
+                    widget.videos.length,
+                    (index) => SectionCard(
+                        title: widget.videos[index].title ?? "",
+                        coverImage: widget.videos[index].coverImage ?? ""),
                   ),
                 ).withPadding(
                     vertical: AppPadding.p16,

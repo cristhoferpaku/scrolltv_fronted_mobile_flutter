@@ -6,13 +6,12 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/top_card_list.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/types/home_state_status.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 
-class MoviesTab extends StatefulWidget {
-  const MoviesTab({
+class SeriesTab extends StatefulWidget {
+  const SeriesTab({
     super.key,
     required this.scrollController,
   });
@@ -20,10 +19,10 @@ class MoviesTab extends StatefulWidget {
   final ScrollController scrollController;
 
   @override
-  State<MoviesTab> createState() => _MoviesTabState();
+  State<SeriesTab> createState() => _SeriesTabState();
 }
 
-class _MoviesTabState extends State<MoviesTab> {
+class _SeriesTabState extends State<SeriesTab> {
   final ScrollController scrollController = ScrollController();
 
   final HomeBloc homeBloc = instance<HomeBloc>();
@@ -39,13 +38,6 @@ class _MoviesTabState extends State<MoviesTab> {
           listener: (context, state) {},
           builder: (context, state) {
             if (state is HomeStateLoadedSections) {
-              if (state.status == HomeStateStatus.loading) {
-                return Container(
-                  height: MediaQuery.of(context).size.height,
-                  child: CircularProgressIndicator(),
-                );
-              }
-
               return Column(
                 children: [
                   FocusTraversalGroup(
@@ -61,18 +53,18 @@ class _MoviesTabState extends State<MoviesTab> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            TopCardList(videos: state.movies?.top10 ?? []),
+                            TopCardList(videos: state.series?.top10 ?? []),
                             SectionCardList(
                                 title: "Recién llegadas",
                                 hasBlurLeft: true,
                                 hasBlurRight: true,
-                                videos: state.movies?.recentContent ?? []),
+                                videos: state.series?.recentContent ?? []),
                             Column(
                               children: [
-                                if (state.movies?.collectionsContent
+                                if (state.series?.collectionsContent
                                         ?.isNotEmpty ??
                                     false)
-                                  ...state.movies!.collectionsContent!
+                                  ...state.series!.collectionsContent!
                                       .asMap()
                                       .entries
                                       .map((entry) {

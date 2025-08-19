@@ -41,11 +41,12 @@ class _LoginPageState extends State<LoginPage> {
         ),
         Positioned.fill(
           child: LoginForm(
-              formKey: formKey,
-              loginBloc: loginBloc,
-              tcUsername: tcUsername,
-              tcPassword: tcPassword),
-        ).withPadding(horizontal: AppPadding.p16, bottom: AppPadding.p16),
+                  formKey: formKey,
+                  loginBloc: loginBloc,
+                  tcUsername: tcUsername,
+                  tcPassword: tcPassword)
+              .withPadding(horizontal: AppPadding.p16, bottom: AppPadding.p16),
+        ),
       ]),
     );
   }

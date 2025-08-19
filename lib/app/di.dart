@@ -8,6 +8,11 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/outbo
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/infrastructure/repositories/auth_api_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/application/use_cases/multimedia_use_case_impl.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/inbound/multimedia_use_case.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/infrastructure/repositories/multimedia_api_repository.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
 
@@ -20,6 +25,23 @@ Future<void> initAppModule() async {
   initRepositoryModule();
   initAuthDependencies();
   initHomeDependencies();
+}
+
+initAuthDependencies() {
+  initAuthRepositoryPort();
+  initAuthUseCase();
+  initAuthModule();
+}
+
+initHomeDependencies() {
+  initHomeBloc();
+  initTabBarModule();
+  initMultimediaDependencies();
+}
+
+initMultimediaDependencies() {
+  initMultimediaRepositoryPort();
+  initMultimediaUseCase();
 }
 
 Future<void> listAppModule() async {
@@ -45,6 +67,19 @@ void initInfoVersion() {
   }
 }
 
+//BLOCS
+initAuthModule() {
+  if (!GetIt.I.isRegistered<LoginBloc>()) {
+    instance.registerLazySingleton<LoginBloc>(() => LoginBloc());
+  }
+}
+
+initHomeBloc() {
+  if (!GetIt.I.isRegistered<HomeBloc>()) {
+    instance.registerLazySingleton<HomeBloc>(() => HomeBloc());
+  }
+}
+
 // SERVICES
 void initDioService() {
   if (!GetIt.I.isRegistered<HttpDioService>()) {
@@ -63,22 +98,6 @@ void initRepositoryModule() {
   }
 }
 
-initAuthDependencies() {
-  initAuthRepositoryPort();
-  initAuthUseCase();
-  initAuthModule();
-}
-
-initHomeDependencies() {
-  initTabBarModule();
-}
-
-initAuthModule() {
-  if (!GetIt.I.isRegistered<LoginBloc>()) {
-    instance.registerLazySingleton<LoginBloc>(() => LoginBloc());
-  }
-}
-
 initAuthUseCase() {
   if (!GetIt.I.isRegistered<AuthUseCase>()) {
     instance.registerFactory<AuthUseCase>(
@@ -92,14 +111,30 @@ initAuthRepositoryPort() {
   }
 }
 
-initUserRepository() {
-  if (!GetIt.I.isRegistered<UserRepository>()) {
-    instance.registerFactory<UserRepository>(() => UserRepositoryImpl());
+initMultimediaUseCase() {
+  if (!GetIt.I.isRegistered<MultimediaUseCaseImpl>()) {
+    instance.registerFactory<MultimediaUseCase>(
+        () => MultimediaUseCaseImpl(instance<MultimediaRepositoryPort>()));
   }
 }
 
+initMultimediaRepositoryPort() {
+  if (!GetIt.I.isRegistered<MultimediaRepositoryPort>()) {
+    instance.registerFactory<MultimediaRepositoryPort>(
+        () => MultimediaApiRepository());
+  }
+}
+
+// widgets
 initTabBarModule() {
   if (!GetIt.I.isRegistered<CustomTabBarBloc>()) {
     instance.registerLazySingleton<CustomTabBarBloc>(() => CustomTabBarBloc());
+  }
+}
+
+//REPOSITORY
+initUserRepository() {
+  if (!GetIt.I.isRegistered<UserRepository>()) {
+    instance.registerFactory<UserRepository>(() => UserRepositoryImpl());
   }
 }

@@ -4,6 +4,7 @@ import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.
 
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart'
     as mobile;
+import 'package:scrolltv_frontend_mobile_flutter/screens/shared/home_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/tv/tv.dart' as tv;
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
@@ -36,12 +37,7 @@ class RouteGenerator {
                 isTv ? const tv.LoginPage() : const mobile.LoginPage());
 
       case Routes.homeRoute:
-        return MaterialPageRoute(
-            builder: (_) =>
-                isTv ? const tv.HomePage() : const mobile.HomePage());
-
-      case Routes.mobileHomeRoute:
-        return MaterialPageRoute(builder: (_) => const mobile.HomePage());
+        return MaterialPageRoute(builder: (_) => const HomePage());
 
       case Routes.componentsRoute:
         return MaterialPageRoute(builder: (_) => const ComponentsPage());
