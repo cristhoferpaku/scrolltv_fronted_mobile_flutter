@@ -42,7 +42,7 @@ class _MoviesTabState extends State<MoviesTab> {
               if (state.status == HomeStateStatus.loading) {
                 return Container(
                   height: MediaQuery.of(context).size.height,
-                  child: CircularProgressIndicator(),
+                  child: Center(child: CircularProgressIndicator()),
                 );
               }
 
