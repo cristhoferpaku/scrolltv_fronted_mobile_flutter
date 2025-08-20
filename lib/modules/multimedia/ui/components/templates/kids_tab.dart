@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/scroll_to_top_on_up.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_skeleton.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/types/home_state_status.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
@@ -37,6 +40,9 @@ class _KidsTabState extends State<KidsTab> {
           listener: (context, state) {},
           builder: (context, state) {
             if (state is HomeStateLoadedSections) {
+              if (state.status == HomeStateStatus.loading) {
+                return HomeSkeleton();
+              }
               return Column(
                 children: [
                   FocusTraversalGroup(
@@ -46,7 +52,8 @@ class _KidsTabState extends State<KidsTab> {
                       children: [
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 1,
-                          child: HomeHero(),
+                          child: HomeHero(
+                              video: state.kids?.banner ?? VideoModel()),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 
 class SectionCard extends StatefulWidget {
@@ -46,50 +47,12 @@ class _SectionCardState extends State<SectionCard> {
                   : [],
             ),
             clipBehavior: Clip.hardEdge,
-            child: NetworkImageWithPlaceholder(
+            child: ImageWithPlaceholder(
               imageUrl: widget.coverImage,
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class NetworkImageWithPlaceholder extends StatelessWidget {
-  final String imageUrl;
-  final double? width;
-  final double? height;
-  final BoxFit fit;
-
-  const NetworkImageWithPlaceholder({
-    super.key,
-    required this.imageUrl,
-    this.width,
-    this.height,
-    this.fit = BoxFit.cover,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.network(
-      imageUrl,
-      width: width,
-      height: height,
-      fit: fit,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          color: Colors.grey[300],
-          alignment: Alignment.center,
-          child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-        );
-      },
     );
   }
 }

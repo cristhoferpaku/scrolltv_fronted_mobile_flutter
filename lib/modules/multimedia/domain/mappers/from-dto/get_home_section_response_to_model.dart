@@ -8,6 +8,9 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entit
 GetHomeSectionModel getHomeSectionResponseToModel(
     GetHomeSectionResponse response) {
   return GetHomeSectionModel(
+    banner: response.recentContent?.isNotEmpty ?? false
+        ? videoResponseToModel(response.recentContent!.first)
+        : null,
     top10: response.top10?.map((e) => videoResponseToModel(e)).toList(),
     recentContent:
         response.recentContent?.map((e) => videoResponseToModel(e)).toList(),

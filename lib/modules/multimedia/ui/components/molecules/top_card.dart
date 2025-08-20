@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/text_drop_shadow.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 
@@ -75,9 +76,8 @@ class _TopCardState extends State<TopCard> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         clipBehavior: Clip.hardEdge,
-                        child: Image.network(
-                          widget.coverImage,
-                          fit: BoxFit.cover,
+                        child: ImageWithPlaceholder(
+                          imageUrl: widget.coverImage,
                         ),
                       ),
                     ],

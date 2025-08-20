@@ -19,6 +19,11 @@ class VideoModel with _$VideoModel {
     String? createdAt,
     String? updatedAt,
     int? topNumber,
+    String? collectionName,
+    String? categories,
+    String? year,
+    String? duration,
+    String? bannerImage,
   }) = _VideoModel;
 
   factory VideoModel.fromJson(Map<String, dynamic> json) =>

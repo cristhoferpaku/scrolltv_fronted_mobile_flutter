@@ -8,6 +8,7 @@ part 'get_home_section_model.g.dart';
 @freezed
 class GetHomeSectionModel with _$GetHomeSectionModel {
   factory GetHomeSectionModel({
+    VideoModel? banner,
     List<VideoModel>? top10,
     List<VideoModel>? recentContent,
     List<CollectionModel>? collectionsContent,

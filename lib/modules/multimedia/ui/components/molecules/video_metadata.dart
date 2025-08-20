@@ -17,7 +17,8 @@ class VideoMetadata extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
       spacing: AppPadding.p8,
       children: [
         ElevatedButtonApp(

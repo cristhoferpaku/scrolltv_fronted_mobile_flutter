@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/background_image.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/linear_gradient_box.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/video_metadata.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/buttons/elevated_button.dart';
 
 class HomeHero extends StatefulWidget {
+  final VideoModel video;
   const HomeHero({
     super.key,
+    required this.video,
   });
 
   @override
@@ -18,13 +23,15 @@ class HomeHero extends StatefulWidget {
 }
 
 class _HomeHeroState extends State<HomeHero> {
+  final bool isTV = PlatformUtils.isTV;
   @override
   Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
         BackgroundImage(
-          image: ImageAssets.backgroundMobile,
+          networkImage:
+              isTV ? widget.video.bannerImage : widget.video.coverImage,
           fit: BoxFit.cover,
         ),
         LinearGradientBox(
@@ -44,13 +51,13 @@ class _HomeHeroState extends State<HomeHero> {
                 height: 120,
               ),
               VideoMetadata(
-                section: "Netflix",
-                year: "2023",
-                duration: "2h 30m",
-                genre: "Acción/fantasia",
+                section: widget.video.collectionName ?? "No collection name",
+                year: widget.video.year ?? "No year",
+                duration: widget.video.duration ?? "No duration",
+                genre: widget.video.categories ?? "No genre",
               ),
               Text(
-                "Miles regresa para un nuevo capítulo de esta galardonada saga donde deberá reevaluar el significado de ser héroe cuando es obligado a enfrentar a todo un equipo de héroes arácnidos encargados de proteger la existencia misma del Multiverso.",
+                widget.video.description ?? "No description",
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: ColorManager.onSurface,
                     ),

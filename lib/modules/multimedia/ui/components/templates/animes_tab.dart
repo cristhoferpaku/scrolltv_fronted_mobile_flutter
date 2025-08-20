@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/scroll_to_top_on_up.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
@@ -46,7 +47,8 @@ class _AnimesTabState extends State<AnimesTab> {
                       children: [
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 1,
-                          child: HomeHero(),
+                          child: HomeHero(
+                              video: state.animes?.banner ?? VideoModel()),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

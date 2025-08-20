@@ -3,6 +3,7 @@ import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/components/molecules/blur_background.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/no_content_box.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/section_card.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
@@ -77,20 +78,23 @@ class _SectionCardListState extends State<SectionCardList> {
                     )
                 ],
               ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  spacing: isTV ? AppPadding.p36 : AppPadding.p16,
-                  children: List.generate(
-                    widget.videos.length,
-                    (index) => SectionCard(
-                        title: widget.videos[index].title ?? "",
-                        coverImage: widget.videos[index].coverImage ?? ""),
-                  ),
-                ).withPadding(
-                    vertical: AppPadding.p16,
-                    left: isTV ? AppPadding.p16 : AppPadding.p0),
-              ),
+              if (widget.videos.isEmpty)
+                NoContentBox()
+              else
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    spacing: isTV ? AppPadding.p36 : AppPadding.p16,
+                    children: List.generate(
+                      widget.videos.length,
+                      (index) => SectionCard(
+                          title: widget.videos[index].title ?? "",
+                          coverImage: widget.videos[index].coverImage ?? ""),
+                    ),
+                  ).withPadding(
+                      vertical: AppPadding.p16,
+                      left: isTV ? AppPadding.p16 : AppPadding.p0),
+                ),
             ],
           ),
           if (widget.hasBlurLeft)

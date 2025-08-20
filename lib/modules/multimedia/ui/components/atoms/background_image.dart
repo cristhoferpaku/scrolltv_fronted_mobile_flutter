@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class BackgroundImage extends StatelessWidget {
   const BackgroundImage({
     super.key,
-    required this.image,
+    this.networkImage,
+    this.image,
     required this.fit,
   });
 
-  final String image;
+  final String? networkImage;
+  final String? image;
   final BoxFit fit;
 
   @override
@@ -17,7 +19,9 @@ class BackgroundImage extends StatelessWidget {
       height: double.infinity,
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage(image),
+          image: networkImage != null
+              ? NetworkImage(networkImage!)
+              : AssetImage(image!),
           fit: fit,
         ),
       ),
