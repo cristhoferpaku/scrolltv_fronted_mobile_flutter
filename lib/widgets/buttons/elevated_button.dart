@@ -35,7 +35,7 @@ class ElevatedButtonApp extends StatelessWidget {
       this.rightIconButton,
       this.textStyleButton,
       this.evelationButton = 2.0,
-      this.roundedButton = 0.0,
+      this.roundedButton = 12.0,
       this.paddingHorizontal = 24.0,
       this.paddingVertical = 8.0,
       this.colorBorder = ColorManager.transparent,
@@ -95,7 +95,6 @@ class ElevatedButtonApp extends StatelessWidget {
     } else {
       return IntrinsicWidth(
         child: Container(
-            height: heightButton,
             decoration: hasShadow ? getBoxDecorationShadow() : null,
             child: ElevatedButton.icon(
               onPressed: enabled ? press : null,
@@ -116,7 +115,7 @@ class ElevatedButtonApp extends StatelessWidget {
                   shape: WidgetStateProperty.all<OutlinedBorder>(
                       RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(roundedButton)))),
-              label: Text(textButton, style: textStyleButton),
+              label: Center(child: Text(textButton, style: textStyleButton)),
             )),
       );
     }

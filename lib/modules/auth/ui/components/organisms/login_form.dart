@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
-import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/constants/schemas/validator_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/constants/string_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/buttons/elevated_button.dart';
@@ -33,61 +33,64 @@ class LoginForm extends StatelessWidget {
       child: BlocConsumer<LoginBloc, LoginState>(
         bloc: loginBloc,
         listener: (context, state) {
-          if (state is LoginStateError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          } else if (state is LoginStateSuccess) {
-            Navigator.pushNamed(context, Routes.homeRoute);
-          }
+          loginListener(context, state);
         },
         builder: (context, state) {
-          return Column(
-            spacing: AppSize.s24,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: AppSize.s24,
-                children: [
-                  if (!isTV) Image(image: AssetImage(ImageAssets.logoScrollTv)),
-                  TextFormFieldIconSmall(
-                    onChanged: (value) {},
-                    controller: tcUsername,
-                    validatorFunction: ValidatorManager.validateUsername,
-                    label: AppStringAuth.loginFormUsername,
-                    hint: AppStringAuth.loginFormUsernameHint,
-                  ),
-                  TextFormFieldIconSmall(
-                    onChanged: (value) {},
-                    controller: tcPassword,
-                    validatorFunction: ValidatorManager.validatePassword,
-                    label: AppStringAuth.loginFormPassword,
-                    hint: AppStringAuth.loginFormPasswordHint,
-                    isPassword: true,
-                    rightIcon: Icons.remove_red_eye,
-                  ),
-                ],
-              ),
-              ElevatedButtonApp(
-                isExpanded: false,
-                textButton: AppString.loginButton,
-                colorButton: ColorManager.primaryContainer,
-                textStyleButton:
-                    Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: ColorManager.onPrimaryContainer,
-                        ),
-                roundedButton: AppSize.s10,
-                press: () async {
-                  Navigator.pushNamed(context, Routes.homeRoute);
-                  // if (formKey.currentState!.validate()) {
-                  //   loginBloc.add(
-                  //     LoginEvent.login(tcUsername.text, tcPassword.text),
-                  //   );
-                  // }
-                },
-              )
+          return CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    spacing: AppSize.s24,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: AppSize.s24,
+                        children: [
+                          if (!isTV)
+                            Image(image: AssetImage(ImageAssets.logoScrollTv)),
+                          TextFormFieldIconSmall(
+                            onChanged: (value) {},
+                            controller: tcUsername,
+                            validatorFunction:
+                                ValidatorManager.validateUsername,
+                            label: AppStringAuth.loginFormUsername,
+                            hint: AppStringAuth.loginFormUsernameHint,
+                          ),
+                          TextFormFieldIconSmall(
+                            onChanged: (value) {},
+                            controller: tcPassword,
+                            validatorFunction:
+                                ValidatorManager.validatePassword,
+                            label: AppStringAuth.loginFormPassword,
+                            hint: AppStringAuth.loginFormPasswordHint,
+                            isPassword: true,
+                            rightIcon: Icons.remove_red_eye,
+                          ),
+                        ],
+                      ),
+                      ElevatedButtonApp(
+                        isExpanded: false,
+                        textButton: AppString.loginButton,
+                        colorButton: ColorManager.primaryContainer,
+                        textStyleButton:
+                            Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  color: ColorManager.onPrimaryContainer,
+                                ),
+                        roundedButton: AppSize.s10,
+                        press: () async {
+                          if (formKey.currentState!.validate()) {
+                            loginBloc.add(
+                              LoginEvent.login(
+                                  tcUsername.text, tcPassword.text),
+                            );
+                          }
+                        },
+                      )
+                    ],
+                  )),
             ],
           );
         },

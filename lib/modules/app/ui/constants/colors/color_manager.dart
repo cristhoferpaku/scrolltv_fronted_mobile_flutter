@@ -101,8 +101,8 @@ class ColorManager {
   static const Color backgroundNotification = Color(0xFFFDCB8B);
 
   //Color for Shimmer
-  static const Color shimmerStart = Color(0xFF929292);
-  static const Color shimmerEffect = Color(0xFFB2B2B2);
+  static const Color shimmerStart = neutro800;
+  static const Color shimmerEffect = Color(0x8A716F6F);
 
   //Color Social Network
   static const Color facebookColor = Color(0xFF3D5A98);

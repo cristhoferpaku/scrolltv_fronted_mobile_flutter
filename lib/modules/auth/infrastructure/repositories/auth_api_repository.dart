@@ -24,7 +24,7 @@ class AuthApiRepository implements AuthRepositoryPort {
       final loginRequest = loginToLoginRequest(login);
 
       final response = await httpService.request(
-          url: "$baseApiUrl/auth/login",
+          url: "$baseApiUrl/auth/client-login",
           method: Method.post,
           data: loginRequest);
 
@@ -39,7 +39,7 @@ class AuthApiRepository implements AuthRepositoryPort {
       } else {
         // Verificar si response.data es un Map y contiene 'message'
         String errorMessage = 'Error desconocido';
-        if (response.data is Map<String, dynamic> && 
+        if (response.data is Map<String, dynamic> &&
             response.data['message'] != null) {
           errorMessage = response.data['message'].toString();
         }
@@ -50,12 +50,14 @@ class AuthApiRepository implements AuthRepositoryPort {
       throw Exception('Sin conexión a internet: ${e.message}');
     } on DioException catch (e) {
       // Errores específicos de Dio (timeouts, HTTP errors, etc.)
-      if (e.type == DioExceptionType.connectionTimeout || 
+      if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.sendTimeout) {
-        throw Exception('Tiempo de espera agotado. Verifica que el servidor esté ejecutándose en $baseApiUrl');
+        throw Exception(
+            'Tiempo de espera agotado. Verifica que el servidor esté ejecutándose en $baseApiUrl');
       } else if (e.type == DioExceptionType.connectionError) {
-        throw Exception('No se puede conectar al servidor en $baseApiUrl. Verifica que el servidor esté ejecutándose.');
+        throw Exception(
+            'No se puede conectar al servidor en $baseApiUrl. Verifica que el servidor esté ejecutándose.');
       } else if (e.response?.statusCode == 401) {
         throw Exception('Credenciales inválidas');
       } else if (e.response?.statusCode == 400) {
@@ -63,9 +65,10 @@ class AuthApiRepository implements AuthRepositoryPort {
       } else if (e.response?.statusCode == 500) {
         // Verificar si hay mensaje específico del servidor
         String serverMessage = 'Error interno del servidor';
-        if (e.response?.data is Map<String, dynamic> && 
+        if (e.response?.data is Map<String, dynamic> &&
             e.response?.data['message'] != null) {
-          serverMessage = e.response?.data['message'].toString() ?? serverMessage;
+          serverMessage =
+              e.response?.data['message'].toString() ?? serverMessage;
         }
         throw ExceptionApp(500, serverMessage);
       } else {
@@ -80,7 +83,7 @@ class AuthApiRepository implements AuthRepositoryPort {
       rethrow;
     } catch (e) {
       // Cualquier otro error no manejado
-      LoggerManager.log.e( e.toString());
+      LoggerManager.log.e(e.toString());
       throw Exception(e.toString());
     }
   }

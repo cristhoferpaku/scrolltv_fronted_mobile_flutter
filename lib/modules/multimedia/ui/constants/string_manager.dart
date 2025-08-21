@@ -1,7 +1,8 @@
 class AppStringMultimedia {
+  static const String sectionLive = "Vivo";
   static const String sectionMovies = "Películas";
   static const String sectionSeries = "Series";
-  static const String sectionDocumentaries = "Documentales";
+  static const String sectionDrama = "Drama";
   static const String sectionKids = "Kids";
   static const String sectionAnimes = "Animes";
 }
