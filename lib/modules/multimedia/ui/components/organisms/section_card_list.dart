@@ -36,6 +36,7 @@ class _SectionCardListState extends State<SectionCardList> {
     return FocusTraversalGroup(
       policy: CustomGridTraversalPolicy(),
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -50,7 +51,7 @@ class _SectionCardListState extends State<SectionCardList> {
                       children: [
                         Text(
                           widget.title,
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                         if (!isTV)
                           IconButton(

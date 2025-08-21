@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/background_image.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/linear_gradient_box.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/video_metadata.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
@@ -65,32 +65,38 @@ class _HomeHeroState extends State<HomeHero> {
               Row(
                 spacing: AppPadding.p16,
                 children: [
-                  ElevatedButtonApp(
-                    iconData: Icon(Icons.play_arrow,
-                        size: ResponsiveUtils.getIconSize(context)),
-                    isExpanded: false,
-                    textButton: AppString.buttonWatchNow,
-                    colorButton: ColorManager.primaryContainer,
-                    textStyleButton:
-                        Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: ColorManager.onPrimaryContainer,
-                            ),
-                    roundedButton: AppSize.s400,
-                    press: () async {},
+                  ContainerFocus(
+                    borderRadius: 999,
+                    child: ElevatedButtonApp(
+                      iconData: Icon(Icons.play_arrow,
+                          size: ResponsiveUtils.getIconSize(context)),
+                      isExpanded: false,
+                      textButton: AppString.buttonWatchNow,
+                      colorButton: ColorManager.primaryContainer,
+                      textStyleButton:
+                          Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: ColorManager.onPrimaryContainer,
+                              ),
+                      roundedButton: AppSize.s400,
+                      press: () async {},
+                    ),
                   ),
-                  ElevatedButtonApp(
-                    iconData: Icon(Icons.info_outline,
-                        size: ResponsiveUtils.getIconSize(context)),
-                    isExpanded: false,
-                    textButton: AppString.buttonDetails,
-                    colorButton: ColorManager.transparent,
-                    colorBorder: ColorManager.primaryContainer,
-                    textStyleButton:
-                        Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: ColorManager.onPrimaryContainer,
-                            ),
-                    roundedButton: AppSize.s400,
-                    press: () async {},
+                  ContainerFocus(
+                    borderRadius: 999,
+                    child: ElevatedButtonApp(
+                      iconData: Icon(Icons.info_outline,
+                          size: ResponsiveUtils.getIconSize(context)),
+                      isExpanded: false,
+                      textButton: AppString.buttonDetails,
+                      colorButton: ColorManager.transparent,
+                      colorBorder: ColorManager.primaryContainer,
+                      textStyleButton:
+                          Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: ColorManager.onPrimaryContainer,
+                              ),
+                      roundedButton: AppSize.s400,
+                      press: () async {},
+                    ),
                   ),
                 ],
               ),

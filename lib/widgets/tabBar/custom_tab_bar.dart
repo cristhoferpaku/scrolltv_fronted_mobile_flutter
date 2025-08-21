@@ -129,6 +129,7 @@ class _CustomTabBarState extends State<CustomTabBar>
                                     return FocusableActionDetector(
                                       focusNode: _focusNodes[position],
                                       onFocusChange: (hasFocus) {
+                                        setState(() {});
                                         if (lastItemWithFocus != 0) {
                                           _focusNodes[lastItemWithFocus]
                                               .requestFocus();
@@ -146,6 +147,12 @@ class _CustomTabBarState extends State<CustomTabBar>
                                       child: Tab(
                                         child: Container(
                                           decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: isTv &&
+                                                        _focusNodes[position]
+                                                            .hasFocus
+                                                    ? Colors.blueAccent
+                                                    : ColorManager.transparent),
                                             color: isCurrentIndex
                                                 ? ColorManager.primaryContainer
                                                 : ColorManager.transparent,

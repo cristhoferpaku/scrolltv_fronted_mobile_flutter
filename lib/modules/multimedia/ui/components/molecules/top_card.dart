@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/text_drop_shadow.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 
 class TopCard extends StatefulWidget {
   final String title;
@@ -63,15 +63,12 @@ class _TopCardState extends State<TopCard> {
                         offset: const Offset(30, 0),
                         child: TextDropShadow(
                           text: widget.topNumber.toString(),
-                          fontSize: ResponsiveUtils.getSize(context,
-                              minSize: 163, maxSize: 300),
+                          fontSize: 163.r,
                         ),
                       ),
                       Container(
-                        width: ResponsiveUtils.getSize(context,
-                            minSize: 150, maxSize: 280),
-                        height: ResponsiveUtils.getSize(context,
-                            minSize: 175, maxSize: 400),
+                        width: 140.r,
+                        height: 200.r,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                         ),

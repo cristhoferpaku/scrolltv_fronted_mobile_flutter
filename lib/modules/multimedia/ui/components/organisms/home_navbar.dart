@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
@@ -43,7 +44,9 @@ class HomeNavbar extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, Routes.profileRoute);
+              },
             ),
           ],
         ),
@@ -77,7 +80,7 @@ class _ContainerFocusState extends State<ContainerFocus> {
       onFocusChange: (hasFocus) {
         setState(() => _isFocused = hasFocus);
       },
-      child: GestureDetector(
+      child: InkWell(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
