@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/colors_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.dart';
 
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart'
@@ -24,6 +25,8 @@ class Routes {
   static const String colorsRoute = 'colors';
 
   static const String inicioRoute = 'inicio';
+  static const String liveTvRoute = 'liveTv';
+
 }
 
 class RouteGenerator {
@@ -47,6 +50,9 @@ class RouteGenerator {
 
       case Routes.colorsRoute:
         return MaterialPageRoute(builder: (_) => const ColorsPage());
+
+      case Routes.liveTvRoute:
+        return MaterialPageRoute(builder: (_) => const LiveTvDetail());
 
       case Routes.inicioRoute:
         return MaterialPageRoute(
