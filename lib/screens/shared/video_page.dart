@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class VideoPage extends StatefulWidget {
   const VideoPage({super.key});
@@ -25,7 +23,7 @@ class _VideoPageState extends State<VideoPage> {
       ]);
     }
 
-    getDeviceId().then((value) {
+    PlatformUtils().getDeviceId().then((value) {
       setState(() {
         deviceId = value;
       });
