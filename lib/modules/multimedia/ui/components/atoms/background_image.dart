@@ -20,8 +20,8 @@ class BackgroundImage extends StatelessWidget {
       decoration: BoxDecoration(
         image: DecorationImage(
           image: networkImage != null
-              ? NetworkImage(networkImage!)
-              : AssetImage(image!),
+              ? NetworkImage(networkImage ?? "")
+              : AssetImage(image ?? ""),
           fit: fit,
         ),
       ),

@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:intl/intl.dart';
 
 String getStringByLanguage(
@@ -9,11 +12,7 @@ String getStringByLanguage(
   }
 }
 
-
 String getFormatDateToString(DateTime dateTime, {String format = 'dd-MM-yy'}) {
   var formatter = DateFormat(format);
   return formatter.format(dateTime);
 }
-
-
-        

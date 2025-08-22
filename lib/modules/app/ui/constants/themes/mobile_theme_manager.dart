@@ -28,7 +28,7 @@ ThemeData getMobileApplicationTheme() {
         onError: ColorManager.white,
         brightness: Brightness.light),
     // CardView Theme
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
         color: ColorManager.white,
         shadowColor: ColorManager.grey1,
         elevation: AppSize.s4),
@@ -203,7 +203,7 @@ ThemeData getMobileApplicationDarkTheme() {
         onError: ColorManager.white,
         brightness: Brightness.light),
     // CardView Theme
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
         color: ColorManager.darkGray,
         shadowColor: ColorManager.grey1,
         elevation: AppSize.s4),

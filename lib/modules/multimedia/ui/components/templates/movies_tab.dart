@@ -52,11 +52,7 @@ class _MoviesTabState extends State<MoviesTab> {
                     child: Column(
                       spacing: AppPadding.p36,
                       children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 1,
-                          child: HomeHero(
-                              video: state.movies?.banner ?? VideoModel()),
-                        ),
+                        HomeHero(video: state.movies?.banner ?? VideoModel()),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
