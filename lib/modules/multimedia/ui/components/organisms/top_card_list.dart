@@ -32,7 +32,7 @@ class _TopCardListState extends State<TopCardList> {
         children: [
           Text(
             "Top streaming",
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           if (widget.videos.isEmpty)
             NoContentBox()

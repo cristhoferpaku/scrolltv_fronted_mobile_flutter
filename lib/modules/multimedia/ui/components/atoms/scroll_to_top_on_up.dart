@@ -13,7 +13,7 @@ class ScrollToTopOnUp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height * 3;
+    final screenHeight = MediaQuery.of(context).size.height * .9;
 
     return Focus(
       canRequestFocus: false,

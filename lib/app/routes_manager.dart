@@ -6,6 +6,9 @@ import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart'
     as mobile;
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/home_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/screens/shared/video_details_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/screens/shared/video_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/tv/tv.dart' as tv;
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
@@ -21,11 +24,13 @@ class Routes {
   static const String componentsRoute = 'components';
 
   static const String typographyRoute = 'typography';
-
   static const String colorsRoute = 'colors';
 
   static const String inicioRoute = 'inicio';
   static const String liveTvRoute = 'liveTv';
+  static const String profileRoute = 'profile';
+  static const String videoRoute = 'video';
+  static const String videoDetailsRoute = 'videoDetails';
 
 }
 
@@ -58,6 +63,15 @@ class RouteGenerator {
         return MaterialPageRoute(
             builder: (_) =>
                 isTv ? const tv.InicioPage() : const mobile.InicioPage());
+
+      case Routes.profileRoute:
+        return MaterialPageRoute(builder: (_) => const ProfilePage());
+
+      case Routes.videoRoute:
+        return MaterialPageRoute(builder: (_) => const VideoPage());
+
+      case Routes.videoDetailsRoute:
+        return MaterialPageRoute(builder: (_) => const VideoDetailsPage());
 
       // case Routes.drawerRoute:
       //   initDrawerDependencies();

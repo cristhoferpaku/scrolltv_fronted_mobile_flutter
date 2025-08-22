@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
@@ -50,11 +51,7 @@ class _DramasTabState extends State<DramasTab> {
                     child: Column(
                       spacing: AppPadding.p36,
                       children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 1,
-                          child: HomeHero(
-                              video: state.dramas?.banner ?? VideoModel()),
-                        ),
+                        HomeHero(video: state.dramas?.banner ?? VideoModel()),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,

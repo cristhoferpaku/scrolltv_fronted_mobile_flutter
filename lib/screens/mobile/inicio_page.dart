@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/gradient_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/buttons/elevated_button.dart';
@@ -17,16 +18,7 @@ class _InicioPageState extends State<InicioPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       backgroundImage: ImageAssets.backgroundMobile,
-      linearGradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.black.withValues(alpha: 0.85),
-          Colors.black.withValues(alpha: 0.80),
-          Colors.black.withValues(alpha: 0.7),
-        ],
-        stops: [0.0, 0.5, 1.0],
-      ),
+      linearGradient: GradientManager().background(),
       body: Center(
         child: SizedBox(
           width: AppSize.s220,
@@ -45,7 +37,7 @@ class _InicioPageState extends State<InicioPage> {
                         ),
                 roundedButton: AppSize.s10,
                 press: () {
-                  Navigator.pushNamed(context, Routes.homeRoute);
+                  Navigator.pushNamed(context, Routes.loginRoute);
                 },
               ).withPadding(top: AppPadding.p20)
             ],

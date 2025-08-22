@@ -6,6 +6,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/utils/
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MyApp extends StatefulWidget {
   final bool logUser;
@@ -39,18 +40,23 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     initContext(context);
-    return MaterialApp(
-      title: AppString.headerTitle, // for web title
-      onGenerateRoute: RouteGenerator.getRoute,
-      initialRoute: initialRouteApp,
-      debugShowCheckedModeBanner: false,
-      theme: getApplicationTheme(isTv),
-      supportedLocales: L10n.all,
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+    return ScreenUtilInit(
+      designSize: const Size(360, 690),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) => MaterialApp(
+        title: AppString.headerTitle, // for web title
+        onGenerateRoute: RouteGenerator.getRoute,
+        initialRoute: initialRouteApp,
+        debugShowCheckedModeBanner: false,
+        theme: getApplicationTheme(isTv),
+        supportedLocales: L10n.all,
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+      ),
     );
   }
 

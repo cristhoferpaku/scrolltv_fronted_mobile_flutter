@@ -32,6 +32,10 @@ class ImageAssets {
   static const String iconUserFill = '$iconsPath/icon_user_fill.svg';
   static const String iconSearch = '$iconsPath/icon_search.svg';
 
+  static const String iconPrivacyAndPolicy =
+      '$iconsPath/icon_privacy_and_policy.svg';
+  // static const String iconLogout = '$iconsPath/icon_logout.svg';
+
   // Login Elements
   static const String iconEmail = '$iconsPath/icon_paku_email.svg';
   static const String iconLock = '$iconsPath/icon_paku_lock.svg';
@@ -120,7 +124,7 @@ class ImageAssets {
   static const String nfcSvgIcon = '$imagePath/nfc.svg';
   static const String nfcAnimation = '$imagePath/lottie/nfc.json';
   static const String iconUserProfile = '$iconsPath/menu_person.svg';
-  static const String iconLogout = '$iconsPath/menu_logout.svg';
+  static const String iconLogout = '$iconsPath/icon_logout.svg';
   static const String iconDocument = '$iconsPath/menu_document.svg';
   static const String iconEmailUser = '$iconsPath/menu_email.svg';
 

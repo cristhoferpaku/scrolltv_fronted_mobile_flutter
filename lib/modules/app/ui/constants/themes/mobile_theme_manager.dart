@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/font_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/style_manager.dart';
@@ -27,7 +28,7 @@ ThemeData getMobileApplicationTheme() {
         onError: ColorManager.white,
         brightness: Brightness.light),
     // CardView Theme
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
         color: ColorManager.white,
         shadowColor: ColorManager.grey1,
         elevation: AppSize.s4),
@@ -77,77 +78,77 @@ ThemeData getMobileApplicationTheme() {
       displayLarge: getBoldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s44,
+          fontsize: FontSize.s44.r,
           fontWeight: FontWeight.w700),
       displayMedium: getBoldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s40,
+          fontsize: FontSize.s40.r,
           fontWeight: FontWeight.w700),
       displaySmall: getBoldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s36,
+          fontsize: FontSize.s36.r,
           fontWeight: FontWeight.w700),
       headlineLarge: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s32,
+          fontsize: FontSize.s32.r,
           fontWeight: FontWeight.w600),
       headlineMedium: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s28,
+          fontsize: FontSize.s28.r,
           fontWeight: FontWeight.w600),
       headlineSmall: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s24,
+          fontsize: FontSize.s24.r,
           fontWeight: FontWeight.w600),
       titleLarge: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s24,
+          fontsize: FontSize.s24.r,
           fontWeight: FontWeight.w600),
       titleMedium: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s20,
+          fontsize: FontSize.s20.r,
           fontWeight: FontWeight.w600),
       titleSmall: getBoldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s18,
+          fontsize: FontSize.s18.r,
           fontWeight: FontWeight.w700),
       bodyLarge: getRegularStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s16,
+          fontsize: FontSize.s16.r,
           fontWeight: FontWeight.w400),
       bodyMedium: getRegularStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s14,
+          fontsize: FontSize.s14.r,
           fontWeight: FontWeight.w400),
       bodySmall: getRegularStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s12,
+          fontsize: FontSize.s12.r,
           fontWeight: FontWeight.w400),
       labelLarge: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s16,
+          fontsize: FontSize.s16.r,
           fontWeight: FontWeight.w600),
       labelMedium: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s14,
+          fontsize: FontSize.s14.r,
           fontWeight: FontWeight.w600),
       labelSmall: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s12,
+          fontsize: FontSize.s12.r,
           fontWeight: FontWeight.w600),
     ),
     // InputDecorationTheme (text form field)
@@ -202,7 +203,7 @@ ThemeData getMobileApplicationDarkTheme() {
         onError: ColorManager.white,
         brightness: Brightness.light),
     // CardView Theme
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
         color: ColorManager.darkGray,
         shadowColor: ColorManager.grey1,
         elevation: AppSize.s4),
@@ -252,77 +253,77 @@ ThemeData getMobileApplicationDarkTheme() {
       displayLarge: getBoldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s44,
+          fontsize: FontSize.s44.r,
           fontWeight: FontWeight.w700),
       displayMedium: getBoldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s40,
+          fontsize: FontSize.s40.r,
           fontWeight: FontWeight.w700),
       displaySmall: getBoldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s36,
+          fontsize: FontSize.s36.r,
           fontWeight: FontWeight.w700),
       headlineLarge: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s32,
+          fontsize: FontSize.s32.r,
           fontWeight: FontWeight.w600),
       headlineMedium: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s28,
+          fontsize: FontSize.s28.r,
           fontWeight: FontWeight.w600),
       headlineSmall: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s24,
+          fontsize: FontSize.s24.r,
           fontWeight: FontWeight.w600),
       titleLarge: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s24,
+          fontsize: FontSize.s24.r,
           fontWeight: FontWeight.w600),
       titleMedium: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s20,
+          fontsize: FontSize.s20.r,
           fontWeight: FontWeight.w600),
       titleSmall: getBoldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s18,
+          fontsize: FontSize.s18.r,
           fontWeight: FontWeight.w700),
       bodyLarge: getRegularStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s16,
+          fontsize: FontSize.s16.r,
           fontWeight: FontWeight.w400),
       bodyMedium: getRegularStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s14,
+          fontsize: FontSize.s14.r,
           fontWeight: FontWeight.w400),
       bodySmall: getRegularStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s12,
+          fontsize: FontSize.s12.r,
           fontWeight: FontWeight.w400),
       labelLarge: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s16,
+          fontsize: FontSize.s16.r,
           fontWeight: FontWeight.w600),
       labelMedium: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyInter,
-          fontsize: FontSize.s14,
+          fontsize: FontSize.s14.r,
           fontWeight: FontWeight.w600),
       labelSmall: getSemiboldStyle(
           color: ColorManager.onSurface,
           fontFamily: FontManager.fontFamilyMontserrat,
-          fontsize: FontSize.s12,
+          fontsize: FontSize.s12.r,
           fontWeight: FontWeight.w600),
     ),
     // InputDecorationTheme (text form field)

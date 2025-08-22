@@ -3,13 +3,12 @@ import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 
 // ignore: must_be_immutable
 class ResponsiveManager extends StatefulWidget {
-
   final Widget mobileView;
   Widget? tabletView;
   Widget? desktopView;
 
   ResponsiveManager({
-    super.key, 
+    super.key,
     required this.mobileView,
     this.tabletView,
     this.desktopView,
@@ -25,9 +24,9 @@ class _ResponsiveManagerState extends State<ResponsiveManager> {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= DimenReponsive.desktopDimen) {
-          return widget.desktopView ?? widget.mobileView;
+          return widget.desktopView ?? widget.tabletView ?? widget.mobileView;
         } else if (constraints.maxWidth > DimenReponsive.tabletDimen) {
-          return widget.tabletView ?? widget.mobileView;
+          return widget.tabletView ?? widget.desktopView ?? widget.mobileView;
         } else {
           return widget.mobileView;
         }

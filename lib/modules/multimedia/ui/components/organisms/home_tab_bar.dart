@@ -27,8 +27,7 @@ class _HomeTabBarState extends State<HomeTabBar> {
   @override
   Widget build(BuildContext context) {
     return CustomTabBar(
-        titleBar: HomeNavbar()
-            .withPadding(horizontal: AppPadding.p16, vertical: AppPadding.p16),
+        titleBar: HomeNavbar().withPadding(horizontal: AppPadding.p16),
         items: [
           CustomTabBarItem(
               title: AppStringMultimedia.sectionLive,

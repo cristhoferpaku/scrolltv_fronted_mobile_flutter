@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 
 class SectionCard extends StatefulWidget {
   final String title;
@@ -28,9 +28,8 @@ class _SectionCardState extends State<SectionCard> {
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeInOut,
           child: Container(
-            width: ResponsiveUtils.getSize(context, minSize: 150, maxSize: 280),
-            height:
-                ResponsiveUtils.getSize(context, minSize: 175, maxSize: 400),
+            width: 140.r,
+            height: 200.r,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: _isFocused

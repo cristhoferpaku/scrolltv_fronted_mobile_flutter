@@ -5,7 +5,6 @@ import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/get_home_section_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/get_home_section_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/data/default_data.dart';
@@ -22,37 +21,31 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
   @override
   Future<ApiResponse<GetHomeSectionModel>> getHomeSection(int sectionId) async {
     try {
-      return ApiResponse(
-          success: true,
-          data: homeSectionData,
-          timestamp: DateTime.now().toString(),
-          path: "get-home-section");
+      final httpService = await dio;
 
-      // final httpService = await dio;
+      final response = await httpService.request(
+        url: "$baseApiUrl/get-home-data?sectionId=$sectionId",
+        method: Method.get,
+      );
 
-      // final response = await httpService.request(
-      //   url: "$baseApiUrl/get-home-data?sectionId=$sectionId",
-      //   method: Method.get,
-      // );
+      LoggerManager.log.i(response.data);
+      if (response.data != null) {
+        final apiResponse = ApiResponse<GetHomeSectionModel>.fromJson(
+          response.data,
+          (json) => getHomeSectionResponseToModel(
+              GetHomeSectionResponse.fromJson(json as Map<String, dynamic>)),
+        );
 
-      // LoggerManager.log.i(response.data);
-      // if (response.data != null) {
-      //   final apiResponse = ApiResponse<GetHomeSectionModel>.fromJson(
-      //     response.data,
-      //     (json) => getHomeSectionResponseToModel(
-      //         GetHomeSectionResponse.fromJson(json as Map<String, dynamic>)),
-      //   );
-
-      //   return apiResponse;
-      // } else {
-      //   // Verificar si response.data es un Map y contiene 'message'
-      //   String errorMessage = 'Error desconocido';
-      //   if (response.data is Map<String, dynamic> &&
-      //       response.data['message'] != null) {
-      //     errorMessage = response.data['message'].toString();
-      //   }
-      //   throw Exception(errorMessage);
-      // }
+        return apiResponse;
+      } else {
+        // Verificar si response.data es un Map y contiene 'message'
+        String errorMessage = 'Error desconocido';
+        if (response.data is Map<String, dynamic> &&
+            response.data['message'] != null) {
+          errorMessage = response.data['message'].toString();
+        }
+        throw Exception(errorMessage);
+      }
     } on SocketException catch (e) {
       // Error de conectividad/red
       throw Exception('Sin conexión a internet: ${e.message}');
