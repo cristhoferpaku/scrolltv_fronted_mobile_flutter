@@ -14,10 +14,13 @@ class AuthUseCaseImpl implements AuthUseCase {
   @override
   Future<ApiResponse<AuthUserModel>> login(LoginModel user) async {
     final response = await _authRepositoryPort.login(user);
+
     if (response.success == true && response.data.tokens?.accessToken != null) {
       final accessToken = response.data.tokens?.accessToken;
       if (accessToken != null) {
         _userRepository.saveToken(accessToken);
+        _userRepository.saveUser("", response.data.user?.username ?? "", "");
+        _userRepository.saveUserId(response.data.user?.id?.toString() ?? "");
       }
     }
     return response;

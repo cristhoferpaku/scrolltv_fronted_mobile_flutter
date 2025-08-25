@@ -9,6 +9,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/series_tab.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/string_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/custom_tab_bar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
@@ -24,19 +25,21 @@ class HomeTabBar extends StatefulWidget {
 
 class _HomeTabBarState extends State<HomeTabBar> {
   final ScrollController scrollController = ScrollController();
+  final bool isTV = PlatformUtils.isTV;
   @override
   Widget build(BuildContext context) {
     return CustomTabBar(
         titleBar: HomeNavbar().withPadding(horizontal: AppPadding.p16),
         items: [
-          CustomTabBarItem(
-              title: AppStringMultimedia.sectionLive,
-              icon: SvgPicture.asset(
-                ImageAssets.iconLive,
-                fit: BoxFit.contain,
-                width: ResponsiveUtils.getIconSize(context),
-              ),
-              child: LiveTab()),
+          if (isTV)
+            CustomTabBarItem(
+                title: AppStringMultimedia.sectionLive,
+                icon: SvgPicture.asset(
+                  ImageAssets.iconLive,
+                  fit: BoxFit.contain,
+                  width: ResponsiveUtils.getIconSize(context),
+                ),
+                child: LiveTab()),
           CustomTabBarItem(
               title: AppStringMultimedia.sectionMovies,
               icon: SvgPicture.asset(

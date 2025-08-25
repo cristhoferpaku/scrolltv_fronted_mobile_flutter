@@ -7,9 +7,9 @@ part 'collection_response.g.dart';
 @freezed
 class CollectionResponse with _$CollectionResponse {
   factory CollectionResponse({
-    int? collectionId,
-    String? collectionName,
-    List<VideoModel>? content,
+    @JsonKey(name: "collectionId") int? collectionId,
+    @JsonKey(name: "collection_name") String? collectionName,
+    @JsonKey(name: "content") List<VideoModel>? content,
   }) = _CollectionResponse;
 
   factory CollectionResponse.fromJson(Map<String, dynamic> json) =>

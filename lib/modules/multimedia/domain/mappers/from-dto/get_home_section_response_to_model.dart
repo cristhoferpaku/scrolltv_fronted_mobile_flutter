@@ -43,5 +43,16 @@ VideoModel videoResponseToModel(VideoResponse response) {
     createdAt: response.createdAt,
     updatedAt: response.updatedAt,
     topNumber: response.topNumber,
+    bannerImage: response.bannerImage,
+    duration: convertMinsToHoursAndMinutes(response.durationMins),
+    collectionName: response.collectionName,
+    categories: response.categories,
   );
+}
+
+String convertMinsToHoursAndMinutes(int? mins) {
+  if (mins == null) return "";
+  int hours = mins ~/ 60;
+  int minutes = mins % 60;
+  return "${hours}h ${minutes.toString().padLeft(2, '0')}min";
 }

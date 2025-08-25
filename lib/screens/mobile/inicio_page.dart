@@ -32,7 +32,7 @@ class _InicioPageState extends State<InicioPage> {
                 textButton: AppString.iniciarSesion,
                 colorButton: ColorManager.primaryContainer,
                 textStyleButton:
-                    Theme.of(context).textTheme.titleSmall?.copyWith(
+                    Theme.of(context).textTheme.labelLarge?.copyWith(
                           color: ColorManager.onPrimaryContainer,
                         ),
                 roundedButton: AppSize.s10,

@@ -48,7 +48,7 @@ class _VideoPageState extends State<VideoPage> {
         child: Column(
           children: [
             Text("Video Page"),
-            Text("Device ID: $deviceId"),
+            // Text("Device ID: $deviceId"),
           ],
         ),
       ),

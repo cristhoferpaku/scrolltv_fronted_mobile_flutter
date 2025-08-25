@@ -13,6 +13,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/infrastructure/repositories/multimedia_api_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
 
@@ -25,6 +26,7 @@ Future<void> initAppModule() async {
   initRepositoryModule();
   initAuthDependencies();
   initHomeDependencies();
+  initProfileModule();
 }
 
 initAuthDependencies() {
@@ -77,6 +79,12 @@ initAuthModule() {
 initHomeBloc() {
   if (!GetIt.I.isRegistered<HomeBloc>()) {
     instance.registerLazySingleton<HomeBloc>(() => HomeBloc());
+  }
+}
+
+initProfileModule() {
+  if (!GetIt.I.isRegistered<ProfileBloc>()) {
+    instance.registerLazySingleton<ProfileBloc>(() => ProfileBloc());
   }
 }
 

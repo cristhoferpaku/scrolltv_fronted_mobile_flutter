@@ -76,7 +76,7 @@ class LoginForm extends StatelessWidget {
                         textButton: AppString.loginButton,
                         colorButton: ColorManager.primaryContainer,
                         textStyleButton:
-                            Theme.of(context).textTheme.titleSmall?.copyWith(
+                            Theme.of(context).textTheme.labelLarge?.copyWith(
                                   color: ColorManager.onPrimaryContainer,
                                 ),
                         roundedButton: AppSize.s10,

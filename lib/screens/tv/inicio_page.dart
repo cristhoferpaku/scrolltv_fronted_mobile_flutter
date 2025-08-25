@@ -38,7 +38,7 @@ class _InicioPageState extends State<InicioPage> {
                         ),
                 roundedButton: AppSize.s10,
                 press: () {
-                  Navigator.pushNamed(context, Routes.homeRoute);
+                  Navigator.pushNamed(context, Routes.loginRoute);
                 },
               ).withPadding(top: AppPadding.p20),
             ],

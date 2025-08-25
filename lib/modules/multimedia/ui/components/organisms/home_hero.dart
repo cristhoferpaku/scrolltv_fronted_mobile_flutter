@@ -59,10 +59,10 @@ class _HomeHeroState extends State<HomeHero> {
                   height: 120,
                 ),
                 VideoMetadata(
-                  section: widget.video.collectionName ?? "No collection name",
-                  year: widget.video.year ?? "No year",
-                  duration: widget.video.duration ?? "No duration",
-                  genre: widget.video.categories ?? "No genre",
+                  section: widget.video.collectionName ?? "No data",
+                  year: widget.video.year ?? "2024",
+                  duration: widget.video.duration ?? "No data",
+                  genre: widget.video.categories ?? "No data",
                 ),
                 SizedBox(
                   width: isTV ? .4.sw : double.infinity,
@@ -110,8 +110,8 @@ class _HomeHeroState extends State<HomeHero> {
                                   ),
                           roundedButton: AppSize.s400,
                           press: () async {
-                            Navigator.pushNamed(
-                                context, Routes.videoDetailsRoute);
+                            // Navigator.pushNamed(
+                            //     context, Routes.videoDetailsRoute);
                           },
                         ),
                       ),

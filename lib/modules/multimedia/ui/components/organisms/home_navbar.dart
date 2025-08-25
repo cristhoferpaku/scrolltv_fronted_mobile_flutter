@@ -2,14 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/responsive_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 
-class HomeNavbar extends StatelessWidget {
+class HomeNavbar extends StatefulWidget {
   const HomeNavbar({
     super.key,
   });
 
+  @override
+  State<HomeNavbar> createState() => _HomeNavbarState();
+}
+
+class _HomeNavbarState extends State<HomeNavbar> {
+  final bool isTV = PlatformUtils.isTV;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -33,21 +40,22 @@ class HomeNavbar extends StatelessWidget {
                     minSize: 32, maxSize: 58),
               ),
             ),
-            ContainerFocus(
-              borderRadius: 999,
-              child: CircleAvatar(
-                radius: ResponsiveUtils.getIconSize(context,
-                        minSize: 32, maxSize: 58) /
-                    2,
-                child: Text(
-                  "D",
-                  style: Theme.of(context).textTheme.labelMedium,
+            if (isTV)
+              ContainerFocus(
+                borderRadius: 999,
+                child: CircleAvatar(
+                  radius: ResponsiveUtils.getIconSize(context,
+                          minSize: 32, maxSize: 58) /
+                      2,
+                  child: Text(
+                    "D",
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
                 ),
+                onTap: () {
+                  Navigator.pushNamed(context, Routes.profileRoute);
+                },
               ),
-              onTap: () {
-                Navigator.pushNamed(context, Routes.profileRoute);
-              },
-            ),
           ],
         ),
       ],
