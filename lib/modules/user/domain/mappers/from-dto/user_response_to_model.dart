@@ -3,7 +3,18 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/dtos/respon
 
 UserModel userResponseToModel(UserResponse userResponse) {
   return UserModel(
-    id: userResponse.id ?? 0,
-    name: userResponse.name ?? "",
+    id: userResponse.id,
+    username: userResponse.username,
+    platformId: userResponse.platformId,
+    platformName: userResponse.platformName,
+    packageUserId: userResponse.packageUserId,
+    packageUserName: userResponse.packageUserName,
+    status: userResponse.status,
+    serviceStarted: userResponse.serviceStarted,
+    startDate: userResponse.startDate,
+    expirationDate: userResponse.expirationDate,
+    canChangePackage: userResponse.canChangePackage,
+    createdAt: userResponse.createdAt,
+    updatedAt: userResponse.updatedAt,
   );
 }

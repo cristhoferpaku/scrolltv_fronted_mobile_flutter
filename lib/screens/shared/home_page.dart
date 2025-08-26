@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage> {
           index: _currentIndex,
           children: [
             HomeTabBar(),
-            LiveTab(),
+            // LiveTab(),
             ProfilePage(),
           ],
         ),

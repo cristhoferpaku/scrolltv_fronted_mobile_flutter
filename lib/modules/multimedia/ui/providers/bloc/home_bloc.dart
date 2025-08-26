@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:logger/logger.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/channel_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
@@ -24,10 +23,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     List<ChannelModel>? selectedChannel;
 
     on<_HomeEventStarted>((event, emit) async {
-      emit(HomeState.loadedSections( selectedChannel,moviesSection, seriesSection, animesSection,
-          dramasSection, kidsSection, HomeStateStatus.loading));
+      emit(HomeState.loadedSections(
+          selectedChannel,
+          moviesSection,
+          seriesSection,
+          animesSection,
+          dramasSection,
+          kidsSection,
+          HomeStateStatus.loading));
       try {
-        final channelsResponse = await multimediaUseCase.fetchChannels();
+        // final channelsResponse = await multimediaUseCase.fetchChannels();
         final moviesResult = await multimediaUseCase.getHomeSection(1);
         final seriesResult = await multimediaUseCase.getHomeSection(2);
         final kidsResult = await multimediaUseCase.getHomeSection(3);
@@ -39,17 +44,27 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         animesSection = animesResult.data;
         dramasSection = dramasResult.data;
         kidsSection = kidsResult.data;
-        selectedChannel = channelsResponse.data;
-
+        // selectedChannel = channelsResponse.data;
 
         LoggerManager.log.i('selectedChannel: $selectedChannel');
 
-
-        emit(HomeState.loadedSections( selectedChannel,moviesSection, seriesSection,
-            animesSection, dramasSection, kidsSection, HomeStateStatus.loaded));
+        emit(HomeState.loadedSections(
+            selectedChannel,
+            moviesSection,
+            seriesSection,
+            animesSection,
+            dramasSection,
+            kidsSection,
+            HomeStateStatus.loaded));
       } catch (e) {
-        emit(HomeState.loadedSections( selectedChannel,moviesSection, seriesSection,
-            animesSection, dramasSection, kidsSection, HomeStateStatus.error));
+        emit(HomeState.loadedSections(
+            selectedChannel,
+            moviesSection,
+            seriesSection,
+            animesSection,
+            dramasSection,
+            kidsSection,
+            HomeStateStatus.error));
       }
     });
   }

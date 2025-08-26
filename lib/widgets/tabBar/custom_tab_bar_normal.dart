@@ -7,25 +7,23 @@ import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/custom_tab_bar.dart';
 
-class CustomTabBarItem {
-  String title;
-  Widget? icon;
-  Widget child;
-
-  CustomTabBarItem({required this.title, this.icon, required this.child});
-}
-
-class CustomTabBar extends StatefulWidget {
+class CustomTabBarNormal extends StatefulWidget {
   final List<CustomTabBarItem> items;
   final Widget titleBar;
-  const CustomTabBar({super.key, required this.items, required this.titleBar});
+  final bool fixed;
+  const CustomTabBarNormal(
+      {super.key,
+      required this.items,
+      required this.titleBar,
+      this.fixed = false});
 
   @override
-  State<CustomTabBar> createState() => _CustomTabBarState();
+  State<CustomTabBarNormal> createState() => _CustomTabBarNormalState();
 }
 
-class _CustomTabBarState extends State<CustomTabBar>
+class _CustomTabBarNormalState extends State<CustomTabBarNormal>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
   final bloc = instance<CustomTabBarBloc>();
@@ -50,7 +48,7 @@ class _CustomTabBarState extends State<CustomTabBar>
     _focusNodes = List.generate(widget.items.length, (_) => FocusNode());
   }
 
-  int lastItemWithFocus = -1;
+  int lastItemWithFocus = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -64,35 +62,8 @@ class _CustomTabBarState extends State<CustomTabBar>
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Positioned.fill(
-                    child: TabBarView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      controller: tabController,
-                      children: widget.items.map((item) {
-                        return NotificationListener<ScrollNotification>(
-                          onNotification: (scrollInfo) {
-                            // Solo nos interesa si hubo scroll vertical
-                            final isVertical =
-                                scrollInfo.metrics.axis == Axis.vertical;
-
-                            if (isVertical) {
-                              final atTop = scrollInfo.metrics.pixels <= 0;
-                              if (atTop != _showHeader) {
-                                setState(() {
-                                  _showHeader = atTop;
-                                });
-                              }
-                            }
-
-                            return false;
-                          },
-                          child: item.child,
-                        );
-                      }).toList(),
-                    ),
-                  ),
                   if (_showHeader) // Solo mostramos si está arriba
-                    Positioned(
+                    Positioned.fill(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,7 +83,7 @@ class _CustomTabBarState extends State<CustomTabBar>
                                     ? TabAlignment.center
                                     : TabAlignment.start,
                                 isScrollable: true,
-                                indicatorColor: ColorManager.transparent,
+                                indicatorColor: ColorManager.white,
                                 controller: tabController,
                                 labelPadding: EdgeInsets.zero,
                                 padding: EdgeInsets.zero,
@@ -130,10 +101,10 @@ class _CustomTabBarState extends State<CustomTabBar>
                                       focusNode: _focusNodes[position],
                                       onFocusChange: (hasFocus) {
                                         setState(() {});
-                                        if (lastItemWithFocus != -1) {
+                                        if (lastItemWithFocus != 0) {
                                           _focusNodes[lastItemWithFocus]
                                               .requestFocus();
-                                          lastItemWithFocus = -1;
+                                          lastItemWithFocus = 0;
                                           return;
                                         }
                                         final focusedNode =
@@ -146,19 +117,6 @@ class _CustomTabBarState extends State<CustomTabBar>
                                       },
                                       child: Tab(
                                         child: Container(
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                                color: isTv &&
-                                                        _focusNodes[position]
-                                                            .hasFocus
-                                                    ? Colors.blueAccent
-                                                    : ColorManager.transparent),
-                                            color: isCurrentIndex
-                                                ? ColorManager.primaryContainer
-                                                : ColorManager.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                                AppSize.s10),
-                                          ),
                                           alignment: Alignment.center,
                                           height: AppSize.s36,
                                           child: Row(
@@ -185,6 +143,35 @@ class _CustomTabBarState extends State<CustomTabBar>
                                   })
                                 ],
                               ),
+                            ),
+                          ),
+                          Expanded(
+                            child: TabBarView(
+                              physics: const NeverScrollableScrollPhysics(),
+                              controller: tabController,
+                              children: widget.items.map((item) {
+                                return NotificationListener<ScrollNotification>(
+                                  onNotification: (scrollInfo) {
+                                    // Solo nos interesa si hubo scroll vertical
+                                    final isVertical =
+                                        scrollInfo.metrics.axis ==
+                                            Axis.vertical;
+
+                                    if (isVertical) {
+                                      final atTop =
+                                          scrollInfo.metrics.pixels <= 0;
+                                      if (atTop != _showHeader) {
+                                        setState(() {
+                                          _showHeader = atTop;
+                                        });
+                                      }
+                                    }
+
+                                    return false;
+                                  },
+                                  child: item.child,
+                                );
+                              }).toList(),
                             ),
                           ),
                         ],

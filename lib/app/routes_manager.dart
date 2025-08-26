@@ -7,6 +7,7 @@ import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart'
     as mobile;
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/home_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/screens/shared/terms_and_conditions_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/video_details_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/video_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/tv/tv.dart' as tv;
@@ -29,9 +30,9 @@ class Routes {
   static const String inicioRoute = 'inicio';
   static const String liveTvRoute = 'liveTv';
   static const String profileRoute = 'profile';
+  static const String termsAndConditionsRoute = 'termsAndConditions';
   static const String videoRoute = 'video';
   static const String videoDetailsRoute = 'videoDetails';
-
 }
 
 class RouteGenerator {
@@ -72,6 +73,10 @@ class RouteGenerator {
 
       case Routes.videoDetailsRoute:
         return MaterialPageRoute(builder: (_) => const VideoDetailsPage());
+
+      case Routes.termsAndConditionsRoute:
+        return MaterialPageRoute(
+            builder: (_) => const TermsAndConditionsPage());
 
       // case Routes.drawerRoute:
       //   initDrawerDependencies();

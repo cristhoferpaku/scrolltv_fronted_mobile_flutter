@@ -3,7 +3,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dto
 
 abstract class UserUseCase {
   Future<ApiResponse<UserModel>> getAll();
-  Future<UserModel> getById(int id);
+  Future<ApiResponse<UserModel>> getById(int id);
   Future<UserModel> create(UserModel user);
   Future<UserModel> update(int id, UserModel user);
   Future<UserModel> delete(int id);

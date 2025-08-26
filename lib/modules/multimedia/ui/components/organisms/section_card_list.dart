@@ -34,7 +34,7 @@ class _SectionCardListState extends State<SectionCardList> {
   Widget build(BuildContext context) {
     final isTV = PlatformUtils.isTV;
     return FocusTraversalGroup(
-      policy: CustomGridTraversalPolicy(),
+      policy: CustomGridTraversalPolicyStrictVertical(),
       child: Stack(
         clipBehavior: Clip.none,
         children: [

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
@@ -11,7 +10,6 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/top_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/types/home_state_status.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 
 class SeriesTab extends StatefulWidget {
@@ -47,49 +45,45 @@ class _SeriesTabState extends State<SeriesTab> {
               }
               return Column(
                 children: [
-                  FocusTraversalGroup(
-                    policy: CustomGridTraversalPolicy(),
-                    child: Column(
-                      spacing: AppPadding.p36,
-                      children: [
-                        HomeHero(video: state.series?.banner ?? VideoModel()),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            TopCardList(videos: state.series?.top10 ?? []),
-                            SectionCardList(
-                                title: "Recién llegadas",
-                                hasBlurLeft: true,
-                                hasBlurRight: true,
-                                videos: state.series?.recentContent ?? []),
-                            Column(
-                              children: [
-                                if (state.series?.collectionsContent
-                                        ?.isNotEmpty ??
-                                    false)
-                                  ...state.series!.collectionsContent!
-                                      .asMap()
-                                      .entries
-                                      .map((entry) {
-                                    final index = entry.key;
-                                    final e = entry.value;
-                                    return SectionCardList(
-                                      title: e.collectionName ?? "",
-                                      hasBlurLeft: index % 2 == 0 && index != 0
-                                          ? true
-                                          : false,
-                                      hasBlurRight:
-                                          index % 2 == 1 ? true : false,
-                                      videos: e.content ?? [],
-                                    );
-                                  }),
-                              ],
-                            )
-                          ],
-                        ).withPadding(all: AppPadding.p16),
-                      ],
-                    ),
+                  Column(
+                    spacing: AppPadding.p36,
+                    children: [
+                      HomeHero(video: state.series?.banner ?? VideoModel()),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          TopCardList(videos: state.series?.top10 ?? []),
+                          SectionCardList(
+                              title: "Recién llegadas",
+                              hasBlurLeft: true,
+                              hasBlurRight: true,
+                              videos: state.series?.recentContent ?? []),
+                          Column(
+                            children: [
+                              if (state
+                                      .series?.collectionsContent?.isNotEmpty ??
+                                  false)
+                                ...state.series!.collectionsContent!
+                                    .asMap()
+                                    .entries
+                                    .map((entry) {
+                                  final index = entry.key;
+                                  final e = entry.value;
+                                  return SectionCardList(
+                                    title: e.collectionName ?? "",
+                                    hasBlurLeft: index % 2 == 0 && index != 0
+                                        ? true
+                                        : false,
+                                    hasBlurRight: index % 2 == 1 ? true : false,
+                                    videos: e.content ?? [],
+                                  );
+                                }),
+                            ],
+                          )
+                        ],
+                      ).withPadding(all: AppPadding.p16),
+                    ],
                   ),
                 ],
               );

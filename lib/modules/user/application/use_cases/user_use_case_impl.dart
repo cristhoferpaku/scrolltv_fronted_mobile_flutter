@@ -8,12 +8,12 @@ class UserUseCaseImpl implements UserUseCase {
   UserUseCaseImpl(this._userRepositoryPort);
   @override
   Future<ApiResponse<UserModel>> getAll() async {
-    return await _userRepositoryPort.getAll();
+    return _userRepositoryPort.getAll();
   }
 
   @override
-  Future<UserModel> getById(int id) async {
-    return await _userRepositoryPort.getById(id);
+  Future<ApiResponse<UserModel>> getById(int id) async {
+    return _userRepositoryPort.getById(id);
   }
 
   @override

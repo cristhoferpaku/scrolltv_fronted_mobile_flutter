@@ -10,7 +10,6 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/top_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/types/home_state_status.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 
 class MoviesTab extends StatefulWidget {
@@ -47,49 +46,45 @@ class _MoviesTabState extends State<MoviesTab> {
 
               return Column(
                 children: [
-                  FocusTraversalGroup(
-                    policy: CustomGridTraversalPolicy(),
-                    child: Column(
-                      spacing: AppPadding.p36,
-                      children: [
-                        HomeHero(video: state.movies?.banner ?? VideoModel()),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            TopCardList(videos: state.movies?.top10 ?? []),
-                            SectionCardList(
-                                title: "Recién llegadas",
-                                hasBlurLeft: true,
-                                hasBlurRight: true,
-                                videos: state.movies?.recentContent ?? []),
-                            Column(
-                              children: [
-                                if (state.movies?.collectionsContent
-                                        ?.isNotEmpty ??
-                                    false)
-                                  ...state.movies!.collectionsContent!
-                                      .asMap()
-                                      .entries
-                                      .map((entry) {
-                                    final index = entry.key;
-                                    final e = entry.value;
-                                    return SectionCardList(
-                                      title: e.collectionName ?? "",
-                                      hasBlurLeft: index % 2 == 0 && index != 0
-                                          ? true
-                                          : false,
-                                      hasBlurRight:
-                                          index % 2 == 1 ? true : false,
-                                      videos: e.content ?? [],
-                                    );
-                                  }),
-                              ],
-                            )
-                          ],
-                        ).withPadding(all: AppPadding.p16),
-                      ],
-                    ),
+                  Column(
+                    spacing: AppPadding.p36,
+                    children: [
+                      HomeHero(video: state.movies?.banner ?? VideoModel()),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          TopCardList(videos: state.movies?.top10 ?? []),
+                          SectionCardList(
+                              title: "Recién llegadas",
+                              hasBlurLeft: true,
+                              hasBlurRight: true,
+                              videos: state.movies?.recentContent ?? []),
+                          Column(
+                            children: [
+                              if (state
+                                      .movies?.collectionsContent?.isNotEmpty ??
+                                  false)
+                                ...state.movies!.collectionsContent!
+                                    .asMap()
+                                    .entries
+                                    .map((entry) {
+                                  final index = entry.key;
+                                  final e = entry.value;
+                                  return SectionCardList(
+                                    title: e.collectionName ?? "",
+                                    hasBlurLeft: index % 2 == 0 && index != 0
+                                        ? true
+                                        : false,
+                                    hasBlurRight: index % 2 == 1 ? true : false,
+                                    videos: e.content ?? [],
+                                  );
+                                }),
+                            ],
+                          )
+                        ],
+                      ).withPadding(all: AppPadding.p16),
+                    ],
                   ),
                 ],
               );

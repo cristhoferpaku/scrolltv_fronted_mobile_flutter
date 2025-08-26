@@ -7,7 +7,6 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/get_home_section_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/data/default_data.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
@@ -93,7 +92,8 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
   @override
   Future<ApiResponse<List<ChannelModel>>> fetchChannels() async {
     try {
-      String playlistUrl = 'https://noalatino.org:443/playlist/demorestream62/demo62/m3u?output=hls';
+      String playlistUrl =
+          'https://noalatino.org:443/playlist/demorestream62/demo62/m3u?output=hls';
       final playlistUri = Uri.parse(playlistUrl);
       final httpService = await dio;
 
@@ -110,7 +110,7 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
       );
 
       LoggerManager.log.i('Playlist response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200 && response.data != null) {
         // Si la respuesta es String, la usamos directamente
         String playlistContent;
@@ -120,11 +120,15 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
           // Si no es String, intentamos convertirla
           playlistContent = response.data.toString();
         }
-        
-        return  ApiResponse<List<ChannelModel>>(data: parseM3u(playlistContent), success: true, timestamp: DateTime.now().toString(), path: 'fetch-channels');
 
+        return ApiResponse<List<ChannelModel>>(
+            data: parseM3u(playlistContent),
+            success: true,
+            timestamp: DateTime.now().toString(),
+            path: 'fetch-channels');
       } else {
-        throw Exception('No se pudo descargar la lista M3U: ${response.statusCode}');
+        throw Exception(
+            'No se pudo descargar la lista M3U: ${response.statusCode}');
       }
     } on SocketException catch (e) {
       // Error de conectividad/red
@@ -153,7 +157,8 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
         }
         throw ExceptionApp(500, serverMessage);
       } else {
-        throw Exception('Error de red al descargar playlist: ${e.message ?? 'Error desconocido'}');
+        throw Exception(
+            'Error de red al descargar playlist: ${e.message ?? 'Error desconocido'}');
       }
     } on FormatException catch (e) {
       // Error de formato en la respuesta

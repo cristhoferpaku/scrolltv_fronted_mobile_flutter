@@ -9,6 +9,7 @@ import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/gradient_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/entities/user_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +23,12 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final ProfileBloc profileBloc = instance<ProfileBloc>();
+  @override
+  void initState() {
+    profileBloc.add(const ProfileEvent.started());
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ResponsiveManager(
@@ -42,31 +49,45 @@ class _ProfilePageState extends State<ProfilePage> {
           }
         },
         builder: (context, state) {
-          return Column(
-            spacing: AppPadding.p16,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              HomeNavbar(),
-              Column(
-                spacing: AppPadding.p16.r,
-                children: [
-                  ProfileCard(),
-                  Row(
-                    spacing: AppPadding.p16.r,
-                    children: [
-                      Expanded(child: PolicyAndPrivaceCard()),
-                      Expanded(child: LogoutCard(
-                        onTap: () {
-                          profileBloc.add(ProfileEvent.logout());
-                        },
-                      )),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          );
+          if (state is ProfileLoaded) {
+            return Column(
+              spacing: AppPadding.p16,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                HomeNavbar(),
+                Column(
+                  spacing: AppPadding.p16.r,
+                  children: [
+                    ProfileCard(
+                      user: state.user,
+                      onTap: () {},
+                    ),
+                    Row(
+                      spacing: AppPadding.p16.r,
+                      children: [
+                        Expanded(
+                          child: PolicyAndPrivaceCard(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, Routes.termsAndConditionsRoute);
+                            },
+                          ),
+                        ),
+                        Expanded(child: LogoutCard(
+                          onTap: () {
+                            profileBloc.add(ProfileEvent.logout());
+                          },
+                        )),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            );
+          } else {
+            return Container();
+          }
         },
       ),
     );
@@ -86,42 +107,50 @@ class _ProfilePageState extends State<ProfilePage> {
           }
         },
         builder: (context, state) {
-          return Column(
-            spacing: AppPadding.p16,
-            children: [
-              HomeNavbar(),
-              IntrinsicHeight(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment:
-                      CrossAxisAlignment.stretch, // estira en alto
-                  spacing: AppPadding.p16,
-                  children: [
-                    Flexible(
-                      flex: 2,
-                      child: ContainerFocus(
-                        child: ProfileCard(),
+          if (state is ProfileLoaded) {
+            return Column(
+              spacing: AppPadding.p16,
+              children: [
+                HomeNavbar(),
+                IntrinsicHeight(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.stretch, // estira en alto
+                    spacing: AppPadding.p16,
+                    children: [
+                      Flexible(
+                        flex: 2,
+                        child: ProfileCard(
+                          user: state.user,
+                          onTap: () {},
+                        ),
                       ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: ContainerFocus(
-                        child: PolicyAndPrivaceCard(),
+                      Flexible(
+                        flex: 1,
+                        child: PolicyAndPrivaceCard(
+                          onTap: () {
+                            Navigator.pushNamed(
+                                context, Routes.termsAndConditionsRoute);
+                          },
+                        ),
                       ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: LogoutCard(
-                        onTap: () {
-                          profileBloc.add(ProfileEvent.logout());
-                        },
+                      Flexible(
+                        flex: 1,
+                        child: LogoutCard(
+                          onTap: () {
+                            profileBloc.add(ProfileEvent.logout());
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          );
+                    ],
+                  ),
+                )
+              ],
+            );
+          } else {
+            return Container();
+          }
         },
       ),
     );
@@ -157,65 +186,80 @@ class BlurContainer extends StatelessWidget {
 }
 
 class ProfileCard extends StatelessWidget {
+  final UserModel? user;
+  final Function() onTap;
   const ProfileCard({
     super.key,
+    this.user,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BlurContainer(
-      child: Row(
-        spacing: AppPadding.p16,
-        children: [
-          CircleAvatar(
-            radius: 75.r / 2,
-            child: Text("D",
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(fontSize: 38.r)),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: AppPadding.p4.r,
-              children: [
-                InfoRow(label: "Cuenta: ", value: "Ulisex31"),
-                InfoRow(label: "Fecha de expiración: ", value: "21/12/2028"),
-                InfoRow(label: "Paquete: ", value: "Pro"),
-              ],
+    return ContainerFocus(
+      onTap: () {},
+      child: BlurContainer(
+        child: Row(
+          spacing: AppPadding.p16,
+          children: [
+            CircleAvatar(
+              radius: 75.r / 2,
+              child: Text("D",
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontSize: 38.r)),
             ),
-          ),
-        ],
-      ).withPadding(all: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: AppPadding.p4.r,
+                children: [
+                  InfoRow(label: "Cuenta: ", value: user?.username ?? ""),
+                  InfoRow(
+                      label: "Fecha de expiración: ",
+                      value: user?.expirationDate ?? ""),
+                  InfoRow(
+                      label: "Paquete: ", value: user?.packageUserName ?? ""),
+                ],
+              ),
+            ),
+          ],
+        ).withPadding(all: 12.w),
+      ),
     );
   }
 }
 
 class PolicyAndPrivaceCard extends StatelessWidget {
+  final Function() onTap;
   const PolicyAndPrivaceCard({
     super.key,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BlurContainer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            ImageAssets.iconPrivacyAndPolicy,
-            height: 32.r,
-          ),
-          Text("Política & Privacidad",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontSize: 11.r))
-              .withPadding(top: AppPadding.p8.r),
-        ],
-      ).withPadding(all: 12.w),
+    return ContainerFocus(
+      onTap: onTap,
+      child: BlurContainer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              ImageAssets.iconPrivacyAndPolicy,
+              height: 32.r,
+            ),
+            Text("Política & Privacidad",
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(fontSize: 11.r))
+                .withPadding(top: AppPadding.p8.r),
+          ],
+        ).withPadding(all: 12.w),
+      ),
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
@@ -42,7 +41,7 @@ class _AnimesTabState extends State<AnimesTab> {
               return Column(
                 children: [
                   FocusTraversalGroup(
-                    policy: CustomGridTraversalPolicy(),
+                    policy: CustomGridTraversalPolicyStrictVertical(),
                     child: Column(
                       spacing: AppPadding.p36,
                       children: [

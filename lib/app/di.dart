@@ -14,6 +14,10 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/infrastructure/repositories/multimedia_api_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/user/application/use_cases/user_use_case_impl.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/inbound/user_use_case.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/outbound/user_repository_port.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/user/infrastructure/repositories/user_api_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
 
@@ -26,7 +30,7 @@ Future<void> initAppModule() async {
   initRepositoryModule();
   initAuthDependencies();
   initHomeDependencies();
-  initProfileModule();
+  initProfileDependencies();
 }
 
 initAuthDependencies() {
@@ -44,6 +48,12 @@ initHomeDependencies() {
 initMultimediaDependencies() {
   initMultimediaRepositoryPort();
   initMultimediaUseCase();
+}
+
+initProfileDependencies() {
+  initUserRepositoryPort();
+  initUserUseCase();
+  initProfileModule();
 }
 
 Future<void> listAppModule() async {
@@ -130,6 +140,19 @@ initMultimediaRepositoryPort() {
   if (!GetIt.I.isRegistered<MultimediaRepositoryPort>()) {
     instance.registerFactory<MultimediaRepositoryPort>(
         () => MultimediaApiRepository());
+  }
+}
+
+initUserUseCase() {
+  if (!GetIt.I.isRegistered<UserUseCase>()) {
+    instance.registerFactory<UserUseCase>(
+        () => UserUseCaseImpl(instance<UserRepositoryPort>()));
+  }
+}
+
+initUserRepositoryPort() {
+  if (!GetIt.I.isRegistered<UserRepositoryPort>()) {
+    instance.registerFactory<UserRepositoryPort>(() => UserApiRepository());
   }
 }
 
