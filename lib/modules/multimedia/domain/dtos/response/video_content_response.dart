@@ -15,4 +15,6 @@ class VideoContentResponse with _$VideoContentResponse {
   }) = _VideoContentResponse;
 
   factory VideoContentResponse.fromJson(Map<String, dynamic> json) => _$VideoContentResponseFromJson(json);
+
+  static List<VideoContentResponse> fromJsonList(List<dynamic> json) => json.map((e) => VideoContentResponse.fromJson(e)).toList();
 }

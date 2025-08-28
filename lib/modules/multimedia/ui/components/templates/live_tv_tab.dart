@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 
@@ -15,6 +17,7 @@ class LiveTab extends StatefulWidget {
 }
 
 class _LiveTabState extends State<LiveTab> {
+  final HomeBloc homeBloc = instance<HomeBloc>();
   int selectedChannelIndex = 0;
   final isTv = PlatformUtils.isTV;
 
@@ -24,6 +27,12 @@ class _LiveTabState extends State<LiveTab> {
     {'name': 'CNN', 'subtitle': 'TV-34'},
     {'name': 'Ver +', 'subtitle': 'Ver más canales'},
   ];
+
+  @override
+  void initState() {
+    homeBloc.add(HomeEvent.loadSectionLive());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
@@ -25,8 +24,7 @@ class CustomTabBar extends StatefulWidget {
   State<CustomTabBar> createState() => _CustomTabBarState();
 }
 
-class _CustomTabBarState extends State<CustomTabBar>
-    with SingleTickerProviderStateMixin {
+class _CustomTabBarState extends State<CustomTabBar> with SingleTickerProviderStateMixin {
   late TabController tabController;
   final bloc = instance<CustomTabBarBloc>();
 
@@ -72,8 +70,7 @@ class _CustomTabBarState extends State<CustomTabBar>
                         return NotificationListener<ScrollNotification>(
                           onNotification: (scrollInfo) {
                             // Solo nos interesa si hubo scroll vertical
-                            final isVertical =
-                                scrollInfo.metrics.axis == Axis.vertical;
+                            final isVertical = scrollInfo.metrics.axis == Axis.vertical;
 
                             if (isVertical) {
                               final atTop = scrollInfo.metrics.pixels <= 0;
@@ -108,36 +105,29 @@ class _CustomTabBarState extends State<CustomTabBar>
                             child: Center(
                               child: TabBar(
                                 splashFactory: NoSplash.splashFactory,
-                                tabAlignment: isTv
-                                    ? TabAlignment.center
-                                    : TabAlignment.start,
+                                tabAlignment: isTv ? TabAlignment.center : TabAlignment.start,
                                 isScrollable: true,
                                 indicatorColor: ColorManager.transparent,
                                 controller: tabController,
                                 labelPadding: EdgeInsets.zero,
                                 padding: EdgeInsets.zero,
-                                labelStyle:
-                                    Theme.of(context).textTheme.bodyMedium,
-                                unselectedLabelStyle:
-                                    Theme.of(context).textTheme.bodyMedium,
+                                labelStyle: Theme.of(context).textTheme.bodyMedium,
+                                unselectedLabelStyle: Theme.of(context).textTheme.bodyMedium,
                                 tabs: [
                                   ...widget.items.asMap().entries.map((entry) {
                                     int position = entry.key;
                                     CustomTabBarItem value = entry.value;
-                                    bool isCurrentIndex =
-                                        position == state.currentIndex;
+                                    bool isCurrentIndex = position == state.currentIndex;
                                     return FocusableActionDetector(
                                       focusNode: _focusNodes[position],
                                       onFocusChange: (hasFocus) {
                                         setState(() {});
                                         if (lastItemWithFocus != -1) {
-                                          _focusNodes[lastItemWithFocus]
-                                              .requestFocus();
+                                          _focusNodes[lastItemWithFocus].requestFocus();
                                           lastItemWithFocus = -1;
                                           return;
                                         }
-                                        final focusedNode =
-                                            FocusManager.instance.primaryFocus;
+                                        final focusedNode = FocusManager.instance.primaryFocus;
                                         if (_focusNodes.contains(focusedNode)) {
                                           tabController.animateTo(position);
                                         } else {
@@ -147,39 +137,20 @@ class _CustomTabBarState extends State<CustomTabBar>
                                       child: Tab(
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            border: Border.all(
-                                                color: isTv &&
-                                                        _focusNodes[position]
-                                                            .hasFocus
-                                                    ? Colors.blueAccent
-                                                    : ColorManager.transparent),
-                                            color: isCurrentIndex
-                                                ? ColorManager.primaryContainer
-                                                : ColorManager.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                                AppSize.s10),
+                                            border: Border.all(color: isTv && _focusNodes[position].hasFocus ? Colors.blueAccent : ColorManager.transparent),
+                                            color: isCurrentIndex ? ColorManager.primaryContainer : ColorManager.transparent,
+                                            borderRadius: BorderRadius.circular(AppSize.s10),
                                           ),
                                           alignment: Alignment.center,
                                           height: AppSize.s36,
                                           child: Row(
                                             spacing: AppPadding.p8,
                                             children: [
-                                              if (value.icon != null)
-                                                value.icon!,
-                                              Text(value.title,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .labelMedium
-                                                      ?.copyWith(
-                                                          color: ColorManager
-                                                              .onPrimaryContainer)),
+                                              if (value.icon != null) value.icon!,
+                                              Text(value.title, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: ColorManager.onPrimaryContainer)),
                                             ],
-                                          ).withPadding(
-                                              horizontal: AppPadding.p16),
-                                        ).withPadding(
-                                            left: position != 0
-                                                ? AppPadding.p16
-                                                : AppPadding.p16),
+                                          ).withPadding(horizontal: AppPadding.p16),
+                                        ).withPadding(left: position != 0 ? AppPadding.p16 : AppPadding.p16),
                                       ),
                                     );
                                   })

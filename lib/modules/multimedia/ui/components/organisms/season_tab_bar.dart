@@ -14,6 +14,7 @@ class SeasonTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (seasons.isEmpty) return const SizedBox.shrink();
     return SizedBox(
       height: 240.r,
       child: CustomTabBarNormal(

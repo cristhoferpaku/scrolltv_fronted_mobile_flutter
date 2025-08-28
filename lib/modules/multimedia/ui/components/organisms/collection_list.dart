@@ -16,6 +16,7 @@ class CollectionList extends StatelessWidget {
           return SectionCardList(
             title: e.collectionName ?? "",
             videos: e.content ?? [],
+            id: e.collectionId ?? 0,
           );
         }),
       ],

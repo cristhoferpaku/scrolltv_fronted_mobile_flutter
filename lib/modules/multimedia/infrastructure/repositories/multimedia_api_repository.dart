@@ -7,11 +7,14 @@ import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/get_home_section_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/video_content_response.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/video_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/channel_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_content_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/get_home_section_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/video_content_response_to_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/video_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
@@ -167,6 +170,44 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
       final video = videoContentResponseToModel(videoResponse);
       return ApiResponseData<VideoContentModel>(success: true, data: video, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
     } else {
+      throw Exception("Something wen't wrong");
+    }
+  }
+
+  @override
+  Future<ApiResponse<List<VideoModel>>> getVideosByCollectionId(int collectionId) async {
+    final httpService = await dio;
+
+    try {
+      final response = await httpService.request(url: "$baseApiUrl/get-collection-content/$collectionId", method: Method.get);
+
+      if (response.data["data"] != null) {
+        final videoResponse = VideoResponse.fromJsonList(response.data["data"]);
+        final video = videoResponseToModelList(videoResponse);
+        return ApiResponseData<List<VideoModel>>(success: true, data: video, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
+      } else {
+        throw Exception("Something wen't wrong");
+      }
+    } catch (e) {
+      throw Exception("Something wen't wrong");
+    }
+  }
+
+  @override
+  Future<ApiResponse<List<VideoModel>>> getVideosBySearch(String search) async {
+    final httpService = await dio;
+
+    try {
+      final response = await httpService.request(url: "$baseApiUrl/get-search-content/?search=$search", method: Method.get);
+
+      if (response.data["data"] != null) {
+        final videoResponse = VideoResponse.fromJsonList(response.data["data"]);
+        final video = videoResponseToModelList(videoResponse);
+        return ApiResponseData<List<VideoModel>>(success: true, data: video, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
+      } else {
+        throw Exception("Something wen't wrong");
+      }
+    } catch (e) {
       throw Exception("Something wen't wrong");
     }
   }

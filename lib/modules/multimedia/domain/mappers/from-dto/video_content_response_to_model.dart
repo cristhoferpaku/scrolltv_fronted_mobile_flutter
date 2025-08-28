@@ -11,3 +11,7 @@ VideoContentModel videoContentResponseToModel(VideoContentResponse response) {
     casts: response.casts?.map((cast) => castResponseToModel(cast)).toList(),
   );
 }
+
+List<VideoContentModel> videoContentResponseToModelList(List<VideoContentResponse> response) {
+  return response.map((response) => videoContentResponseToModel(response)).toList();
+}

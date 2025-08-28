@@ -36,7 +36,9 @@ class _HomeNavbarState extends State<HomeNavbar> {
             spacing: AppPadding.p16,
             children: [
               ContainerFocus(
-                onTap: () {},
+                onTap: () {
+                  Navigator.pushNamed(context, Routes.searchRoute);
+                },
                 borderRadius: 999,
                 child: SvgPicture.asset(
                   ImageAssets.iconSearch,

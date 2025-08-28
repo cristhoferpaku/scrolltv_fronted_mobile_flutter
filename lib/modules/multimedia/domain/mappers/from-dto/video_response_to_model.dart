@@ -23,3 +23,7 @@ VideoModel videoResponseToModel(VideoResponse response) {
     categories: response.categories,
   );
 }
+
+List<VideoModel> videoResponseToModelList(List<VideoResponse> response) {
+  return response.map((response) => videoResponseToModel(response)).toList();
+}

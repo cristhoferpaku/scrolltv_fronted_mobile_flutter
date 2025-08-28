@@ -77,7 +77,7 @@ class _HomeHeroState extends State<HomeHero> {
                   SizedBox(
                     width: isTV ? .4.sw : double.infinity,
                     child: Text(
-                      "Intensamente 2: Las aventuras de rayli y sus emociones",
+                      widget.video.title ?? "No data",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: ColorManager.onSurface,
                           ),

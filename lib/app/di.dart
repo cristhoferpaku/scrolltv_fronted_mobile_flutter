@@ -12,8 +12,10 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/application/
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/inbound/multimedia_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/infrastructure/repositories/multimedia_api_repository.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/video_details_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/collection/collection_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/search/search_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/video_details/video_details_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/application/use_cases/user_use_case_impl.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/inbound/user_use_case.dart';
@@ -33,6 +35,8 @@ Future<void> initAppModule() async {
   initHomeDependencies();
   initProfileDependencies();
   initVideoDetailsDependencies();
+  initCollectionDependencies();
+  initSearchDependencies();
 }
 
 initAuthDependencies() {
@@ -60,6 +64,14 @@ initProfileDependencies() {
 
 initVideoDetailsDependencies() {
   initVideoDetailsModule();
+}
+
+initCollectionDependencies() {
+  initCollectionModule();
+}
+
+initSearchDependencies() {
+  initSearchModule();
 }
 
 Future<void> listAppModule() async {
@@ -107,6 +119,18 @@ initProfileModule() {
 initVideoDetailsModule() {
   if (!GetIt.I.isRegistered<VideoDetailsBloc>()) {
     instance.registerLazySingleton<VideoDetailsBloc>(() => VideoDetailsBloc());
+  }
+}
+
+initCollectionModule() {
+  if (!GetIt.I.isRegistered<CollectionBloc>()) {
+    instance.registerLazySingleton<CollectionBloc>(() => CollectionBloc());
+  }
+}
+
+initSearchModule() {
+  if (!GetIt.I.isRegistered<SearchBloc>()) {
+    instance.registerLazySingleton<SearchBloc>(() => SearchBloc());
   }
 }
 

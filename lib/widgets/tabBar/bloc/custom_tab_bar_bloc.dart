@@ -7,12 +7,14 @@ part 'custom_tab_bar_state.dart';
 
 class CustomTabBarBloc extends Bloc<CustomTabBarEvent, CustomTabBarState> {
   CustomTabBarBloc() : super(const _Initial()) {
+    int currentIndex = 0;
     on<CustomTabBarEvent>((event, emit) {});
     on<_CustomTabBarEventStarted>((event, emit) {
-      emit(const CustomTabBarState.loaded(0));
+      emit(CustomTabBarState.loaded(currentIndex));
     });
     on<_CustomTabBarEventChangeTab>((event, emit) {
-      emit(CustomTabBarState.loaded(event.index));
+      currentIndex = event.index;
+      emit(CustomTabBarState.loaded(currentIndex));
     });
   }
 }

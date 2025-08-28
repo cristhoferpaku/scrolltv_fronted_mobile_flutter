@@ -24,9 +24,9 @@ class VideoResponse with _$VideoResponse {
     @JsonKey(name: 'categories') String? categories,
   }) = _VideoResponse;
 
-  factory VideoResponse.fromJson(Map<String, dynamic> json) =>
-      _$VideoResponseFromJson(json);
+  factory VideoResponse.fromJson(Map<String, dynamic> json) => _$VideoResponseFromJson(json);
 
+  static List<VideoResponse> fromJsonList(List<dynamic> json) => json.map((e) => VideoResponse.fromJson(e)).toList();
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

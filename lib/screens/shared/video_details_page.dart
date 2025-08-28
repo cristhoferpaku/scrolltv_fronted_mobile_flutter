@@ -8,7 +8,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/collection_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/season_tab_bar.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/video_details_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/video_details/video_details_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';

@@ -4,8 +4,10 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart' as mobile;
+import 'package:scrolltv_frontend_mobile_flutter/screens/shared/collection_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/home_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/screens/shared/search_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/terms_and_conditions_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/video_details_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/video_page.dart';
@@ -31,6 +33,8 @@ class Routes {
   static const String termsAndConditionsRoute = 'termsAndConditions';
   static const String videoRoute = 'video';
   static const String videoDetailsRoute = 'videoDetails';
+  static const String collectionRoute = 'collection';
+  static const String searchRoute = 'search';
 }
 
 class RouteGenerator {
@@ -70,6 +74,12 @@ class RouteGenerator {
 
       case Routes.termsAndConditionsRoute:
         return MaterialPageRoute(builder: (_) => const TermsAndConditionsPage());
+
+      case Routes.collectionRoute:
+        return MaterialPageRoute(builder: (_) => const CollectionPage(), settings: RouteSettings(name: Routes.collectionRoute, arguments: routeSettings.arguments));
+
+      case Routes.searchRoute:
+        return MaterialPageRoute(builder: (_) => const SearchPage(), settings: RouteSettings(name: Routes.searchRoute, arguments: routeSettings.arguments));
 
       // case Routes.drawerRoute:
       //   initDrawerDependencies();

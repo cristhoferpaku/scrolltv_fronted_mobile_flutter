@@ -4,13 +4,14 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/scroll_to_top_on_up.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/collection_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
-import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/home_skeleton.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/top_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/types/home_state_status.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/home_skeleton.dart';
 
 class MoviesTab extends StatefulWidget {
   const MoviesTab({
@@ -28,6 +29,12 @@ class _MoviesTabState extends State<MoviesTab> {
   final ScrollController scrollController = ScrollController();
 
   final HomeBloc homeBloc = instance<HomeBloc>();
+
+  @override
+  void initState() {
+    homeBloc.add(HomeEvent.loadSectionMovies());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,22 +62,14 @@ class _MoviesTabState extends State<MoviesTab> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           TopCardList(videos: state.movies?.top10 ?? []),
-                          SectionCardList(title: "Recién llegadas", hasBlurLeft: true, hasBlurRight: true, videos: state.movies?.recentContent ?? []),
-                          Column(
-                            children: [
-                              if (state.movies?.collectionsContent?.isNotEmpty ?? false)
-                                ...state.movies!.collectionsContent!.asMap().entries.map((entry) {
-                                  final index = entry.key;
-                                  final e = entry.value;
-                                  return SectionCardList(
-                                    title: e.collectionName ?? "",
-                                    hasBlurLeft: index % 2 == 0 && index != 0 ? true : false,
-                                    hasBlurRight: index % 2 == 1 ? true : false,
-                                    videos: e.content ?? [],
-                                  );
-                                }),
-                            ],
-                          )
+                          SectionCardList(
+                            title: "Recién llegadas",
+                            hasBlurLeft: true,
+                            hasBlurRight: true,
+                            videos: state.movies?.recentContent ?? [],
+                            id: 0,
+                          ),
+                          CollectionList(collection: state.movies?.collectionsContent ?? []),
                         ],
                       ).withPadding(all: AppPadding.p16),
                     ],
