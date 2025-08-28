@@ -1,0 +1,27 @@
+
+
+{
+    "version": "0.1.0",
+    "configurations": [
+      {
+        "name": "Scroll TV (Mobile)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug",
+        "args": [
+          "--flavor", "mobile",
+          "--dart-define=IS_TV=false"
+        ]
+      },
+      {
+        "name": "Scroll TV (TV)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug",
+        "args": [
+          "--flavor", "tv",
+          "--dart-define=IS_TV=true"
+        ]
+      },
+    ]
+  }

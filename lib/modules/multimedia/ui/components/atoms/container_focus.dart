@@ -21,19 +21,23 @@ class _ContainerFocusState extends State<ContainerFocus> {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
+    return FocusableActionDetector(
       onFocusChange: (hasFocus) {
         setState(() => _isFocused = hasFocus);
       },
       child: InkWell(
         onTap: widget.onTap,
-        child: AnimatedContainer(
+        child: AnimatedScale(
+          scale: _isFocused ? 1.02 : 1.0,
           duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            border: _isFocused ? Border.all(color: Colors.blueAccent, width: 2) : null,
+          curve: Curves.easeInOut,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              border: _isFocused ? Border.all(color: Colors.blueAccent, width: 2) : null,
+            ),
+            child: widget.child,
           ),
-          child: widget.child,
         ),
       ),
     );

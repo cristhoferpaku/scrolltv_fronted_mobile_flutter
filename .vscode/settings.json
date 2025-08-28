@@ -1,0 +1,34 @@
+{
+    "dart.flutterSdkPath": ".fvm/versions/3.29.3",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    },
+    "explorer.fileNesting.patterns": {
+        "*.dart": "${capture}.g.dart, ${capture}.freezed.dart"
+    },
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+    "dart.lineLength": 200,
+    "[dart]": {
+      "editor.formatOnSave": true,
+      "editor.tabSize": 2,
+      "editor.rulers": [
+        150
+      ],
+      "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit",
+          "source.fixAll": "explicit",
+          "source.quickFix": "explicit",
+          "quickfix.add.required": "explicit",
+          "quickfix.create.constructorForFinalFields": "explicit",
+      },
+    },
+    "dart.previewFlutterUiGuides": true,
+    "editor.renderWhitespace": "all",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    "git.autofetch": true
+}
