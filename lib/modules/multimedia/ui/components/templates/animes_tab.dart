@@ -6,7 +6,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entit
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/scroll_to_top_on_up.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 

@@ -5,12 +5,12 @@ import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/scroll_to_top_on_up.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_skeleton.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/types/home_state_status.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/home_skeleton.dart';
 
 class DramasTab extends StatefulWidget {
   const DramasTab({
@@ -55,29 +55,17 @@ class _DramasTabState extends State<DramasTab> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            SectionCardList(
-                                title: "Recién llegadas",
-                                hasBlurLeft: true,
-                                hasBlurRight: true,
-                                videos: state.dramas?.recentContent ?? []),
+                            SectionCardList(title: "Recién llegadas", hasBlurLeft: true, hasBlurRight: true, videos: state.dramas?.recentContent ?? []),
                             Column(
                               children: [
-                                if (state.dramas?.collectionsContent
-                                        ?.isNotEmpty ??
-                                    false)
-                                  ...state.dramas!.collectionsContent!
-                                      .asMap()
-                                      .entries
-                                      .map((entry) {
+                                if (state.dramas?.collectionsContent?.isNotEmpty ?? false)
+                                  ...state.dramas!.collectionsContent!.asMap().entries.map((entry) {
                                     final index = entry.key;
                                     final e = entry.value;
                                     return SectionCardList(
                                       title: e.collectionName ?? "",
-                                      hasBlurLeft: index % 2 == 0 && index != 0
-                                          ? true
-                                          : false,
-                                      hasBlurRight:
-                                          index % 2 == 1 ? true : false,
+                                      hasBlurLeft: index % 2 == 0 && index != 0 ? true : false,
+                                      hasBlurRight: index % 2 == 1 ? true : false,
                                       videos: e.content ?? [],
                                     );
                                   }),

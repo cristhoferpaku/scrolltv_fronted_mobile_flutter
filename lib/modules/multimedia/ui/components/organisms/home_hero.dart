@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/background_image.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/linear_gradient_box.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/video_metadata.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
@@ -35,14 +36,13 @@ class _HomeHeroState extends State<HomeHero> {
   final bool isTV = PlatformUtils.isTV;
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: isTV ? 1.sh : .8.sh,
       child: Stack(
         fit: StackFit.expand,
         children: [
           BackgroundImage(
-            networkImage:
-                isTV ? widget.video.bannerImage : widget.video.coverImage,
+            networkImage: isTV ? widget.video.bannerImage : widget.video.coverImage,
             fit: BoxFit.cover,
           ),
           LinearGradientBox(
@@ -108,15 +108,13 @@ class _HomeHeroState extends State<HomeHero> {
                       ContainerFocus(
                         borderRadius: 999,
                         child: ElevatedButtonApp(
-                          iconData: Icon(Icons.play_arrow,
-                              size: ResponsiveUtils.getIconSize(context)),
+                          iconData: Icon(Icons.play_arrow, size: ResponsiveUtils.getIconSize(context)),
                           isExpanded: false,
                           textButton: AppString.buttonWatchNow,
                           colorButton: ColorManager.primaryContainer,
-                          textStyleButton:
-                              Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    color: ColorManager.onPrimaryContainer,
-                                  ),
+                          textStyleButton: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: ColorManager.onPrimaryContainer,
+                              ),
                           roundedButton: AppSize.s400,
                           press: () async {
                             Navigator.pushNamed(context, Routes.videoRoute);
@@ -127,22 +125,23 @@ class _HomeHeroState extends State<HomeHero> {
                         ContainerFocus(
                           borderRadius: 999,
                           child: ElevatedButtonApp(
-                            iconData: Icon(Icons.info_outline,
-                                size: ResponsiveUtils.getIconSize(context)),
+                            iconData: Icon(Icons.info_outline, size: ResponsiveUtils.getIconSize(context)),
                             isExpanded: false,
                             textButton: AppString.buttonDetails,
                             colorButton: ColorManager.transparent,
                             colorBorder: ColorManager.primaryContainer,
-                            textStyleButton: Theme.of(context)
-                                .textTheme
-                                .labelLarge
-                                ?.copyWith(
+                            textStyleButton: Theme.of(context).textTheme.labelLarge?.copyWith(
                                   color: ColorManager.onPrimaryContainer,
                                 ),
                             roundedButton: AppSize.s400,
                             press: () async {
                               Navigator.pushNamed(
-                                  context, Routes.videoDetailsRoute);
+                                context,
+                                Routes.videoDetailsRoute,
+                                arguments: VideoDetailsPageArguments(
+                                  videoId: widget.video.id ?? 0,
+                                ),
+                              );
                             },
                           ),
                         ),

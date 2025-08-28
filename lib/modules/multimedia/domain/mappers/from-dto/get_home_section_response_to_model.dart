@@ -1,58 +1,13 @@
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/collection_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/get_home_section_response.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/video_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/collection_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/collection_response_to_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/video_response_to_model.dart';
 
-GetHomeSectionModel getHomeSectionResponseToModel(
-    GetHomeSectionResponse response) {
+GetHomeSectionModel getHomeSectionResponseToModel(GetHomeSectionResponse response) {
   return GetHomeSectionModel(
-    banner: response.recentContent?.isNotEmpty ?? false
-        ? videoResponseToModel(response.recentContent!.first)
-        : null,
+    banner: response.recentContent?.isNotEmpty ?? false ? videoResponseToModel(response.recentContent!.first) : null,
     top10: response.top10?.map((e) => videoResponseToModel(e)).toList(),
-    recentContent:
-        response.recentContent?.map((e) => videoResponseToModel(e)).toList(),
-    collectionsContent: response.collectionsContent
-        ?.map((e) => collectionResponseToModel(e))
-        .toList(),
+    recentContent: response.recentContent?.map((e) => videoResponseToModel(e)).toList(),
+    collectionsContent: response.collectionsContent?.map((e) => collectionResponseToModel(e)).toList(),
   );
-}
-
-CollectionModel collectionResponseToModel(CollectionResponse response) {
-  return CollectionModel(
-    collectionId: response.collectionId,
-    collectionName: response.collectionName,
-    content: response.content,
-  );
-}
-
-VideoModel videoResponseToModel(VideoResponse response) {
-  return VideoModel(
-    id: response.id,
-    title: response.title,
-    description: response.description,
-    coverImage: response.coverImage,
-    type: response.type,
-    durationMins: response.durationMins,
-    videoUrl: response.videoUrl,
-    sectionId: response.sectionId,
-    countryId: response.countryId,
-    collectionId: response.collectionId,
-    createdAt: response.createdAt,
-    updatedAt: response.updatedAt,
-    topNumber: response.topNumber,
-    bannerImage: response.bannerImage,
-    duration: convertMinsToHoursAndMinutes(response.durationMins),
-    collectionName: response.collectionName,
-    categories: response.categories,
-  );
-}
-
-String convertMinsToHoursAndMinutes(int? mins) {
-  if (mins == null) return "";
-  int hours = mins ~/ 60;
-  int minutes = mins % 60;
-  return "${hours}h ${minutes.toString().padLeft(2, '0')}min";
 }

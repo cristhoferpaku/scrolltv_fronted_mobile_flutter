@@ -1,16 +1,20 @@
 import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/get_home_section_response.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/video_content_response.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/channel_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_content_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/get_home_section_response_to_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/video_content_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
-import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/channel_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/m3u_parser.dart';
 
 class MultimediaApiRepository implements MultimediaRepositoryPort {
@@ -31,16 +35,14 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
       if (response.data != null) {
         final apiResponse = ApiResponse<GetHomeSectionModel>.fromJson(
           response.data,
-          (json) => getHomeSectionResponseToModel(
-              GetHomeSectionResponse.fromJson(json as Map<String, dynamic>)),
+          (json) => getHomeSectionResponseToModel(GetHomeSectionResponse.fromJson(json as Map<String, dynamic>)),
         );
 
         return apiResponse;
       } else {
         // Verificar si response.data es un Map y contiene 'message'
         String errorMessage = 'Error desconocido';
-        if (response.data is Map<String, dynamic> &&
-            response.data['message'] != null) {
+        if (response.data is Map<String, dynamic> && response.data['message'] != null) {
           errorMessage = response.data['message'].toString();
         }
         throw Exception(errorMessage);
@@ -50,14 +52,10 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
       throw Exception('Sin conexión a internet: ${e.message}');
     } on DioException catch (e) {
       // Errores específicos de Dio (timeouts, HTTP errors, etc.)
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
-        throw Exception(
-            'Tiempo de espera agotado. Verifica que el servidor esté ejecutándose en $baseApiUrl');
+      if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.sendTimeout) {
+        throw Exception('Tiempo de espera agotado. Verifica que el servidor esté ejecutándose en $baseApiUrl');
       } else if (e.type == DioExceptionType.connectionError) {
-        throw Exception(
-            'No se puede conectar al servidor en $baseApiUrl. Verifica que el servidor esté ejecutándose.');
+        throw Exception('No se puede conectar al servidor en $baseApiUrl. Verifica que el servidor esté ejecutándose.');
       } else if (e.response?.statusCode == 401) {
         throw Exception('Credenciales inválidas');
       } else if (e.response?.statusCode == 400) {
@@ -65,10 +63,8 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
       } else if (e.response?.statusCode == 500) {
         // Verificar si hay mensaje específico del servidor
         String serverMessage = 'Error interno del servidor';
-        if (e.response?.data is Map<String, dynamic> &&
-            e.response?.data['message'] != null) {
-          serverMessage =
-              e.response?.data['message'].toString() ?? serverMessage;
+        if (e.response?.data is Map<String, dynamic> && e.response?.data['message'] != null) {
+          serverMessage = e.response?.data['message'].toString() ?? serverMessage;
         }
         throw ExceptionApp(500, serverMessage);
       } else {
@@ -92,8 +88,7 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
   @override
   Future<ApiResponse<List<ChannelModel>>> fetchChannels() async {
     try {
-      String playlistUrl =
-          'https://noalatino.org:443/playlist/demorestream62/demo62/m3u?output=hls';
+      String playlistUrl = 'https://noalatino.org:443/playlist/demorestream62/demo62/m3u?output=hls';
       final playlistUri = Uri.parse(playlistUrl);
       final httpService = await dio;
 
@@ -121,28 +116,19 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
           playlistContent = response.data.toString();
         }
 
-        return ApiResponse<List<ChannelModel>>(
-            data: parseM3u(playlistContent),
-            success: true,
-            timestamp: DateTime.now().toString(),
-            path: 'fetch-channels');
+        return ApiResponse<List<ChannelModel>>(data: parseM3u(playlistContent), success: true, timestamp: DateTime.now().toString(), path: 'fetch-channels');
       } else {
-        throw Exception(
-            'No se pudo descargar la lista M3U: ${response.statusCode}');
+        throw Exception('No se pudo descargar la lista M3U: ${response.statusCode}');
       }
     } on SocketException catch (e) {
       // Error de conectividad/red
       throw Exception('Sin conexión a internet: ${e.message}');
     } on DioException catch (e) {
       // Errores específicos de Dio (timeouts, HTTP errors, etc.)
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
-        throw Exception(
-            'Tiempo de espera agotado. Verifica que el servidor de playlist esté disponible en la url');
+      if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.sendTimeout) {
+        throw Exception('Tiempo de espera agotado. Verifica que el servidor de playlist esté disponible en la url');
       } else if (e.type == DioExceptionType.connectionError) {
-        throw Exception(
-            'No se puede conectar al servidor de playlist en la url. Verifica la URL.');
+        throw Exception('No se puede conectar al servidor de playlist en la url. Verifica la URL.');
       } else if (e.response?.statusCode == 401) {
         throw Exception('Acceso no autorizado a la playlist');
       } else if (e.response?.statusCode == 404) {
@@ -150,15 +136,12 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
       } else if (e.response?.statusCode == 500) {
         // Verificar si hay mensaje específico del servidor
         String serverMessage = 'Error interno del servidor de playlist';
-        if (e.response?.data is Map<String, dynamic> &&
-            e.response?.data['message'] != null) {
-          serverMessage =
-              e.response?.data['message'].toString() ?? serverMessage;
+        if (e.response?.data is Map<String, dynamic> && e.response?.data['message'] != null) {
+          serverMessage = e.response?.data['message'].toString() ?? serverMessage;
         }
         throw ExceptionApp(500, serverMessage);
       } else {
-        throw Exception(
-            'Error de red al descargar playlist: ${e.message ?? 'Error desconocido'}');
+        throw Exception('Error de red al descargar playlist: ${e.message ?? 'Error desconocido'}');
       }
     } on FormatException catch (e) {
       // Error de formato en la respuesta
@@ -170,6 +153,21 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
       // Cualquier otro error no manejado
       LoggerManager.log.e('Error en fetchChannels: ${e.toString()}');
       throw Exception('Error al procesar la playlist: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<ApiResponse<VideoContentModel>> getVideoContentById(int videoId) async {
+    final httpService = await dio;
+
+    final response = await httpService.request(url: "$baseApiUrl/get-content-data-detail/$videoId", method: Method.get);
+
+    if (response.data["data"] != null) {
+      final videoResponse = VideoContentResponse.fromJson(response.data["data"]);
+      final video = videoContentResponseToModel(videoResponse);
+      return ApiResponseData<VideoContentModel>(success: true, data: video, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
+    } else {
+      throw Exception("Something wen't wrong");
     }
   }
 }

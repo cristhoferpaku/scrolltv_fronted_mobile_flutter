@@ -32,9 +32,7 @@ class _SectionCardState extends State<SectionCard> {
             height: 200.r,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              border: _isFocused
-                  ? Border.all(color: Colors.blueAccent, width: 3)
-                  : null,
+              border: _isFocused ? Border.all(color: Colors.blueAccent, width: 3) : null,
               boxShadow: _isFocused
                   ? [
                       BoxShadow(

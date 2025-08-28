@@ -1,10 +1,6 @@
-import 'dart:io';
-
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:intl/intl.dart';
 
-String getStringByLanguage(
-    String? currentLanguage, String textToSpanish, String textToEnglish) {
+String getStringByLanguage(String? currentLanguage, String textToSpanish, String textToEnglish) {
   if (currentLanguage == 'ES' || currentLanguage == null) {
     return textToSpanish;
   } else {
@@ -15,4 +11,11 @@ String getStringByLanguage(
 String getFormatDateToString(DateTime dateTime, {String format = 'dd-MM-yy'}) {
   var formatter = DateFormat(format);
   return formatter.format(dateTime);
+}
+
+String convertMinsToHoursAndMinutes(int? mins) {
+  if (mins == null) return "";
+  int hours = mins ~/ 60;
+  int minutes = mins % 60;
+  return "${hours}h ${minutes.toString().padLeft(2, '0')}min";
 }

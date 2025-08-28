@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/colors_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/typography_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.dart';
-
-import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart'
-    as mobile;
+import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart' as mobile;
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/home_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/terms_and_conditions_page.dart';
@@ -13,7 +12,6 @@ import 'package:scrolltv_frontend_mobile_flutter/screens/shared/video_page.dart'
 import 'package:scrolltv_frontend_mobile_flutter/screens/tv/tv.dart' as tv;
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/typography_page.dart';
 
 class Routes {
   //static const String splashRoute = '/';
@@ -41,9 +39,7 @@ class RouteGenerator {
     switch (routeSettings.name) {
       case Routes.loginRoute:
         //initLoginDependencies();
-        return MaterialPageRoute(
-            builder: (_) =>
-                isTv ? const tv.LoginPage() : const mobile.LoginPage());
+        return MaterialPageRoute(builder: (_) => isTv ? const tv.LoginPage() : const mobile.LoginPage());
 
       case Routes.homeRoute:
         return MaterialPageRoute(builder: (_) => const HomePage());
@@ -61,9 +57,7 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const LiveTvDetail());
 
       case Routes.inicioRoute:
-        return MaterialPageRoute(
-            builder: (_) =>
-                isTv ? const tv.InicioPage() : const mobile.InicioPage());
+        return MaterialPageRoute(builder: (_) => isTv ? const tv.InicioPage() : const mobile.InicioPage());
 
       case Routes.profileRoute:
         return MaterialPageRoute(builder: (_) => const ProfilePage());
@@ -72,11 +66,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const VideoPage());
 
       case Routes.videoDetailsRoute:
-        return MaterialPageRoute(builder: (_) => const VideoDetailsPage());
+        return MaterialPageRoute(builder: (_) => const VideoDetailsPage(), settings: RouteSettings(name: Routes.videoDetailsRoute, arguments: routeSettings.arguments));
 
       case Routes.termsAndConditionsRoute:
-        return MaterialPageRoute(
-            builder: (_) => const TermsAndConditionsPage());
+        return MaterialPageRoute(builder: (_) => const TermsAndConditionsPage());
 
       // case Routes.drawerRoute:
       //   initDrawerDependencies();
@@ -118,13 +111,10 @@ class TemplateForAnimationBase extends PageRouteBuilder {
 
   TemplateForAnimationBase({
     required this.child,
-  }) : super(
-            transitionDuration: const Duration(milliseconds: 400),
-            pageBuilder: (context, animation, secondaryAnimation) => child);
+  }) : super(transitionDuration: const Duration(milliseconds: 400), pageBuilder: (context, animation, secondaryAnimation) => child);
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
+  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
     return ScaleTransition(scale: animation, child: child);
   }
 }
@@ -133,16 +123,11 @@ class CustomAnimationPageTransitionFadeSlide extends PageRouteBuilder {
   final Widget child;
   final RouteSettings? routeSettings;
 
-  CustomAnimationPageTransitionFadeSlide(
-      {required this.child, this.routeSettings})
-      : super(
-            transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (context, animation, secondaryAnimation) => child,
-            settings: routeSettings);
+  CustomAnimationPageTransitionFadeSlide({required this.child, this.routeSettings})
+      : super(transitionDuration: const Duration(milliseconds: 500), pageBuilder: (context, animation, secondaryAnimation) => child, settings: routeSettings);
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
+  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
     // ScaleTransition(scale: animation, child: child);
     return FadeTransition(
       opacity: Tween<double>(
@@ -171,14 +156,10 @@ class AnimationRouteTransitionBelow extends PageRouteBuilder {
   final RouteSettings? settingsRoute;
 
   AnimationRouteTransitionBelow({required this.child, this.settingsRoute})
-      : super(
-            transitionDuration: const Duration(milliseconds: 300),
-            pageBuilder: (context, animation, secondaryAnimation) => child,
-            settings: settingsRoute);
+      : super(transitionDuration: const Duration(milliseconds: 300), pageBuilder: (context, animation, secondaryAnimation) => child, settings: settingsRoute);
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
+  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
     const begin = Offset(0.0, 1.0);
     const end = Offset.zero;
     const curve = Curves.ease;

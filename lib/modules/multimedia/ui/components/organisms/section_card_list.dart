@@ -88,13 +88,9 @@ class _SectionCardListState extends State<SectionCardList> {
                     spacing: isTV ? AppPadding.p36 : AppPadding.p16,
                     children: List.generate(
                       widget.videos.length,
-                      (index) => SectionCard(
-                          title: widget.videos[index].title ?? "",
-                          coverImage: widget.videos[index].coverImage ?? ""),
+                      (index) => SectionCard(title: widget.videos[index].title ?? "", coverImage: widget.videos[index].coverImage ?? ""),
                     ),
-                  ).withPadding(
-                      vertical: AppPadding.p16,
-                      left: isTV ? AppPadding.p16 : AppPadding.p0),
+                  ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
                 ),
             ],
           ),
@@ -102,31 +98,17 @@ class _SectionCardListState extends State<SectionCardList> {
             BlurBackground(
               top: 0,
               left: 0,
-              offset: Offset(
-                  ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) /
-                      2 *
-                      -1,
-                  ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) /
-                      2 *
-                      -1),
-              width:
-                  ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
-              height:
-                  ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+              offset: Offset(ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2 * -1, ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2 * -1),
+              width: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+              height: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
             ),
           if (widget.hasBlurRight)
             BlurBackground(
-              offset: Offset(
-                  ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) /
-                      2,
-                  ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) /
-                      2),
+              offset: Offset(ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2, ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2),
               bottom: 0,
               right: 0,
-              width:
-                  ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
-              height:
-                  ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+              width: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+              height: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
             ),
         ],
       ),

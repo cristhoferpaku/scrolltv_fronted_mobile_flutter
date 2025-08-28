@@ -1,18 +1,19 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/gradient_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/entities/user_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -69,8 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Expanded(
                           child: PolicyAndPrivaceCard(
                             onTap: () {
-                              Navigator.pushNamed(
-                                  context, Routes.termsAndConditionsRoute);
+                              Navigator.pushNamed(context, Routes.termsAndConditionsRoute);
                             },
                           ),
                         ),
@@ -115,8 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 IntrinsicHeight(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment:
-                        CrossAxisAlignment.stretch, // estira en alto
+                    crossAxisAlignment: CrossAxisAlignment.stretch, // estira en alto
                     spacing: AppPadding.p16,
                     children: [
                       Flexible(
@@ -130,8 +129,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         flex: 1,
                         child: PolicyAndPrivaceCard(
                           onTap: () {
-                            Navigator.pushNamed(
-                                context, Routes.termsAndConditionsRoute);
+                            Navigator.pushNamed(context, Routes.termsAndConditionsRoute);
                           },
                         ),
                       ),
@@ -204,11 +202,7 @@ class ProfileCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 75.r / 2,
-              child: Text("D",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontSize: 38.r)),
+              child: Text("D", style: Theme.of(context).textTheme.titleSmall?.copyWith(fontSize: 38.r)),
             ),
             Expanded(
               child: Column(
@@ -216,11 +210,8 @@ class ProfileCard extends StatelessWidget {
                 spacing: AppPadding.p4.r,
                 children: [
                   InfoRow(label: "Cuenta: ", value: user?.username ?? ""),
-                  InfoRow(
-                      label: "Fecha de expiración: ",
-                      value: user?.expirationDate ?? ""),
-                  InfoRow(
-                      label: "Paquete: ", value: user?.packageUserName ?? ""),
+                  InfoRow(label: "Fecha de expiración: ", value: user?.expirationDate ?? ""),
+                  InfoRow(label: "Paquete: ", value: user?.packageUserName ?? ""),
                 ],
               ),
             ),
@@ -251,12 +242,7 @@ class PolicyAndPrivaceCard extends StatelessWidget {
               ImageAssets.iconPrivacyAndPolicy,
               height: 32.r,
             ),
-            Text("Política & Privacidad",
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(fontSize: 11.r))
-                .withPadding(top: AppPadding.p8.r),
+            Text("Política & Privacidad", style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11.r)).withPadding(top: AppPadding.p8.r),
           ],
         ).withPadding(all: 12.w),
       ),
@@ -284,12 +270,7 @@ class LogoutCard extends StatelessWidget {
               ImageAssets.iconLogout,
               height: 32.r,
             ),
-            Text("Cerrar sesión",
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(fontSize: 11.r))
-                .withPadding(top: AppPadding.p8.r),
+            Text("Cerrar sesión", style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11.r)).withPadding(top: AppPadding.p8.r),
           ],
         ).withPadding(all: 12.w),
       ),

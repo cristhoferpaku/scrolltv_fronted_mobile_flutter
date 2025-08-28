@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/config_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/config_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/application/use_cases/auth_use_case_impl.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/outbound/auth_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/infrastructure/repositories/auth_api_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/application/use_cases/multimedia_use_case_impl.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/inbound/multimedia_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/infrastructure/repositories/multimedia_api_repository.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/video_details_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/application/use_cases/user_use_case_impl.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/inbound/user_use_case.dart';
@@ -31,6 +32,7 @@ Future<void> initAppModule() async {
   initAuthDependencies();
   initHomeDependencies();
   initProfileDependencies();
+  initVideoDetailsDependencies();
 }
 
 initAuthDependencies() {
@@ -54,6 +56,10 @@ initProfileDependencies() {
   initUserRepositoryPort();
   initUserUseCase();
   initProfileModule();
+}
+
+initVideoDetailsDependencies() {
+  initVideoDetailsModule();
 }
 
 Future<void> listAppModule() async {
@@ -98,6 +104,12 @@ initProfileModule() {
   }
 }
 
+initVideoDetailsModule() {
+  if (!GetIt.I.isRegistered<VideoDetailsBloc>()) {
+    instance.registerLazySingleton<VideoDetailsBloc>(() => VideoDetailsBloc());
+  }
+}
+
 // SERVICES
 void initDioService() {
   if (!GetIt.I.isRegistered<HttpDioService>()) {
@@ -111,15 +123,13 @@ void initDioService() {
 
 void initRepositoryModule() {
   if (!GetIt.I.isRegistered<ConfigRepositoryImpl>()) {
-    instance
-        .registerFactory<ConfigRepositoryImpl>(() => ConfigRepositoryImpl());
+    instance.registerFactory<ConfigRepositoryImpl>(() => ConfigRepositoryImpl());
   }
 }
 
 initAuthUseCase() {
   if (!GetIt.I.isRegistered<AuthUseCase>()) {
-    instance.registerFactory<AuthUseCase>(
-        () => AuthUseCaseImpl(instance<AuthRepositoryPort>()));
+    instance.registerFactory<AuthUseCase>(() => AuthUseCaseImpl(instance<AuthRepositoryPort>()));
   }
 }
 
@@ -131,22 +141,19 @@ initAuthRepositoryPort() {
 
 initMultimediaUseCase() {
   if (!GetIt.I.isRegistered<MultimediaUseCaseImpl>()) {
-    instance.registerFactory<MultimediaUseCase>(
-        () => MultimediaUseCaseImpl(instance<MultimediaRepositoryPort>()));
+    instance.registerFactory<MultimediaUseCase>(() => MultimediaUseCaseImpl(instance<MultimediaRepositoryPort>()));
   }
 }
 
 initMultimediaRepositoryPort() {
   if (!GetIt.I.isRegistered<MultimediaRepositoryPort>()) {
-    instance.registerFactory<MultimediaRepositoryPort>(
-        () => MultimediaApiRepository());
+    instance.registerFactory<MultimediaRepositoryPort>(() => MultimediaApiRepository());
   }
 }
 
 initUserUseCase() {
   if (!GetIt.I.isRegistered<UserUseCase>()) {
-    instance.registerFactory<UserUseCase>(
-        () => UserUseCaseImpl(instance<UserRepositoryPort>()));
+    instance.registerFactory<UserUseCase>(() => UserUseCaseImpl(instance<UserRepositoryPort>()));
   }
 }
 

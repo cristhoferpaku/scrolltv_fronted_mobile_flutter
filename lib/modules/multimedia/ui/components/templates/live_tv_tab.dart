@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 
@@ -65,14 +65,12 @@ class _LiveTabState extends State<LiveTab> {
                     final availableWidth = constraints.maxWidth;
                     final spacing = 12.0;
                     final totalSpacing = spacing * (channels.length - 1);
-                    final channelWidth =
-                        (availableWidth - totalSpacing) / channels.length;
+                    final channelWidth = (availableWidth - totalSpacing) / channels.length;
 
                     return ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: channels.length,
-                      separatorBuilder: (context, index) =>
-                          SizedBox(width: spacing),
+                      separatorBuilder: (context, index) => SizedBox(width: spacing),
                       itemBuilder: (context, index) {
                         final isSelected = index == selectedChannelIndex;
                         return ContainerFocus(
@@ -89,9 +87,7 @@ class _LiveTabState extends State<LiveTab> {
                             width: channelWidth.r,
                             height: 40.r,
                             decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFF2DD4BF)
-                                  : Colors.grey[800],
+                              color: isSelected ? const Color(0xFF2DD4BF) : Colors.grey[800],
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(
@@ -102,9 +98,7 @@ class _LiveTabState extends State<LiveTab> {
                                 Text(
                                   channels[index]['name']!,
                                   style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.black
-                                        : Colors.white,
+                                    color: isSelected ? Colors.black : Colors.white,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
                                   ),
@@ -115,9 +109,7 @@ class _LiveTabState extends State<LiveTab> {
                                 Text(
                                   channels[index]['subtitle']!,
                                   style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.black54
-                                        : Colors.grey[400],
+                                    color: isSelected ? Colors.black54 : Colors.grey[400],
                                     fontSize: 10,
                                   ),
                                   textAlign: TextAlign.center,

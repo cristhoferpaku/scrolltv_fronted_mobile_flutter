@@ -27,8 +27,12 @@ class _InicioPageState extends State<InicioPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image(image: AssetImage(ImageAssets.logoScrollTv)),
+              Image(
+                image: AssetImage(ImageAssets.logoScrollTv),
+                width: 400,
+              ),
               ElevatedButtonApp(
+                paddingHorizontal: AppPadding.p120,
                 isExpanded: false,
                 textButton: AppString.iniciarSesion,
                 colorButton: ColorManager.primary300,
