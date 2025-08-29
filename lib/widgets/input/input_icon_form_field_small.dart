@@ -22,6 +22,8 @@ class TextFormFieldIconSmall extends StatefulWidget {
   int? maxLines;
   bool readOnly;
   double borderRadius;
+  bool canRequestFocus;
+  bool? rightIconOnEditingComplete;
 
   TextFormFieldIconSmall({
     super.key,
@@ -42,6 +44,8 @@ class TextFormFieldIconSmall extends StatefulWidget {
     this.onEditingComplete,
     this.rightIcon,
     this.borderRadius = AppSize.s12,
+    this.canRequestFocus = true,
+    this.rightIconOnEditingComplete = false,
   });
 
   @override
@@ -59,8 +63,7 @@ class _TextFormFieldIconSmallState extends State<TextFormFieldIconSmall> {
           style: Theme.of(context).textTheme.labelLarge?.copyWith(color: ColorManager.white),
         ).withPadding(bottom: AppPadding.p8),
       TextFormField(
-        autofocus: false,
-        canRequestFocus: false,
+        canRequestFocus: widget.canRequestFocus,
         onEditingComplete: widget.onEditingComplete,
         onChanged: widget.onChanged,
         readOnly: widget.readOnly,
@@ -83,19 +86,27 @@ class _TextFormFieldIconSmallState extends State<TextFormFieldIconSmall> {
           fillColor: widget.readOnly ? ColorManager.disabled : widget.background,
           prefixIcon: widget.leftIcon != null ? Icon(widget.leftIcon, color: ColorManager.secondary) : null,
           suffixIcon: widget.rightIcon != null
-              ? IconButton(
-                  icon: Icon(
-                      widget.isPassword
-                          ? _isPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility
-                          : widget.rightIcon,
-                      color: ColorManager.secondary),
-                  onPressed: () {
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
+              ? ExcludeFocus(
+                  child: IconButton(
+                    icon: Icon(
+                        widget.isPassword
+                            ? _isPasswordVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility
+                            : widget.rightIcon,
+                        color: ColorManager.secondary),
+                    onPressed: () {
+                      if (widget.rightIconOnEditingComplete != null) {
+                        widget.onEditingComplete!();
+                      }
+                      if (widget.isPassword) {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      }
+                      return;
+                    },
+                  ),
                 )
               : null,
           enabledBorder: OutlineInputBorder(

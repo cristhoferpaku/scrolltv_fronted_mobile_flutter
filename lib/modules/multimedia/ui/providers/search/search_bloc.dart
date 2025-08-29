@@ -12,21 +12,23 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   SearchBloc() : super(_Initial()) {
     final MultimediaUseCase multimediaUseCase = instance<MultimediaUseCase>();
     List<VideoModel>? videos;
+    String search = "";
     on<SearchEvent>((event, emit) async {});
     on<_SearchEventStarted>((event, emit) async {
-      emit(SearchState.loaded(status: SearchStateStatus.initial, videos: []));
+      emit(SearchState.loaded(status: SearchStateStatus.initial, videos: [], search: search));
+      add(_SearchEventSearch(search)); //busqueda inicial
     });
     on<_SearchEventSearch>((event, emit) async {
       try {
-        emit(SearchState.loaded(status: SearchStateStatus.loadingVideos, videos: videos));
-        await Future.delayed(const Duration(seconds: 1));
-        final response = await multimediaUseCase.getVideosBySearch(event.search);
+        emit(SearchState.loaded(status: SearchStateStatus.loadingVideos, videos: videos, search: search));
+        final response = await multimediaUseCase.getVideosBySearch(event.search.isEmpty ? "a" : event.search);
+        search = event.search;
         if (response.success) {
           videos = response.data;
-          emit(SearchState.loaded(status: SearchStateStatus.loadedVideos, videos: videos));
+          emit(SearchState.loaded(status: SearchStateStatus.loadedVideos, videos: videos, search: search));
         }
       } catch (e) {
-        emit(SearchState.loaded(status: SearchStateStatus.error, videos: videos));
+        emit(SearchState.loaded(status: SearchStateStatus.error, videos: videos, search: search));
       }
     });
   }

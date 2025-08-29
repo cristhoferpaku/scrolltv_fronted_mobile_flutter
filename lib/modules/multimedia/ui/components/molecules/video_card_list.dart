@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/no_content_box.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/video_card.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 
@@ -20,6 +21,9 @@ class VideoCardList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (videos.isEmpty) {
+      return NoContentBox();
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         return GridView.builder(
@@ -33,11 +37,9 @@ class VideoCardList extends StatelessWidget {
           itemCount: videos.length,
           itemBuilder: (context, index) {
             return VideoCard(
-              focusNode: index == 0 ? firstCardFocusNode : null,
               title: videos[index].title ?? "",
               coverImage: videos[index].coverImage ?? "",
               onTap: () {
-                print("index: $index");
                 Navigator.pushNamed(
                   context,
                   Routes.videoDetailsRoute,

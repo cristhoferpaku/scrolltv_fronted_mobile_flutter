@@ -10,6 +10,11 @@ class VirtualKeyboard extends StatefulWidget {
   final VoidCallback? onNext;
   final bool isPasswordField;
   final FocusNode? focusNode;
+  final double paddingContainer;
+  final bool showHeaderIndicator;
+  final Color? colorBorder;
+  final double borderWidth;
+  final String labelLastButton;
 
   const VirtualKeyboard({
     super.key,
@@ -21,6 +26,11 @@ class VirtualKeyboard extends StatefulWidget {
     this.onNext,
     this.isPasswordField = false,
     this.focusNode,
+    this.paddingContainer = 16,
+    this.colorBorder,
+    this.showHeaderIndicator = true,
+    this.borderWidth = 2,
+    this.labelLastButton = 'Ingresar',
   });
 
   @override
@@ -327,38 +337,43 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         autofocus: true,
         onKey: (node, event) {
           return _handleRemoteKey(event);
-          return KeyEventResult.ignored;
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(widget.paddingContainer),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.8),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: widget.isPasswordField ? Colors.orange : Colors.blue,
-              width: 2,
+              color: widget.colorBorder ?? (widget.isPasswordField ? Colors.orange : Colors.blue),
+              width: widget.borderWidth,
             ),
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Field indicator
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: widget.isPasswordField ? Colors.orange.withOpacity(0.2) : Colors.blue.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
+              if (widget.showHeaderIndicator)
+                Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: widget.isPasswordField ? Colors.orange.withOpacity(0.2) : Colors.blue.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.isPasswordField ? 'Contraseña' : 'Usuario',
+                        style: TextStyle(
+                          color: widget.isPasswordField ? Colors.orange : Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                child: Text(
-                  widget.isPasswordField ? 'Contraseña' : 'Usuario',
-                  style: TextStyle(
-                    color: widget.isPasswordField ? Colors.orange : Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               // Keyboard rows
               Container(
                 color: Color.fromRGBO(38, 38, 38, 1),
@@ -577,7 +592,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
 
     if (widget.onNext == null && widget.onPrevious == null) {
       buttons.add(Expanded(
-        child: _buildActionButton('Ingresar', widget.onEnter, isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
+        child: _buildActionButton(widget.labelLastButton, widget.onEnter, isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
       ));
       return buttons;
     }
