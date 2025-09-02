@@ -22,6 +22,7 @@ class VideoResponse with _$VideoResponse {
     @JsonKey(name: 'topNumber') int? topNumber,
     @JsonKey(name: 'collection_name') String? collectionName,
     @JsonKey(name: 'categories') String? categories,
+    @JsonKey(name: 'contentId') int? contentId,
   }) = _VideoResponse;
 
   factory VideoResponse.fromJson(Map<String, dynamic> json) => _$VideoResponseFromJson(json);

@@ -13,3 +13,21 @@ class HomeState with _$HomeState {
     GetHomeSectionModel? kids,
   }) = HomeStateLoadedSections;
 }
+
+enum HomeStateStatus {
+  loading,
+  loadingChannels,
+  loadingMovies,
+  loadingSeries,
+  loadingAnimes,
+  loadingDramas,
+  loadingKids,
+  loaded,
+  loadedChannels,
+  loadedMovies,
+  loadedSeries,
+  loadedAnimes,
+  loadedDramas,
+  loadedKids,
+  error,
+}

@@ -15,8 +15,8 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     String search = "";
     on<SearchEvent>((event, emit) async {});
     on<_SearchEventStarted>((event, emit) async {
-      emit(SearchState.loaded(status: SearchStateStatus.initial, videos: [], search: search));
-      add(_SearchEventSearch(search)); //busqueda inicial
+      emit(SearchState.loaded(status: SearchStateStatus.initial, videos: videos, search: search));
+      // add(_SearchEventSearch(search)); //busqueda inicial
     });
     on<_SearchEventSearch>((event, emit) async {
       try {

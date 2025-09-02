@@ -69,7 +69,7 @@ class _CollectionPageState extends State<CollectionPage> {
                         child: Icon(Icons.arrow_back, color: ColorManager.white),
                       ).withPadding(top: AppPadding.p16),
                       Text(
-                        "Collection Page",
+                        state.collectionName,
                         style: Theme.of(context).textTheme.titleLarge,
                       ).withPadding(top: AppPadding.p16),
                       if (state.videos != null)

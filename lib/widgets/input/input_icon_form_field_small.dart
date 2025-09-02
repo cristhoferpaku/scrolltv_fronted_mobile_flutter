@@ -96,14 +96,17 @@ class _TextFormFieldIconSmallState extends State<TextFormFieldIconSmall> {
                             : widget.rightIcon,
                         color: ColorManager.secondary),
                     onPressed: () {
-                      if (widget.rightIconOnEditingComplete != null) {
-                        widget.onEditingComplete!();
-                      }
                       if (widget.isPassword) {
                         setState(() {
                           _isPasswordVisible = !_isPasswordVisible;
                         });
+                        return;
                       }
+                      if (widget.rightIconOnEditingComplete != null) {
+                        widget.onEditingComplete!();
+                        return;
+                      }
+
                       return;
                     },
                   ),
@@ -127,6 +130,13 @@ class _TextFormFieldIconSmallState extends State<TextFormFieldIconSmall> {
             borderRadius: BorderRadius.circular(widget.borderRadius),
             borderSide: BorderSide(
               color: Colors.transparent,
+              width: 1,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderSide: BorderSide(
+              color: ColorManager.error,
               width: 1,
             ),
           ),

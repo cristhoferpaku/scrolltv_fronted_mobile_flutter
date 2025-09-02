@@ -16,6 +16,7 @@ class EpisodeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ContainerFocus(
+      onTap: () {},
       child: Stack(
         children: [
           Container(

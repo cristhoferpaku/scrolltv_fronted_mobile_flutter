@@ -2,19 +2,13 @@ import 'package:flutter/material.dart';
 
 class AppEdgeInsets {
   //Horizontal Margin
-  static const EdgeInsets horizontalMargin48 =
-      EdgeInsets.symmetric(horizontal: AppMargin.m48);
-  static const EdgeInsets horizontalMargin40 =
-      EdgeInsets.symmetric(horizontal: AppMargin.m40);
-  static const EdgeInsets horizontalMargin32 =
-      EdgeInsets.symmetric(horizontal: AppMargin.m32);
-  static const EdgeInsets horizontalMargin24 =
-      EdgeInsets.symmetric(horizontal: AppMargin.m24);
-  static const EdgeInsets horizontalMargin16 =
-      EdgeInsets.symmetric(horizontal: AppMargin.m16);
+  static const EdgeInsets horizontalMargin48 = EdgeInsets.symmetric(horizontal: AppMargin.m48);
+  static const EdgeInsets horizontalMargin40 = EdgeInsets.symmetric(horizontal: AppMargin.m40);
+  static const EdgeInsets horizontalMargin32 = EdgeInsets.symmetric(horizontal: AppMargin.m32);
+  static const EdgeInsets horizontalMargin24 = EdgeInsets.symmetric(horizontal: AppMargin.m24);
+  static const EdgeInsets horizontalMargin16 = EdgeInsets.symmetric(horizontal: AppMargin.m16);
 
-  static const EdgeInsets symetricMarginv8h16 =
-      EdgeInsets.symmetric(horizontal: AppMargin.m16, vertical: AppMargin.m8);
+  static const EdgeInsets symetricMarginv8h16 = EdgeInsets.symmetric(horizontal: AppMargin.m16, vertical: AppMargin.m8);
 
   // All
   static EdgeInsets all(double sized) {
@@ -64,6 +58,7 @@ class AppPadding {
   static const double p48 = 48.0;
   static const double p56 = 56.0;
   static const double p64 = 64.0;
+  static const double p92 = 92.0;
   static const double p120 = 120.0;
   static const double p280 = 280.0;
 }

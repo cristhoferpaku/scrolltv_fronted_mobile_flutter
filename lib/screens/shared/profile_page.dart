@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/components/molecules/blur_background.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/gradient_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/components/molecules/logout_card.dart';
@@ -49,12 +51,22 @@ class _ProfilePageState extends State<ProfilePage> {
         },
         builder: (context, state) {
           if (state is ProfileLoaded) {
-            return Column(
-              spacing: AppPadding.p16,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            return Stack(
               children: [
-                HomeNavbar(),
+                BlurBackground(
+                  top: 0,
+                  left: 0,
+                  width: 300,
+                  height: 300,
+                  offset: Offset(-100, 0),
+                ),
+                BlurBackground(
+                  right: 0,
+                  bottom: 0,
+                  width: 300,
+                  height: 300,
+                  offset: Offset(100, 0),
+                ),
                 Column(
                   spacing: AppPadding.p16.r,
                   children: [
@@ -80,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                   ],
-                ),
+                ).withPadding(top: AppPadding.p16.r),
               ],
             );
           } else {

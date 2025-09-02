@@ -19,3 +19,9 @@ String convertMinsToHoursAndMinutes(int? mins) {
   int minutes = mins % 60;
   return "${hours}h ${minutes.toString().padLeft(2, '0')}min";
 }
+
+String convertIsoDateToLocal(String? isoString) {
+  if (isoString == null) return "";
+  final date = DateTime.parse(isoString).toLocal();
+  return DateFormat('dd/MM/yyyy').format(date);
+}

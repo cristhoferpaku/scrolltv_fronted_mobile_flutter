@@ -3,7 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_tab_bar.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/search/search_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
@@ -17,12 +20,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final HomeBloc homeBloc = instance<HomeBloc>();
+  final ProfileBloc profileBloc = instance<ProfileBloc>();
+  final SearchBloc searchBloc = instance<SearchBloc>();
 
   int _currentIndex = 0;
 
   @override
   void initState() {
     homeBloc.add(HomeEvent.started());
+    profileBloc.add(ProfileEvent.started());
+    searchBloc.add(SearchEvent.search(""));
     super.initState();
   }
 
@@ -82,7 +89,7 @@ class _HomePageState extends State<HomePage> {
           index: _currentIndex,
           children: [
             HomeTabBar(),
-            // LiveTab(),
+            LiveTvDetail(),
             ProfilePage(),
           ],
         ),

@@ -41,16 +41,29 @@ android {
     }
     flavorDimensions = ["platform"]
     productFlavors {
-        mobile {
+        moviehomeMobile {
             dimension = "platform"
-            applicationIdSuffix = ".mobile"
-            versionNameSuffix = "-mobile"
+            applicationIdSuffix = ".mobile.moviehome"
+            versionNameSuffix = "-mobile-moviehome"
+            resValue "string", "app_name", "MovieHome App"
         }
-        tv {
+        scrolltvMobile {
             dimension = "platform"
-            applicationIdSuffix = ".tv"
-            versionNameSuffix = "-tv"
-            buildConfigField "boolean", "IS_TV", "true"
+            applicationIdSuffix = ".mobile.scrolltv"
+            versionNameSuffix = "-mobile-scrolltv"
+            resValue "string", "app_name", "ScrollTV App"
+        }
+        moviehomeTv {
+            dimension = "platform"
+            applicationIdSuffix = ".tv.moviehome"
+            versionNameSuffix = "-tv-moviehome"
+            resValue "string", "app_name", "MovieHome Tv"
+        }
+        scrolltvTv {
+            dimension = "platform"
+            applicationIdSuffix = ".tv.scrolltv"
+            versionNameSuffix = "-tv-scrolltv"
+            resValue "string", "app_name", "ScrollTV Tv"
         }
     }
 }

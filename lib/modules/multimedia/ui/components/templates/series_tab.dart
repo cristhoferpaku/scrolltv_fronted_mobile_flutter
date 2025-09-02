@@ -6,9 +6,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entit
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/scroll_to_top_on_up.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/collection_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/top_card_list.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/types/home_state_status.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/home_skeleton.dart';
@@ -47,7 +45,7 @@ class _SeriesTabState extends State<SeriesTab> {
           listener: (context, state) {},
           builder: (context, state) {
             if (state is HomeStateLoadedSections) {
-              if (state.status == HomeStateStatus.loading) {
+              if (state.status == HomeStateStatus.loadingSeries) {
                 return HomeSkeleton();
               }
               return Column(
@@ -61,13 +59,6 @@ class _SeriesTabState extends State<SeriesTab> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           TopCardList(videos: state.series?.top10 ?? []),
-                          SectionCardList(
-                            title: "Recién llegadas",
-                            hasBlurLeft: true,
-                            hasBlurRight: true,
-                            videos: state.series?.recentContent ?? [],
-                            id: 0,
-                          ),
                           CollectionList(collection: state.series?.collectionsContent ?? []),
                         ],
                       ).withPadding(all: AppPadding.p16),

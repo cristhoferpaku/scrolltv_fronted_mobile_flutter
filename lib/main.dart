@@ -9,6 +9,11 @@ void main() async {
 
   final userRepo = instance<UserRepository>();
 
+  const bool isTv = bool.fromEnvironment('IS_TV', defaultValue: false);
+  const String variant = String.fromEnvironment('VARIANT', defaultValue: 'not_set');
+  print("isTv: $isTv");
+  print("variant: $variant");
+
   runApp(MyApp(
     logUser: await userRepo.isUserLogged(),
   ));

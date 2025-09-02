@@ -25,7 +25,7 @@ class VideoDetailsBloc extends Bloc<VideoDetailsEvent, VideoDetailsState> {
     });
     on<VideoDetailsEventGetVideoById>((event, emit) async {
       emit(VideoDetailsState.loaded(status: VideoDetailsStateStatus.loadingVideo, videoContent: videoContent, homeSectionData: homeSectionData));
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(microseconds: 300));
       final response = await multimediaUseCase.getVideoContentById(event.videoId);
       if (response.success) {
         videoContent = response.data;

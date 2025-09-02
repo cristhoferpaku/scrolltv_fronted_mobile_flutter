@@ -4,10 +4,11 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/entities/login_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 
+part 'login_bloc.freezed.dart';
 part 'login_event.dart';
 part 'login_state.dart';
-part 'login_bloc.freezed.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc() : super(_Initial()) {
@@ -16,8 +17,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginEventLogin>((event, emit) async {
       emit(LoginState.loading());
       try {
-        final user =
-            LoginModel(username: event.username, password: event.password);
+        final deviceId = await PlatformUtils().getDeviceId();
+        final platformId = PlatformUtils.getPlatformId();
+
+        final user = LoginModel(username: event.username, password: event.password, deviceId: deviceId, platformId: platformId);
 
         final response = await authUseCase.login(user);
 

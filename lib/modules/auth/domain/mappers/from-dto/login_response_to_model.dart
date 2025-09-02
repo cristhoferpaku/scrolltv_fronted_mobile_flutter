@@ -5,5 +5,7 @@ LoginModel loginResponseToModel(LoginResponse loginResponse) {
   return LoginModel(
     username: loginResponse.username ?? "",
     password: loginResponse.password ?? "",
+    deviceId: "",
+    platformId: 0,
   );
 }

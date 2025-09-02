@@ -22,7 +22,6 @@ class CollectionBloc extends Bloc<CollectionEvent, CollectionState> {
     });
     on<_CollectionEventGetCollection>((event, emit) async {
       emit(CollectionState.loaded(status: CollectionStateStatus.loading, collectionName: collectionName, videos: videos));
-      await Future.delayed(const Duration(seconds: 3));
       try {
         final collectionResult = await multimediaUseCase.getVideosByCollectionId(collectionId);
         videos = collectionResult.data;

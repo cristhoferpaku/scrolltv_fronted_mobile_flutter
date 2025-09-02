@@ -4,7 +4,7 @@ import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 
 VideoModel videoResponseToModel(VideoResponse response) {
   return VideoModel(
-    id: response.id,
+    id: response.contentId ?? response.id,
     title: response.title,
     description: response.description,
     coverImage: response.coverImage,
