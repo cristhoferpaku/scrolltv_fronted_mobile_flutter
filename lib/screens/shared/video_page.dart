@@ -544,7 +544,7 @@ class _VideoPageState extends State<VideoPage> {
                           
                           // Control Buttons
                           Row(
-                            mainAxisAlignment: isTV ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: isTV ? MainAxisAlignment.start : MainAxisAlignment.spaceEvenly,
                             children: [
                               Container(
                                 margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
@@ -583,7 +583,6 @@ class _VideoPageState extends State<VideoPage> {
                                     size: isTV ? 40 : 32),
                                   onPressed: () {
                                     _showAudioPanel();
-                                    _controlsManager?.resetTimer();
                                   },
                                 ),
                               ),
@@ -603,7 +602,6 @@ class _VideoPageState extends State<VideoPage> {
                                     size: isTV ? 40 : 32),
                                   onPressed: () {
                                     _showSubtitlePanel();
-                                    _controlsManager?.resetTimer();
                                   },
                                 ),
                               ),
@@ -623,7 +621,6 @@ class _VideoPageState extends State<VideoPage> {
                                     size: isTV ? 40 : 32),
                                   onPressed: () {
                                     _showQualityPanel();
-                                    _controlsManager?.resetTimer();
                                   },
                                 ),
                               ),
@@ -690,9 +687,17 @@ class _VideoPageState extends State<VideoPage> {
                 isVisible: showQualityPanel,
                 currentValue: _videoManager?.currentQualityIndex.toString() ?? '0',
                 options: _getQualityOptions(),
-                onValueChanged: (String index) {
+                onValueChanged: (String index) async {
                   final selectedIndex = int.tryParse(index) ?? 0;
-                  _videoManager?.changeQualityLevel(selectedIndex);
+                  final qualityLevels = _videoManager?.qualityLevels ?? [];
+                  
+                  // Don't change quality if there are no real quality options
+                  if (qualityLevels.isEmpty) {
+                    print('No quality levels available to change');
+                    return;
+                  }
+                  
+                  await _videoManager?.changeQualityLevel(selectedIndex);
                 },
                 onClose: _hideQualityPanel,
               ),
