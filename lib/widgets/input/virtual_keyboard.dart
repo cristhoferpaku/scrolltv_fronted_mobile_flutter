@@ -744,17 +744,19 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       setState(() {
         _isShiftPressed = !_isShiftPressed;
       });
-    } else if (key == '-') {
-      widget.onBackspace();
+    }
+    //  else if (key == '-') {
+    //   widget.onBackspace();
 
-      // Ignorar navegación automática temporalmente
-      _ignoreNavigation = true;
-      Future.delayed(const Duration(milliseconds: 200), () {
-        if (mounted) {
-          _ignoreNavigation = false;
-        }
-      });
-    } else {
+    //   // Ignorar navegación automática temporalmente
+    //   _ignoreNavigation = true;
+    //   Future.delayed(const Duration(milliseconds: 200), () {
+    //     if (mounted) {
+    //       _ignoreNavigation = false;
+    //     }
+    //   });
+    // }
+    else {
       String actualKey = _isShiftPressed && key.length == 1 ? key.toUpperCase() : key;
       widget.onKeyPressed(actualKey);
       if (_isShiftPressed) {

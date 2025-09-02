@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/entities/user_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/inbound/user_use_case.dart';
 
@@ -12,6 +13,7 @@ part 'profile_state.dart';
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final UserRepository _userRepository = instance<UserRepository>();
   final UserUseCase _userUseCase = instance<UserUseCase>();
+  final AuthUseCase _authUseCase = instance<AuthUseCase>();
 
   UserModel? user;
   String? firstLetterUsername;
@@ -34,8 +36,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       }
     });
     on<_ProfileEventLogout>((event, emit) async {
-      await _userRepository.logoutUser();
-      emit(ProfileState.loaded(status: ProfileStatus.logoutSuccess, user: user, firstLetterUsername: firstLetterUsername));
+      try {
+        await _authUseCase.logout();
+        await _userRepository.logoutUser();
+        emit(ProfileState.loaded(status: ProfileStatus.logoutSuccess, user: user, firstLetterUsername: firstLetterUsername));
+      } catch (e) {
+        emit(ProfileState.loaded(status: ProfileStatus.error, user: user, firstLetterUsername: firstLetterUsername));
+      }
     });
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/cast_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/cast_card.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/no_content_box.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 
 class CastCardList extends StatelessWidget {
@@ -20,18 +21,7 @@ class CastCardList extends StatelessWidget {
       children: [
         Text("Reparto", style: Theme.of(context).textTheme.titleLarge),
         if (casts.isEmpty)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              spacing: AppPadding.p24.r,
-              children: [
-                ...List.generate(
-                  5,
-                  (index) => CastCard(cast: CastModel(id: index, name: "Cast $index", image: "", role: "")),
-                ),
-              ],
-            ),
-          )
+          NoContentBox()
         else
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,

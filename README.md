@@ -189,3 +189,18 @@ scrolltv
 flutter pub run flutter_native_splash:create --path=flutter_native_splash_scroll_tv.yaml
 
 ```
+
+### Comandos de iconos:
+
+moviehome
+
+```bash
+dart run flutter_launcher_icons -f flutter_launcher_icons_movie_home.yaml
+```
+
+scrolltv
+
+```bash
+dart run flutter_launcher_icons -f flutter_launcher_icons_scroll_tv.yaml
+
+```

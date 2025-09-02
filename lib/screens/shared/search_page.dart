@@ -229,6 +229,7 @@ class SearchInput extends StatelessWidget {
               showHeaderIndicator: false,
               focusNode: _keyboardFocus,
               onKeyPressed: (String key) {
+                print(key);
                 _searchController.text += key;
               },
               onBackspace: () {

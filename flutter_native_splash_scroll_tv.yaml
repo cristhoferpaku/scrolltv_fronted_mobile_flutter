@@ -1,4 +1,9 @@
 flutter_native_splash:
-  color: "#ffffff"
-  image: assets/images/img_logo_scroll_tv.png
+  color: "#0F1312"
+  image: assets/images/img_icon_splash_scroll_tv.png
   android: true
+
+  android_12:
+    image: assets/images/img_icon_splash_scroll_tv.png
+    icon_background_color: "#0F1312" # evita el círculo blanco en Android 12+
+    color: "#0F1312"

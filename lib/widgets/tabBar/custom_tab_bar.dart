@@ -48,7 +48,7 @@ class _CustomTabBarState extends State<CustomTabBar> with SingleTickerProviderSt
     _focusNodes = List.generate(widget.items.length, (_) => FocusNode());
   }
 
-  int lastItemWithFocus = -1;
+  int lastItemWithFocus = 0;
 
   @override
   Widget build(BuildContext context) {

@@ -9,6 +9,7 @@ abstract class UserRepository {
   Future<bool> isUserLogged();
   Future<String> getUserEmail();
   Future<String> getUserName();
+  Future<String?> getDeviceId();
   Future<void> logoutUser();
   Future<void> saveToken(String token);
   Future<void> saveTokenRefresh(String refreshToken);
@@ -16,6 +17,7 @@ abstract class UserRepository {
   Future<String> getTokenRefresh();
   Future<String> getUserId();
   Future<void> saveUserId(String userId);
+  Future<void> saveDeviceId(String deviceId);
 }
 
 class UserRepositoryImpl extends UserRepository {
@@ -25,7 +27,7 @@ class UserRepositoryImpl extends UserRepository {
   final keyUserToken = 'SP_KEY_TOKEN_USER';
   final keyUserTokenRefresh = 'SP_KEY_TOKEN_REFRESH_USER';
   final keyUserId = 'SP_KEY_USER_ID';
-
+  final keyDeviceId = 'SP_KEY_DEVICE_ID';
 
   static final UserRepositoryImpl _singleton = UserRepositoryImpl._internal();
 
@@ -43,17 +45,13 @@ class UserRepositoryImpl extends UserRepository {
   }
 
   @override
-  Future<void> saveUser(
-      String userEmail, String userName, String userAvatar) async {
+  Future<void> saveUser(String userEmail, String userName, String userAvatar) async {
     WidgetsFlutterBinding.ensureInitialized();
     var prefs = await SharedPreferences.getInstance();
     await prefs.setBool(keyUserIsLogged, true);
     await prefs.setString(keyUserEmail, userEmail);
     await prefs.setString(keyUserName, userName);
   }
-
-
-
 
   @override
   Future<void> saveToken(String token) async {
@@ -97,7 +95,6 @@ class UserRepositoryImpl extends UserRepository {
     return prefs.getString(keyUserName) ?? '';
   }
 
-
   @override
   Future<bool> isUserLogged() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -105,24 +102,33 @@ class UserRepositoryImpl extends UserRepository {
     return prefs.getBool(keyUserIsLogged) ?? false;
   }
 
- 
   @override
   Future<void> logoutUser() async {
     var prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
-  
+
   @override
   Future<String> getUserId() async {
     var prefs = await SharedPreferences.getInstance();
     return prefs.getString(keyUserId) ?? '';
   }
-  
+
+  @override
+  Future<String> getDeviceId() async {
+    var prefs = await SharedPreferences.getInstance();
+    return prefs.getString(keyDeviceId) ?? '';
+  }
+
   @override
   Future<void> saveUserId(String userId) async {
     var prefs = await SharedPreferences.getInstance();
     await prefs.setString(keyUserId, userId);
   }
 
-
+  @override
+  Future<void> saveDeviceId(String deviceId) async {
+    var prefs = await SharedPreferences.getInstance();
+    await prefs.setString(keyDeviceId, deviceId);
+  }
 }

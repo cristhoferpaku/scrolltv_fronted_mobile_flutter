@@ -3,8 +3,9 @@ import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_reposi
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/entities/auth_user_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/entities/login_model.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/outbound/auth_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/outbound/auth_repository.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 
 class AuthUseCaseImpl implements AuthUseCase {
   final UserRepository _userRepository = instance<UserRepository>();
@@ -21,8 +22,16 @@ class AuthUseCaseImpl implements AuthUseCase {
         _userRepository.saveToken(accessToken);
         _userRepository.saveUser("", response.data.user?.username ?? "", "");
         _userRepository.saveUserId(response.data.user?.id?.toString() ?? "");
+        final deviceId = await PlatformUtils().getDeviceId();
+        _userRepository.saveDeviceId(deviceId);
       }
     }
     return response;
+  }
+
+  @override
+  Future<void> logout() async {
+    final deviceId = await _userRepository.getDeviceId() ?? "";
+    await _authRepositoryPort.logout(deviceId);
   }
 }

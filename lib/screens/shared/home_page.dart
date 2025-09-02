@@ -9,6 +9,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   final HomeBloc homeBloc = instance<HomeBloc>();
   final ProfileBloc profileBloc = instance<ProfileBloc>();
   final SearchBloc searchBloc = instance<SearchBloc>();
+  final bool isScrollTV = PlatformUtils.isScrollTV;
 
   int _currentIndex = 0;
 
@@ -29,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     homeBloc.add(HomeEvent.started());
     profileBloc.add(ProfileEvent.started());
-    searchBloc.add(SearchEvent.search(""));
+    searchBloc.add(SearchEvent.getInitialVideos());
     super.initState();
   }
 
@@ -71,11 +73,12 @@ class _HomePageState extends State<HomePage> {
                 icon: Icon(Icons.home),
                 label: 'Home',
               ),
-              BottomNavigationBarItem(
-                activeIcon: SvgPicture.asset(ImageAssets.iconLive, color: ColorManager.primary),
-                icon: SvgPicture.asset(ImageAssets.iconLive),
-                label: 'Search',
-              ),
+              if (isScrollTV)
+                BottomNavigationBarItem(
+                  activeIcon: SvgPicture.asset(ImageAssets.iconLive, color: ColorManager.primary),
+                  icon: SvgPicture.asset(ImageAssets.iconLive),
+                  label: 'Search',
+                ),
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.person,
@@ -89,7 +92,7 @@ class _HomePageState extends State<HomePage> {
           index: _currentIndex,
           children: [
             HomeTabBar(),
-            LiveTvDetail(),
+            if (isScrollTV) LiveTvDetail(),
             ProfilePage(),
           ],
         ),

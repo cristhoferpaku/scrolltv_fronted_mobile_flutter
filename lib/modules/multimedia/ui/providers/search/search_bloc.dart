@@ -12,11 +12,15 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   SearchBloc() : super(_Initial()) {
     final MultimediaUseCase multimediaUseCase = instance<MultimediaUseCase>();
     List<VideoModel>? videos;
+    List<VideoModel>? initialVideos;
     String search = "";
     on<SearchEvent>((event, emit) async {});
     on<_SearchEventStarted>((event, emit) async {
-      emit(SearchState.loaded(status: SearchStateStatus.initial, videos: videos, search: search));
-      // add(_SearchEventSearch(search)); //busqueda inicial
+      add(_SearchEventClear()); //busqueda inicial
+    });
+    on<_SearchEventClear>((event, emit) async {
+      search = "";
+      emit(SearchState.loaded(status: SearchStateStatus.initial, videos: initialVideos, search: search));
     });
     on<_SearchEventSearch>((event, emit) async {
       try {
@@ -25,6 +29,19 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         search = event.search;
         if (response.success) {
           videos = response.data;
+          emit(SearchState.loaded(status: SearchStateStatus.loadedVideos, videos: videos, search: search));
+        }
+      } catch (e) {
+        emit(SearchState.loaded(status: SearchStateStatus.error, videos: videos, search: search));
+      }
+    });
+    on<_SearchEventGetInitialVideos>((event, emit) async {
+      try {
+        emit(SearchState.loaded(status: SearchStateStatus.loadingVideos, videos: videos, search: search));
+        final response = await multimediaUseCase.getVideosBySearch("a");
+        if (response.success) {
+          videos = response.data;
+          initialVideos = response.data;
           emit(SearchState.loaded(status: SearchStateStatus.loadedVideos, videos: videos, search: search));
         }
       } catch (e) {

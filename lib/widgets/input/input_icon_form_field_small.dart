@@ -140,6 +140,13 @@ class _TextFormFieldIconSmallState extends State<TextFormFieldIconSmall> {
               width: 1,
             ),
           ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderSide: BorderSide(
+              color: ColorManager.error,
+              width: 1,
+            ),
+          ),
         ),
       )
     ]);
