@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
-import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/dtos/response/auth_user_response.dart';
@@ -85,12 +84,8 @@ class AuthApiRepository implements AuthRepositoryPort {
     final httpService = await dio;
 
     final logoutRequest = logoutToLogoutRequest(deviceId);
-    UserRepository userRepository = instance<UserRepository>();
-    final token = await userRepository.getToken();
-    LoggerManager.log.e(token);
-    print(token);
     try {
-      final response = await httpService.request(url: "$baseApiUrl/logout-mobile", method: Method.post, data: {"device_id": "token"});
+      final response = await httpService.request(url: "$baseApiUrl/logout-mobile", method: Method.post, data: logoutRequest);
       LoggerManager.log.e(response);
 
       if (response.data != null) {

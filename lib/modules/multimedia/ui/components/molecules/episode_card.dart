@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
@@ -16,7 +18,9 @@ class EpisodeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ContainerFocus(
-      onTap: () {},
+      onTap: () {
+        Navigator.pushNamed(context, Routes.videoRoute, arguments: VideoPageArguments(videoId: episode.episodeId ?? 0, videoUrl: episode.videoUrl ?? ""));
+      },
       child: Stack(
         children: [
           Container(

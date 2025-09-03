@@ -67,7 +67,7 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ProfilePage());
 
       case Routes.videoRoute:
-        return MaterialPageRoute(builder: (_) => const VideoPage());
+        return MaterialPageRoute(builder: (_) => const VideoPage(), settings: RouteSettings(name: Routes.videoRoute, arguments: routeSettings.arguments));
 
       case Routes.videoDetailsRoute:
         return MaterialPageRoute(builder: (_) => const VideoDetailsPage(), settings: RouteSettings(name: Routes.videoDetailsRoute, arguments: routeSettings.arguments));

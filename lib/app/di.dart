@@ -21,6 +21,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/user/application/use_ca
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/inbound/user_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/outbound/user_repository_port.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/infrastructure/repositories/user_api_repository.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/bloc/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
 
@@ -37,6 +38,7 @@ Future<void> initAppModule() async {
   initVideoDetailsDependencies();
   initCollectionDependencies();
   initSearchDependencies();
+  initVideoDependencies();
 }
 
 initAuthDependencies() {
@@ -72,6 +74,10 @@ initCollectionDependencies() {
 
 initSearchDependencies() {
   initSearchModule();
+}
+
+initVideoDependencies() {
+  initVideoPlayerModule();
 }
 
 Future<void> listAppModule() async {
@@ -131,6 +137,12 @@ initCollectionModule() {
 initSearchModule() {
   if (!GetIt.I.isRegistered<SearchBloc>()) {
     instance.registerLazySingleton<SearchBloc>(() => SearchBloc());
+  }
+}
+
+initVideoPlayerModule() {
+  if (!GetIt.I.isRegistered<VideoPlayerBloc>()) {
+    instance.registerLazySingleton<VideoPlayerBloc>(() => VideoPlayerBloc());
   }
 }
 
