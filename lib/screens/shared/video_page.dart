@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/video_controller_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/video_controls_manager.dart';
@@ -13,11 +14,22 @@ class VideoPage extends StatefulWidget {
   State<VideoPage> createState() => _VideoPageState();
 }
 
+class VideoPageWrapper extends StatelessWidget {
+  const VideoPageWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const VideoPage();
+  }
+}
+
 class _VideoPageState extends State<VideoPage> {
+  String videoUrl = '';
+  int videoId = 0;
   final bool isTV = PlatformUtils.isTV;
   String deviceId = "";
-  VideoControllerManager? _videoManager;
   VideoControlsManager? _controlsManager;
+  VideoControllerManager? _videoControllerManager;
   bool showSubtitlePanel = false;
   bool showAudioPanel = false;
   bool showQualityPanel = false;
@@ -43,6 +55,26 @@ class _VideoPageState extends State<VideoPage> {
   @override
   void initState() {
     super.initState();
+    _videoControllerManager = VideoControllerManager();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)!.settings.arguments as VideoPageArguments;
+      videoUrl = args.videoUrl;
+      videoId = args.videoId;
+
+      // Inicializar el video player con VideoControllerManager
+      _videoControllerManager!.initializePlayer(
+        'https://scroll-tv-movie-home-cdn.b-cdn.net/Pantera%20Negra.mp4',
+        onStateChanged: () {
+          if (mounted) {
+            setState(() {});
+          }
+        },
+      );
+
+      _focusNode.requestFocus();
+    });
+
     if (!isTV) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
@@ -56,25 +88,11 @@ class _VideoPageState extends State<VideoPage> {
       });
     });
 
-    _initializeManagers();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
+    _initializeControlsManager();
   }
 
-  void _initializeManagers() {
-    _videoManager = VideoControllerManager();
+  void _initializeControlsManager() {
     _controlsManager = VideoControlsManager();
-
-    _videoManager?.initializePlayer(
-      'https://vz-62f65928-e3c.b-cdn.net/e924310a-57e3-44e2-ba63-3caf67ba0a36/playlist.m3u8',
-      onStateChanged: () {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-    );
 
     _controlsManager?.initialize(
       onControlsChanged: () {
@@ -87,7 +105,7 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   void dispose() {
-    _videoManager?.dispose();
+    _videoControllerManager?.dispose();
     _controlsManager?.dispose();
     _focusNode.dispose();
     if (!isTV) {
@@ -143,51 +161,78 @@ class _VideoPageState extends State<VideoPage> {
 
   // Helper methods to get dynamic options
   List<Map<String, String>> _getSubtitleOptions() {
-    final subtitleTracks = _videoManager?.subtitleTracks ?? [];
-
-    if (subtitleTracks.isEmpty) {
-      return [
-        {'label': 'No hay más subtítulos por el momento.', 'value': '0'}
-      ];
+    if (_videoControllerManager?.subtitleTracks.isNotEmpty == true) {
+      return _videoControllerManager!.subtitleTracks.asMap().entries.map((entry) {
+        final index = entry.key;
+        final track = entry.value;
+        return {'label': track['name'] ?? 'Subtítulo ${index + 1}', 'value': index.toString()};
+      }).toList();
     }
 
-    return subtitleTracks.asMap().entries.map((entry) {
-      final index = entry.key;
-      final track = entry.value;
-      return {'label': track['name'] ?? 'Subtítulo ${index + 1}', 'value': index.toString()};
-    }).toList();
+    return [
+      {'label': 'No hay más subtítulos por el momento.', 'value': '0'}
+    ];
   }
 
   List<Map<String, String>> _getAudioOptions() {
-    final audioTracks = _videoManager?.audioTracks ?? [];
-
-    if (audioTracks.isEmpty) {
-      return [
-        {'label': 'No hay más audio por el momento.', 'value': '0'}
-      ];
+    if (_videoControllerManager?.audioTracks.isNotEmpty == true) {
+      return _videoControllerManager!.audioTracks.asMap().entries.map((entry) {
+        final index = entry.key;
+        final track = entry.value;
+        return {'label': track['name'] ?? 'Audio ${index + 1}', 'value': index.toString()};
+      }).toList();
     }
 
-    return audioTracks.asMap().entries.map((entry) {
-      final index = entry.key;
-      final track = entry.value;
-      return {'label': track['name'] ?? 'Audio ${index + 1}', 'value': index.toString()};
-    }).toList();
+    return [
+      {'label': 'No hay más audio por el momento.', 'value': '0'}
+    ];
   }
 
   List<Map<String, String>> _getQualityOptions() {
-    final qualityLevels = _videoManager?.qualityLevels ?? [];
+    // Solo mostrar opción automática - funcionalidad de calidad eliminada
+    return [
+      {'label': 'Automática', 'value': '0'}
+    ];
+  }
 
-    if (qualityLevels.isEmpty) {
-      return [
-        {'label': 'No hay más calidad por el momento.', 'value': '0'}
-      ];
+  Widget _buildVideoPlayer() {
+    if (_videoControllerManager?.controller != null) {
+      return Center(
+        child: VlcPlayer(
+          controller: _videoControllerManager!.controller!,
+          aspectRatio: 16 / 9,
+          placeholder: Container(
+            color: Colors.black,
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        color: Colors.black,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.white,
+          ),
+        ),
+      );
     }
+  }
 
-    return qualityLevels.asMap().entries.map((entry) {
-      final index = entry.key;
-      final level = entry.value;
-      return {'label': level['name'] ?? 'Calidad ${index + 1}', 'value': index.toString()};
-    }).toList();
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+
+    if (duration.inHours > 0) {
+      return '${duration.inHours}:$twoDigitMinutes:$twoDigitSeconds';
+    } else {
+      return '$twoDigitMinutes:$twoDigitSeconds';
+    }
   }
 
   // Método para delegar eventos de teclado a los paneles activos
@@ -218,10 +263,7 @@ class _VideoPageState extends State<VideoPage> {
               _controlsManager?.show();
             } else if (_isSliderFocused) {
               // Control del slider: +10 segundos
-              final currentPos = _videoManager?.currentPosition ?? Duration.zero;
-              final newPos = currentPos + Duration(seconds: 10);
-              final maxPos = _videoManager?.totalDuration ?? Duration.zero;
-              _videoManager?.seekTo(newPos > maxPos ? maxPos : newPos);
+              _videoControllerManager?.skipForward(10);
               _controlsManager?.resetTimer();
             } else {
               // Navegar a la derecha entre controles
@@ -245,9 +287,7 @@ class _VideoPageState extends State<VideoPage> {
               _hideQualityPanel();
             } else if (_controlsManager!.showControls && _isSliderFocused) {
               // Control del slider: -10 segundos
-              final currentPos = _videoManager?.currentPosition ?? Duration.zero;
-              final newPos = currentPos - Duration(seconds: 10);
-              _videoManager?.seekTo(newPos < Duration.zero ? Duration.zero : newPos);
+              _videoControllerManager?.skipBackward(10);
               _controlsManager?.resetTimer();
             } else if (_controlsManager!.showControls) {
               // Navegar a la izquierda entre controles
@@ -324,12 +364,12 @@ class _VideoPageState extends State<VideoPage> {
               // Activar el elemento con focus
               switch (_currentFocusIndex) {
                 case 0: // Play/Pause
-                  _videoManager?.togglePlayPause();
+                  _videoControllerManager?.togglePlayPause();
                   break;
                 case 1: // Slider - no hacer nada en select
                   break;
                 case 2: // Restart
-                  _videoManager?.restart();
+                  _videoControllerManager?.restart();
                   break;
                 case 3: // Audio
                   _showAudioPanel();
@@ -347,7 +387,7 @@ class _VideoPageState extends State<VideoPage> {
           break;
         case LogicalKeyboardKey.space:
           // Play/Pause para ambas plataformas
-          _videoManager?.togglePlayPause();
+          _videoControllerManager?.togglePlayPause();
           _controlsManager?.resetTimer();
           break;
         case LogicalKeyboardKey.escape:
@@ -374,30 +414,7 @@ class _VideoPageState extends State<VideoPage> {
         child: Stack(
           children: [
             // Video Player
-            if (_videoManager?.controller != null)
-              Center(
-                child: VlcPlayer(
-                  controller: _videoManager!.controller!,
-                  aspectRatio: 16 / 9,
-                  placeholder: Container(
-                    color: Colors.black,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            else
-              Container(
-                color: Colors.black,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+            _buildVideoPlayer(),
 
             // Controls Overlay
             if (_controlsManager?.showControls == true)
@@ -460,12 +477,12 @@ class _VideoPageState extends State<VideoPage> {
                                     ),
                                     child: IconButton(
                                       icon: Icon(
-                                        _videoManager?.hasEnded == true ? Icons.replay : (_videoManager?.isPlaying == true ? Icons.pause : Icons.play_arrow),
+                                        _videoControllerManager?.hasEnded == true ? Icons.replay : (_videoControllerManager?.isPlaying == true ? Icons.pause : Icons.play_arrow),
                                         color: Colors.white,
                                         size: isTV ? 48 : 32,
                                       ),
                                       onPressed: () async {
-                                        await _videoManager?.togglePlayPause();
+                                        _videoControllerManager?.togglePlayPause();
                                         _controlsManager?.resetTimer();
                                       },
                                     ),
@@ -473,7 +490,7 @@ class _VideoPageState extends State<VideoPage> {
                                   SizedBox(width: isTV ? 24 : 16),
                                   // Times
                                   Text(
-                                    '${_videoManager?.formatDuration(_videoManager?.currentPosition ?? Duration.zero) ?? '0:00'} / ${_videoManager?.formatDuration(_videoManager?.totalDuration ?? Duration.zero) ?? '0:00'}',
+                                    '${_formatDuration(_videoControllerManager?.currentPosition ?? Duration.zero)} / ${_formatDuration(_videoControllerManager?.totalDuration ?? Duration.zero)}',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: isTV ? 18 : 14,
@@ -509,15 +526,15 @@ class _VideoPageState extends State<VideoPage> {
                                     ),
                                   ),
                                   child: Slider(
-                                    value: (_videoManager?.totalDuration.inMilliseconds ?? 0) > 0
-                                        ? (_videoManager?.currentPosition.inMilliseconds ?? 0) / (_videoManager?.totalDuration.inMilliseconds ?? 1)
+                                    value: (_videoControllerManager?.totalDuration.inMilliseconds ?? 0) > 0
+                                        ? (_videoControllerManager?.currentPosition.inMilliseconds ?? 0) / (_videoControllerManager?.totalDuration.inMilliseconds ?? 1)
                                         : 0.0,
                                     onChanged: (value) {
-                                      if (_videoManager?.controller != null && (_videoManager?.totalDuration.inMilliseconds ?? 0) > 0) {
+                                      if ((_videoControllerManager?.totalDuration.inMilliseconds ?? 0) > 0) {
                                         final position = Duration(
-                                          milliseconds: (value * (_videoManager?.totalDuration.inMilliseconds ?? 0)).round(),
+                                          milliseconds: (value * (_videoControllerManager?.totalDuration.inMilliseconds ?? 0)).round(),
                                         );
-                                        _videoManager?.seekTo(position);
+                                        _videoControllerManager?.seekTo(position);
                                         _controlsManager?.resetTimer();
                                       }
                                     },
@@ -550,7 +567,7 @@ class _VideoPageState extends State<VideoPage> {
                                     child: IconButton(
                                       icon: Icon(Icons.replay, color: Colors.white, size: isTV ? 40 : 32),
                                       onPressed: () async {
-                                        await _videoManager?.restart();
+                                        _videoControllerManager?.restart();
                                         _controlsManager?.resetTimer();
                                       },
                                     ),
@@ -652,11 +669,11 @@ class _VideoPageState extends State<VideoPage> {
                 key: _subtitlePanelKey,
                 title: 'Subtítulos',
                 isVisible: showSubtitlePanel,
-                currentValue: _videoManager?.currentSubtitleIndex.toString() ?? '0',
+                currentValue: '0', // TODO: Implement current subtitle index getter
                 options: _getSubtitleOptions(),
                 onValueChanged: (String index) {
                   final selectedIndex = int.tryParse(index) ?? 0;
-                  _videoManager?.changeSubtitleTrack(selectedIndex);
+                  _videoControllerManager?.changeSubtitleTrack(selectedIndex);
                 },
                 onClose: _hideSubtitlePanel,
               ),
@@ -667,34 +684,25 @@ class _VideoPageState extends State<VideoPage> {
                 key: _audioPanelKey,
                 title: 'Audio',
                 isVisible: showAudioPanel,
-                currentValue: _videoManager?.currentAudioIndex.toString() ?? '0',
+                currentValue: '0', // TODO: Implement current audio index getter
                 options: _getAudioOptions(),
                 onValueChanged: (String index) {
                   final selectedIndex = int.tryParse(index) ?? 0;
-                  _videoManager?.changeAudioTrack(selectedIndex);
+                  _videoControllerManager?.changeAudioTrack(selectedIndex);
                 },
                 onClose: _hideAudioPanel,
               ),
 
-            // Quality Panel
+            // Quality Panel - Solo muestra opción automática
             if (showQualityPanel)
               OptionPanel(
                 key: _qualityPanelKey,
                 title: 'Calidad',
                 isVisible: showQualityPanel,
-                currentValue: _videoManager?.currentQualityIndex.toString() ?? '0',
+                currentValue: '0', // Siempre automática
                 options: _getQualityOptions(),
-                onValueChanged: (String index) async {
-                  final selectedIndex = int.tryParse(index) ?? 0;
-                  final qualityLevels = _videoManager?.qualityLevels ?? [];
-
-                  // Don't change quality if there are no real quality options
-                  if (qualityLevels.isEmpty) {
-                    print('No quality levels available to change');
-                    return;
-                  }
-
-                  await _videoManager?.changeQualityLevel(selectedIndex);
+                onValueChanged: (String index) {
+                  // No hacer nada - solo hay opción automática
                 },
                 onClose: _hideQualityPanel,
               ),

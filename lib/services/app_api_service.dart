@@ -1,13 +1,14 @@
 import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_store.dart';
+//import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
-//import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
-import 'package:path_provider/path_provider.dart';
 
 enum Method { post, get, put, delete, patch }
 
@@ -26,8 +27,7 @@ class HttpDioService {
 
   Future<HttpDioService> init() async {
     cachedirname = await getTemporaryDirectory();
-    var cacheStore = HiveCacheStore(cachedirname?.path,
-        hiveBoxName: '${Env.projectName}-hive');
+    var cacheStore = HiveCacheStore(cachedirname?.path, hiveBoxName: '${Env.projectName}-hive');
 
     final optionsCache = CacheOptions(
         store: cacheStore,
@@ -56,6 +56,7 @@ class HttpDioService {
 
             var currentToken = await getCurrentTokenUser();
             if (currentToken.isNotEmpty) {
+              print('currentToken: $currentToken');
               requestOptions.headers['Authorization'] = 'Bearer $currentToken';
             }
 
@@ -67,14 +68,10 @@ class HttpDioService {
           onError: (error, handler) async {
             final refreshTokenUser = await userRepository.getTokenRefresh();
 
-            if (refreshTokenUser.isNotEmpty &&
-                (error.response?.statusCode == 401 ||
-                    error.response?.statusCode == 403)) {
+            if (refreshTokenUser.isNotEmpty && (error.response?.statusCode == 401 || error.response?.statusCode == 403)) {
               await refreshToken();
 
-              final cloneReq = await _dio?.request(error.requestOptions.path,
-                  data: error.requestOptions.data,
-                  queryParameters: error.requestOptions.queryParameters);
+              final cloneReq = await _dio?.request(error.requestOptions.path, data: error.requestOptions.data, queryParameters: error.requestOptions.queryParameters);
 
               var newToken = await getCurrentTokenUser();
 
@@ -141,13 +138,11 @@ class HttpDioService {
     } on DioException catch (e) {
       if (e.response?.statusCode == 500) {
         String errorMessage = 'Error interno del servidor';
-        if (e.response?.data is Map<String, dynamic> && 
-            e.response?.data['message'] != null) {
+        if (e.response?.data is Map<String, dynamic> && e.response?.data['message'] != null) {
           errorMessage = e.response?.data['message'].toString() ?? errorMessage;
         }
         throw ExceptionApp(500, errorMessage);
-      } else if (e.message?.contains('Connection refused') == true || 
-                 e.message?.contains('connection errored') == true) {
+      } else if (e.message?.contains('Connection refused') == true || e.message?.contains('connection errored') == true) {
         throw Exception('No se puede conectar al servidor. Verifica que el servidor esté ejecutándose en la URL configurada.');
       } else {
         throw Exception('Error de conexión: ${e.message ?? "Error desconocido"}');
