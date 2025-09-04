@@ -34,4 +34,9 @@ class AuthUseCaseImpl implements AuthUseCase {
     final deviceId = await _userRepository.getDeviceId() ?? "";
     await _authRepositoryPort.logout(deviceId);
   }
+
+  @override
+  Future<ApiResponse<void>> validateServiceExpiration() async {
+    return await _authRepositoryPort.validateServiceExpiration();
+  }
 }

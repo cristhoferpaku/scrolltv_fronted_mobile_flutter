@@ -8,12 +8,11 @@ sealed class ApiResponse<T> with _$ApiResponse<T> {
   factory ApiResponse({
     required bool success,
     int? count,
+    String? message,
     required T data,
     required String timestamp,
     required String path,
   }) = ApiResponseData<T>;
 
-  factory ApiResponse.fromJson(
-          Map<String, dynamic> json, T Function(Object?) fromJsonT) =>
-      _$ApiResponseFromJson(json, fromJsonT);
+  factory ApiResponse.fromJson(Map<String, dynamic> json, T Function(Object?) fromJsonT) => _$ApiResponseFromJson(json, fromJsonT);
 }

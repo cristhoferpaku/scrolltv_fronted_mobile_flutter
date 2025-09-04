@@ -7,6 +7,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/auth/application/use_ca
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/outbound/auth_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/infrastructure/repositories/auth_api_repository.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/application/use_cases/multimedia_use_case_impl.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/inbound/multimedia_use_case.dart';
@@ -40,12 +41,14 @@ Future<void> initAppModule() async {
   initCollectionDependencies();
   initSearchDependencies();
   initVideoDependencies();
+  initAuthDependencies();
 }
 
 initAuthDependencies() {
   initAuthRepositoryPort();
   initAuthUseCase();
   initAuthModule();
+  initLoginModule();
 }
 
 initHomeDependencies() {
@@ -106,6 +109,12 @@ void initInfoVersion() {
 
 //BLOCS
 initAuthModule() {
+  if (!GetIt.I.isRegistered<AuthBloc>()) {
+    instance.registerLazySingleton<AuthBloc>(() => AuthBloc());
+  }
+}
+
+initLoginModule() {
   if (!GetIt.I.isRegistered<LoginBloc>()) {
     instance.registerLazySingleton<LoginBloc>(() => LoginBloc());
   }

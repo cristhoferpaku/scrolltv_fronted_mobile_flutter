@@ -86,10 +86,31 @@ class AuthApiRepository implements AuthRepositoryPort {
     final logoutRequest = logoutToLogoutRequest(deviceId);
     try {
       final response = await httpService.request(url: "$baseApiUrl/logout-mobile", method: Method.post, data: logoutRequest);
-      LoggerManager.log.e(response);
+
+      LoggerManager.log.e(response.data.toString());
+      if (response.data != null) {
+        ApiResponse<void> apiResponse = ApiResponse<void>.fromJson(response.data, (json) {});
+        return apiResponse;
+      } else {
+        throw Exception("Something wen't wrong");
+      }
+    } catch (e) {
+      LoggerManager.log.e(e.toString());
+      throw Exception(e.toString());
+    }
+  }
+
+  @override
+  Future<ApiResponse<void>> validateServiceExpiration() async {
+    final httpService = await dio;
+
+    try {
+      final response = await httpService.request(url: "$baseApiUrl/validate-service-expiration", method: Method.post);
+
+      LoggerManager.log.e(response.data.toString());
 
       if (response.data != null) {
-        return ApiResponseData<void>(success: true, data: null, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
+        return ApiResponse<void>.fromJson(response.data, (json) {});
       } else {
         throw Exception("Something wen't wrong");
       }

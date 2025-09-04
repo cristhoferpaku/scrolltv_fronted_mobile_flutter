@@ -11,7 +11,7 @@ class HomeState with _$HomeState {
     GetHomeSectionModel? animes,
     GetHomeSectionModel? dramas,
     GetHomeSectionModel? kids,
-  }) = HomeStateLoadedSections;
+  }) = HomeStateLoaded;
 }
 
 enum HomeStateStatus {
@@ -30,4 +30,5 @@ enum HomeStateStatus {
   loadedDramas,
   loadedKids,
   error,
+  errorServiceExpired,
 }

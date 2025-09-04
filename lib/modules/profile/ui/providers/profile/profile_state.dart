@@ -11,5 +11,4 @@ enum ProfileStatus {
   loading,
   loaded,
   error,
-  logoutSuccess,
 }

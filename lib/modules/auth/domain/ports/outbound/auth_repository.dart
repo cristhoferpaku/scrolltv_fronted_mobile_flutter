@@ -5,4 +5,5 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/entities/lo
 abstract class AuthRepositoryPort {
   Future<ApiResponse<AuthUserModel>> login(LoginModel login);
   Future<void> logout(String deviceId);
+  Future<ApiResponse<void>> validateServiceExpiration();
 }

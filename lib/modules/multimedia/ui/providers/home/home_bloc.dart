@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/channel_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/inbound/multimedia_use_case.dart';
@@ -12,12 +13,14 @@ part 'home_state.dart';
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc() : super(_Initial()) {
     final MultimediaUseCase multimediaUseCase = instance<MultimediaUseCase>();
+    final AuthUseCase authUseCase = instance<AuthUseCase>();
     GetHomeSectionModel? moviesSection;
     GetHomeSectionModel? seriesSection;
     GetHomeSectionModel? animesSection;
     GetHomeSectionModel? dramasSection;
     GetHomeSectionModel? kidsSection;
     List<ChannelModel>? selectedChannel;
+    on<HomeEvent>((event, emit) async {});
 
     on<_HomeEventStarted>((event, emit) async {});
 

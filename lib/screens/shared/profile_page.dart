@@ -6,6 +6,8 @@ import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/components/molecules/blur_background.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/gradient_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/components/molecules/logout_card.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/components/molecules/policy_and_privace_card.dart';
@@ -23,6 +25,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final AuthBloc authBloc = instance<AuthBloc>();
   final ProfileBloc profileBloc = instance<ProfileBloc>();
   @override
   void initState() {
@@ -32,23 +35,26 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveManager(
-      mobileView: _mobileView(),
-      desktopView: _desktopView(),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AuthBloc, AuthState>(
+          bloc: authBloc,
+          listener: (context, state) {
+            authListener(context, state, authBloc);
+          },
+        ),
+      ],
+      child: ResponsiveManager(
+        mobileView: _mobileView(),
+        desktopView: _desktopView(),
+      ),
     );
   }
 
   Widget _mobileView() {
     return AppScaffold(
-      body: BlocConsumer<ProfileBloc, ProfileState>(
+      body: BlocBuilder<ProfileBloc, ProfileState>(
         bloc: profileBloc,
-        listener: (context, state) {
-          if (state is ProfileLoaded) {
-            if (state.status == ProfileStatus.logoutSuccess) {
-              Navigator.pushNamed(context, Routes.inicioRoute);
-            }
-          }
-        },
         builder: (context, state) {
           if (state is ProfileLoaded) {
             return Stack(
@@ -86,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         Expanded(child: LogoutCard(
                           onTap: () {
-                            profileBloc.add(ProfileEvent.logout());
+                            authBloc.add(AuthEvent.logout());
                           },
                         )),
                       ],
@@ -107,15 +113,8 @@ class _ProfilePageState extends State<ProfilePage> {
     return AppScaffold(
       backgroundImage: ImageAssets.backgroundTv,
       linearGradient: GradientManager().background(),
-      body: BlocConsumer<ProfileBloc, ProfileState>(
+      body: BlocBuilder<ProfileBloc, ProfileState>(
         bloc: profileBloc,
-        listener: (context, state) {
-          if (state is ProfileLoaded) {
-            if (state.status == ProfileStatus.logoutSuccess) {
-              Navigator.pushNamed(context, Routes.inicioRoute);
-            }
-          }
-        },
         builder: (context, state) {
           if (state is ProfileLoaded) {
             return FocusTraversalGroup(
@@ -149,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           flex: 1,
                           child: LogoutCard(
                             onTap: () {
-                              profileBloc.add(ProfileEvent.logout());
+                              authBloc.add(AuthEvent.logout());
                             },
                           ),
                         ),

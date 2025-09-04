@@ -44,7 +44,7 @@ class _DramasTabState extends State<DramasTab> {
           bloc: homeBloc,
           listener: (context, state) {},
           builder: (context, state) {
-            if (state is HomeStateLoadedSections) {
+            if (state is HomeStateLoaded) {
               if (state.status == HomeStateStatus.loadingDramas) {
                 return HomeSkeleton();
               }

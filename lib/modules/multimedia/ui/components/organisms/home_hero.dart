@@ -7,6 +7,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entit
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/background_image.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/linear_gradient_box.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/no_content_box.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/video_metadata.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
@@ -36,6 +37,7 @@ class _HomeHeroState extends State<HomeHero> {
   final bool isTV = PlatformUtils.isTV;
   @override
   Widget build(BuildContext context) {
+    if (widget.video.id == null) return NoContentBox(height: 1.sh);
     return SizedBox(
       height: isTV ? 1.sh : .8.sh,
       child: Stack(

@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_tab_bar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/search/search_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
@@ -23,23 +27,45 @@ class _HomePageState extends State<HomePage> {
   final HomeBloc homeBloc = instance<HomeBloc>();
   final ProfileBloc profileBloc = instance<ProfileBloc>();
   final SearchBloc searchBloc = instance<SearchBloc>();
+  final AuthBloc authBloc = instance<AuthBloc>();
   final bool isScrollTV = PlatformUtils.isScrollTV;
 
   int _currentIndex = 0;
+  UserRepository userRepository = instance<UserRepository>();
 
   @override
   void initState() {
     homeBloc.add(HomeEvent.started());
     profileBloc.add(ProfileEvent.started());
     searchBloc.add(SearchEvent.getInitialVideos());
+    // authBloc.add(AuthEvent.validateExpiration());
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      LoggerManager.log.i(await userRepository.getToken());
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveManager(
-      desktopView: _desktopView(),
-      mobileView: _mobileView(),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AuthBloc, AuthState>(
+          bloc: authBloc,
+          listener: (context, state) {
+            authListener(context, state, authBloc);
+          },
+        ),
+        BlocListener<HomeBloc, HomeState>(
+          bloc: homeBloc,
+          listener: (context, state) {
+            homeListener(context, state);
+          },
+        ),
+      ],
+      child: ResponsiveManager(
+        desktopView: _desktopView(),
+        mobileView: _mobileView(),
+      ),
     );
   }
 
@@ -88,13 +114,18 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        body: IndexedStack(
-          index: _currentIndex,
-          children: [
-            HomeTabBar(),
-            if (isScrollTV) LiveTvDetail(),
-            ProfilePage(),
-          ],
+        body: BlocBuilder<HomeBloc, HomeState>(
+          bloc: homeBloc,
+          builder: (context, state) {
+            return IndexedStack(
+              index: _currentIndex,
+              children: [
+                HomeTabBar(),
+                if (isScrollTV) LiveTvDetail(),
+                ProfilePage(),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -109,9 +140,8 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: BlocConsumer<HomeBloc, HomeState>(
+            child: BlocBuilder<HomeBloc, HomeState>(
               bloc: homeBloc,
-              listener: (context, state) {},
               builder: (context, state) {
                 return HomeTabBar();
               },

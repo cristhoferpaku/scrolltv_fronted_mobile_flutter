@@ -44,7 +44,7 @@ class _SeriesTabState extends State<SeriesTab> {
           bloc: homeBloc,
           listener: (context, state) {},
           builder: (context, state) {
-            if (state is HomeStateLoadedSections) {
+            if (state is HomeStateLoaded) {
               if (state.status == HomeStateStatus.loadingSeries) {
                 return HomeSkeleton();
               }
