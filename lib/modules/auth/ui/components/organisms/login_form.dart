@@ -49,21 +49,18 @@ class LoginForm extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         spacing: AppSize.s24,
                         children: [
-                          if (!isTV)
-                            Image(image: AssetImage(ImageAssets.logoScrollTv)),
+                          if (!isTV) Image(image: AssetImage(PlatformUtils.getLogo()), width: 220, height: 120),
                           TextFormFieldIconSmall(
                             onChanged: (value) {},
                             controller: tcUsername,
-                            validatorFunction:
-                                ValidatorManager.validateUsername,
+                            validatorFunction: ValidatorManager.validateUsername,
                             label: AppStringAuth.loginFormUsername,
                             hint: AppStringAuth.loginFormUsernameHint,
                           ),
                           TextFormFieldIconSmall(
                             onChanged: (value) {},
                             controller: tcPassword,
-                            validatorFunction:
-                                ValidatorManager.validatePassword,
+                            validatorFunction: ValidatorManager.validatePassword,
                             label: AppStringAuth.loginFormPassword,
                             hint: AppStringAuth.loginFormPasswordHint,
                             isPassword: true,
@@ -75,16 +72,14 @@ class LoginForm extends StatelessWidget {
                         isExpanded: false,
                         textButton: AppString.loginButton,
                         colorButton: ColorManager.primaryContainer,
-                        textStyleButton:
-                            Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  color: ColorManager.onPrimaryContainer,
-                                ),
+                        textStyleButton: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: ColorManager.onPrimaryContainer,
+                            ),
                         roundedButton: AppSize.s10,
                         press: () async {
                           if (formKey.currentState!.validate()) {
                             loginBloc.add(
-                              LoginEvent.login(
-                                  tcUsername.text, tcPassword.text),
+                              LoginEvent.login(tcUsername.text, tcPassword.text),
                             );
                           }
                         },

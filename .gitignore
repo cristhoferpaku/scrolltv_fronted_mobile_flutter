@@ -79,8 +79,8 @@ logs/
 *.log
 
 # IDE
-.vscode/settings.json
-.vscode/launch.json
+# .vscode/settings.json
+# .vscode/launch.json
 
 # OS generated files
 Thumbs.db

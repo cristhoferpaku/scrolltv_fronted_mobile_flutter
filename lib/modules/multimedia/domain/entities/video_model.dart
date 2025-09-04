@@ -24,8 +24,8 @@ class VideoModel with _$VideoModel {
     String? year,
     String? duration,
     String? bannerImage,
+    VideoModel? contentInfo,
   }) = _VideoModel;
 
-  factory VideoModel.fromJson(Map<String, dynamic> json) =>
-      _$VideoModelFromJson(json);
+  factory VideoModel.fromJson(Map<String, dynamic> json) => _$VideoModelFromJson(json);
 }

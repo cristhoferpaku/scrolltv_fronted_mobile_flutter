@@ -1,0 +1,51 @@
+
+
+{
+    "version": "0.1.0",
+    "configurations": [
+      {
+        "name": "Scroll TV (Mobile - MovieHome)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug",
+        "args": [
+          "--flavor", "moviehomeMobile",
+          "--dart-define=IS_TV=false",
+          "--dart-define=VARIANT=moviehome"
+        ]
+      },
+      {
+        "name": "Scroll TV (Mobile - ScrollTV)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug",
+        "args": [
+          "--flavor", "scrolltvMobile",
+          "--dart-define=IS_TV=false",
+          "--dart-define=VARIANT=scrolltv"
+        ]
+      },
+      {
+        "name": "Scroll TV (TV - MovieHome)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug",
+        "args": [
+          "--flavor", "moviehomeTv",
+          "--dart-define=IS_TV=true",
+          "--dart-define=VARIANT=moviehome"
+        ]
+      },
+      {
+        "name": "Scroll TV (TV - ScrollTV)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug",
+        "args": [
+          "--flavor", "scrolltvTv",
+          "--dart-define=IS_TV=true",
+          "--dart-define=VARIANT=scrolltv"
+        ]
+      },
+    ]
+  }

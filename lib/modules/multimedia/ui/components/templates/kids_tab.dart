@@ -4,13 +4,12 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/scroll_to_top_on_up.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/collection_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_skeleton.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/section_card_list.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/constants/types/home_state_status.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/bloc/home_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/home_skeleton.dart';
 
 class KidsTab extends StatefulWidget {
   const KidsTab({
@@ -30,6 +29,12 @@ class _KidsTabState extends State<KidsTab> {
   final HomeBloc homeBloc = instance<HomeBloc>();
 
   @override
+  void initState() {
+    homeBloc.add(HomeEvent.loadSectionKids());
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ScrollToTopOnUp(
       scrollController: widget.scrollController,
@@ -40,7 +45,7 @@ class _KidsTabState extends State<KidsTab> {
           listener: (context, state) {},
           builder: (context, state) {
             if (state is HomeStateLoadedSections) {
-              if (state.status == HomeStateStatus.loading) {
+              if (state.status == HomeStateStatus.loadingKids) {
                 return HomeSkeleton();
               }
               return Column(
@@ -55,34 +60,7 @@ class _KidsTabState extends State<KidsTab> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            SectionCardList(
-                                title: "Recién llegadas",
-                                hasBlurLeft: true,
-                                hasBlurRight: true,
-                                videos: state.kids?.recentContent ?? []),
-                            Column(
-                              children: [
-                                if (state
-                                        .kids?.collectionsContent?.isNotEmpty ??
-                                    false)
-                                  ...state.kids!.collectionsContent!
-                                      .asMap()
-                                      .entries
-                                      .map((entry) {
-                                    final index = entry.key;
-                                    final e = entry.value;
-                                    return SectionCardList(
-                                      title: e.collectionName ?? "",
-                                      hasBlurLeft: index % 2 == 0 && index != 0
-                                          ? true
-                                          : false,
-                                      hasBlurRight:
-                                          index % 2 == 1 ? true : false,
-                                      videos: e.content ?? [],
-                                    );
-                                  }),
-                              ],
-                            )
+                            CollectionList(collection: state.kids?.collectionsContent ?? []),
                           ],
                         ).withPadding(all: AppPadding.p16),
                       ],

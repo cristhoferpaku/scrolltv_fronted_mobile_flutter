@@ -27,12 +27,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     initialRouteApp = getRouteByUserLogged(
-        // widget.logUser,
-        // widget.idCompany,
-        // widget.nameCompany,
-        // widget.idProject,
-        // widget.nameProject,
-        );
+      widget.logUser,
+    );
   }
 
   final bool isTv = PlatformUtils.isTV;
@@ -60,29 +56,11 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  String getRouteByUserLogged() {
-    return Routes.inicioRoute;
-    //   bool logUser,
-    //   String? idCompany,
-    //   String? nameCompany,
-    //   String? idProject,
-    //   String? nameProject,
-    // ) {
-    //   if (!logUser) {
-    //     // Si el usuario no está logueado, redirigir a login
-    //     return Routes.loginRoute;
-    //   } else if ((idCompany == null || idCompany.isEmpty) &&
-    //       (nameCompany == null || nameCompany.isEmpty)) {
-    //     return Routes.associatedCompaniesRoute;
-    //   } else if ((idProject == null || idProject.isEmpty) &&
-    //       (idCompany == null || idCompany.isEmpty)) {
-    //     return Routes.associatedCompaniesRoute;
-    //   } else if ((idProject == null || idProject.isEmpty) &&
-    //       (idCompany != null && idCompany.isNotEmpty)) {
-    //     return Routes.associatedCompaniesRoute;
-    //   } else {
-    //     return Routes.homeRoute;
-    //   }
-    // }
+  String getRouteByUserLogged(bool logUser) {
+    if (!logUser) {
+      return Routes.inicioRoute;
+    } else {
+      return Routes.homeRoute;
+    }
   }
 }

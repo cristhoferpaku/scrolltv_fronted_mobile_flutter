@@ -5,5 +5,7 @@ LoginRequest loginToLoginRequest(LoginModel login) {
   return LoginRequest(
     username: login.username,
     password: login.password,
+    id_device: login.deviceId,
+    platform: login.platformId,
   );
 }

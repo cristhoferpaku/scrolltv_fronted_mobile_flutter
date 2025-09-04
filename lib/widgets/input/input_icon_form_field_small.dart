@@ -21,6 +21,9 @@ class TextFormFieldIconSmall extends StatefulWidget {
   Color borderColor;
   int? maxLines;
   bool readOnly;
+  double borderRadius;
+  bool canRequestFocus;
+  bool? rightIconOnEditingComplete;
 
   TextFormFieldIconSmall({
     super.key,
@@ -40,6 +43,9 @@ class TextFormFieldIconSmall extends StatefulWidget {
     this.readOnly = false,
     this.onEditingComplete,
     this.rightIcon,
+    this.borderRadius = AppSize.s12,
+    this.canRequestFocus = true,
+    this.rightIconOnEditingComplete = false,
   });
 
   @override
@@ -54,82 +60,90 @@ class _TextFormFieldIconSmallState extends State<TextFormFieldIconSmall> {
       if (widget.label != null)
         Text(
           widget.label ?? "",
-          style: Theme.of(context)
-              .textTheme
-              .labelLarge
-              ?.copyWith(color: ColorManager.white),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(color: ColorManager.white),
         ).withPadding(bottom: AppPadding.p8),
       TextFormField(
+        canRequestFocus: widget.canRequestFocus,
         onEditingComplete: widget.onEditingComplete,
         onChanged: widget.onChanged,
         readOnly: widget.readOnly,
         maxLines: widget.maxLines,
         obscureText: widget.isPassword && !_isPasswordVisible,
         controller: widget.controller,
-        style: Theme.of(context)
-            .textTheme
-            .bodyLarge
-            ?.copyWith(color: ColorManager.white),
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: ColorManager.white),
         cursorColor: ColorManager.primary,
         onSaved: (value) {
           widget.valueData = value!;
         },
         enabled: widget.enabled ?? true,
-        validator: widget.validatorFunction != null
-            ? (value) => widget.validatorFunction!(value)
-            : null,
+        validator: widget.validatorFunction != null ? (value) => widget.validatorFunction!(value) : null,
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.only(
-              left: widget.leftIcon != null ? 44 : 16,
-              top: 12,
-              bottom: 12,
-              right: 8),
+          contentPadding: EdgeInsets.only(left: widget.leftIcon != null ? 44 : 16, top: 12, bottom: 12, right: 8),
           hintText: widget.hint,
           labelText: widget.labelText,
-          hintStyle: Theme.of(context)
-              .textTheme
-              .bodyLarge
-              ?.copyWith(color: ColorManager.neutro300),
+          hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: ColorManager.neutro300),
           filled: true,
-          fillColor:
-              widget.readOnly ? ColorManager.disabled : widget.background,
-          prefixIcon: widget.leftIcon != null
-              ? Icon(widget.leftIcon, color: ColorManager.secondary)
-              : null,
+          fillColor: widget.readOnly ? ColorManager.disabled : widget.background,
+          prefixIcon: widget.leftIcon != null ? Icon(widget.leftIcon, color: ColorManager.secondary) : null,
           suffixIcon: widget.rightIcon != null
-              ? IconButton(
-                  icon: Icon(
-                      widget.isPassword
-                          ? _isPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility
-                          : widget.rightIcon,
-                      color: ColorManager.secondary),
-                  onPressed: () {
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
+              ? ExcludeFocus(
+                  child: IconButton(
+                    icon: Icon(
+                        widget.isPassword
+                            ? _isPasswordVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility
+                            : widget.rightIcon,
+                        color: ColorManager.secondary),
+                    onPressed: () {
+                      if (widget.isPassword) {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                        return;
+                      }
+                      if (widget.rightIconOnEditingComplete != null) {
+                        widget.onEditingComplete!();
+                        return;
+                      }
+
+                      return;
+                    },
+                  ),
                 )
               : null,
           enabledBorder: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(AppSize.s12)),
+            borderRadius: BorderRadius.circular(widget.borderRadius),
             borderSide: BorderSide(
               color: widget.borderColor,
               width: 1,
             ),
           ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(AppSize.s12)),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
             borderSide: BorderSide(
               color: ColorManager.primary,
               width: 1,
             ),
           ),
-          disabledBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(AppSize.s12)),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
             borderSide: BorderSide(
               color: Colors.transparent,
+              width: 1,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderSide: BorderSide(
+              color: ColorManager.error,
+              width: 1,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderSide: BorderSide(
+              color: ColorManager.error,
               width: 1,
             ),
           ),

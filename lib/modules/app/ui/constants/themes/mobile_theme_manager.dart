@@ -14,6 +14,7 @@ ThemeData getMobileApplicationTheme() {
     primaryColorDark: ColorManager.primaryColorDarkShadeLight,
     //ripple Color
     splashColor: ColorManager.primary,
+
     disabledColor: ColorManager.grey1, //Color used in case of disable buttons
     colorScheme: const ColorScheme(
         primary: ColorManager.primary,
@@ -349,5 +350,8 @@ ThemeData getMobileApplicationDarkTheme() {
                 BorderSide(color: ColorManager.primary, width: AppSize.s1_5),
             borderRadius: BorderRadius.all(Radius.circular(AppSize.s8)))),
     unselectedWidgetColor: ColorManager.darkGray,
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: ColorManager.surfaceContainerLowest,
+    ),
   );
 }

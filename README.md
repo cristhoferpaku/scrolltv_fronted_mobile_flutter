@@ -5,11 +5,13 @@ Aplicación Flutter con detección automática de plataforma para Android TV y A
 ## 🔨 Generación de Código
 
 ### Instalar dependencias:
+
 ```bash
 flutter pub get
 ```
 
 ### Generar archivos con Freezed, JSON Annotation y otros:
+
 ```bash
 # Generar una sola vez
 flutter packages pub run build_runner build
@@ -25,6 +27,7 @@ flutter packages pub run build_runner clean
 ```
 
 ### Comandos alternativos más cortos:
+
 ```bash
 # Generar archivos
 dart run build_runner build
@@ -40,6 +43,7 @@ dart run build_runner clean
 ```
 
 ### 📝 Archivos que se generan automáticamente:
+
 - `*.g.dart` - Archivos de serialización JSON
 - `*.freezed.dart` - Clases inmutables con Freezed
 - `*.config.dart` - Configuraciones de inyección de dependencias
@@ -49,49 +53,95 @@ dart run build_runner clean
 ## 🚀 Comandos de Desarrollo
 
 ### Para Android TV:
+
+moviehome
+
 ```bash
-flutter run --flavor tv --dart-define=IS_TV=true
+flutter run --flavor moviehomeTv --dart-define=IS_TV=true --dart-define=VARIANT=moviehome
 ```
+
+scrolltv
+
+```bash
+flutter run --flavor scrolltvTv --dart-define=IS_TV=true --dart-define=VARIANT=scrolltv
+```
+
 **O usar el script:** `.\run_tv.bat`
 
 ### Para Android Mobile:
+
+moviehome
+
 ```bash
-flutter run --flavor mobile --dart-define=IS_TV=false
+flutter run --flavor moviehomeMobile --dart-define=IS_TV=false --dart-define=VARIANT=moviehome
 ```
+
+scrolltv
+
+```bash
+flutter run --flavor scrolltvMobile --dart-define=IS_TV=false --dart-define=VARIANT=scrolltv
+```
+
 **O usar el script:** `.\run_mobile.bat`
 
 ## 📦 Generar APK Release
 
 ### Para Android TV:
+
+moviehome
+
+moviehome
+
 ```bash
-flutter build apk --release --flavor tv --dart-define=IS_TV=true
+flutter build apk --release --flavor moviehomeTv --dart-define=IS_TV=true --dart-define=VARIANT=moviehome
 ```
+
+scrolltv
+
+```bash
+flutter build apk --release --flavor scrolltvTv --dart-define=IS_TV=true --dart-define=VARIANT=scrolltv
+```
+
 **O usar el script:** `.\build_tv_release.bat`
 
 ### Para Android Mobile:
+
+moviehome
+
 ```bash
-flutter build apk --release --flavor mobile --dart-define=IS_TV=false
+flutter build apk --release --flavor moviehomeMobile --dart-define=IS_TV=false --dart-define=VARIANT=moviehome
 ```
+
+scrolltv
+
+```bash
+flutter build apk --release --flavor scrolltvMobile --dart-define=IS_TV=false --dart-define=VARIANT=scrolltv
+```
+
 **O usar el script:** `.\build_mobile_release.bat`
 
 ## 🔧 Detección de Plataforma
 
 La aplicación detecta automáticamente si está ejecutándose en Android TV o Mobile usando:
+
 - `--dart-define=IS_TV=true/false` (método principal)
+- `--dart-define=VARIANT=moviehome/scrolltv` (método secundario)
 - Flavors de Android (`tv` / `mobile`)
 - Código en `lib/utils/platform_utils.dart`
 
 ## ⌨️ Comandos de Flutter
 
 ### Durante la ejecución (flutter run):
+
 - `r` - Hot reload
-- `R` - Hot restart  
+- `R` - Hot restart
 - `h` - Listar comandos disponibles
 - `d` - Detach (mantener app corriendo)
 - `c` - Limpiar pantalla
 - `q` - Salir (terminar aplicación)
 
 ### Comandos útiles de desarrollo:
+
 ```bash
 # Limpiar proyecto
 flutter clean
@@ -119,7 +169,38 @@ flutter inspector
 ```
 
 ### Comandos de localización:
+
 ```bash
 # Generar archivos de localización
 flutter gen-l10n
+```
+
+### Comandos de splash:
+
+moviehome
+
+```bash
+flutter pub run flutter_native_splash:create --path=flutter_native_splash_movie_home.yaml
+```
+
+scrolltv
+
+```bash
+flutter pub run flutter_native_splash:create --path=flutter_native_splash_scroll_tv.yaml
+
+```
+
+### Comandos de iconos:
+
+moviehome
+
+```bash
+dart run flutter_launcher_icons -f flutter_launcher_icons_movie_home.yaml
+```
+
+scrolltv
+
+```bash
+dart run flutter_launcher_icons -f flutter_launcher_icons_scroll_tv.yaml
+
 ```

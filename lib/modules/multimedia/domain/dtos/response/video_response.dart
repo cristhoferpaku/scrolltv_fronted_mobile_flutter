@@ -9,6 +9,7 @@ class VideoResponse with _$VideoResponse {
     @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'title') String? title,
     @JsonKey(name: 'description') String? description,
+    @JsonKey(name: 'bannerImage') String? bannerImage,
     @JsonKey(name: 'coverImage') String? coverImage,
     @JsonKey(name: 'type') String? type,
     @JsonKey(name: 'durationMins') int? durationMins,
@@ -19,11 +20,14 @@ class VideoResponse with _$VideoResponse {
     @JsonKey(name: 'createdAt') String? createdAt,
     @JsonKey(name: 'updatedAt') String? updatedAt,
     @JsonKey(name: 'topNumber') int? topNumber,
+    @JsonKey(name: 'collection_name') String? collectionName,
+    @JsonKey(name: 'categories') String? categories,
+    @JsonKey(name: 'contentId') int? contentId,
   }) = _VideoResponse;
 
-  factory VideoResponse.fromJson(Map<String, dynamic> json) =>
-      _$VideoResponseFromJson(json);
+  factory VideoResponse.fromJson(Map<String, dynamic> json) => _$VideoResponseFromJson(json);
 
+  static List<VideoResponse> fromJsonList(List<dynamic> json) => json.map((e) => VideoResponse.fromJson(e)).toList();
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

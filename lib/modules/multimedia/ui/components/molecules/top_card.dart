@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/text_drop_shadow.dart';
 
@@ -7,11 +9,13 @@ class TopCard extends StatefulWidget {
   final String title;
   final int topNumber;
   final String coverImage;
+  final int videoId;
   const TopCard({
     super.key,
     required this.title,
     required this.topNumber,
     required this.coverImage,
+    required this.videoId,
   });
 
   @override
@@ -29,7 +33,7 @@ class _TopCardState extends State<TopCard> {
       },
       child: InkWell(
         splashColor: Colors.transparent,
-        onTap: () => debugPrint("Card seleccionada"),
+        onTap: () => {Navigator.pushNamed(context, Routes.videoDetailsRoute, arguments: VideoDetailsPageArguments(videoId: widget.videoId))},
         child: AnimatedScale(
           scale: _isFocused ? 1.08 : 1.0, // crece desde el centro
           duration: const Duration(milliseconds: 150),
@@ -37,9 +41,7 @@ class _TopCardState extends State<TopCard> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              border: _isFocused
-                  ? Border.all(color: Colors.blueAccent, width: 3)
-                  : null,
+              border: _isFocused ? Border.all(color: Colors.blueAccent, width: 3) : null,
               boxShadow: _isFocused
                   ? [
                       BoxShadow(

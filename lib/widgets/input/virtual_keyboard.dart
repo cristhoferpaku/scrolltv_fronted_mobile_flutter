@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/colors.dart';
 
 class VirtualKeyboard extends StatefulWidget {
   final Function(String) onKeyPressed;
@@ -11,6 +10,11 @@ class VirtualKeyboard extends StatefulWidget {
   final VoidCallback? onNext;
   final bool isPasswordField;
   final FocusNode? focusNode;
+  final double paddingContainer;
+  final bool showHeaderIndicator;
+  final Color? colorBorder;
+  final double borderWidth;
+  final String labelLastButton;
 
   const VirtualKeyboard({
     super.key,
@@ -22,6 +26,11 @@ class VirtualKeyboard extends StatefulWidget {
     this.onNext,
     this.isPasswordField = false,
     this.focusNode,
+    this.paddingContainer = 16,
+    this.colorBorder,
+    this.showHeaderIndicator = true,
+    this.borderWidth = 2,
+    this.labelLastButton = 'Ingresar',
   });
 
   @override
@@ -35,7 +44,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   bool _isSymbolMode = false;
   late FocusNode _keyboardFocus;
   bool _ignoreNavigation = false;
-  
+
   // Solo uno de estos puede ser true a la vez
   bool _isActionButtonFocused = false;
   int _focusedActionButton = 0;
@@ -94,7 +103,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       _isActionButtonFocused = false;
       _isEmailSuggestionFocused = false;
       _isNavigationButtonFocused = false;
-      
+
       // Activar solo el estado solicitado
       if (actionButton) {
         _isActionButtonFocused = true;
@@ -129,13 +138,9 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     ['ABC', '°', '©', '®', '™', '•', '≤', '≥', ',', 'x'],
   ];
 
-  final List<String> _emailSuggestions = [
-    '@hotmail.com',
-    '@gmail.com',
-    '@outlook.com'
-  ];
-   
-  final List<String> _actionButtons = ['!#\$','@', '.', '⎵','⌫'];
+  final List<String> _emailSuggestions = ['@hotmail.com', '@gmail.com', '@outlook.com'];
+
+  final List<String> _actionButtons = ['!#\$', '@', '.', '⎵', '⌫'];
 
   List<String> get _filteredActionButtons {
     if (_isSymbolMode) {
@@ -193,13 +198,11 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
           return KeyEventResult.handled; // Consumir el evento
         case LogicalKeyboardKey.arrowDown:
           List<List<String>> currentLayout = _isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout;
-          if (!_isEmailSuggestionFocused && !_isActionButtonFocused && !_isNavigationButtonFocused &&
-              _focusedRow < currentLayout.length - 1) {
+          if (!_isEmailSuggestionFocused && !_isActionButtonFocused && !_isNavigationButtonFocused && _focusedRow < currentLayout.length - 1) {
             setState(() {
               _focusedRow++;
             });
-          } else if (!_isEmailSuggestionFocused && !_isActionButtonFocused && !_isNavigationButtonFocused &&
-              _focusedRow == currentLayout.length - 1) {
+          } else if (!_isEmailSuggestionFocused && !_isActionButtonFocused && !_isNavigationButtonFocused && _focusedRow == currentLayout.length - 1) {
             // Si estamos en modo símbolo, saltar las sugerencias y ir directo a los botones de acción
             if (_isSymbolMode) {
               _setFocusState(actionButton: true);
@@ -333,92 +336,88 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         focusNode: _keyboardFocus,
         autofocus: true,
         onKey: (node, event) {
-          if (event is RawKeyEvent) {
-            return _handleRemoteKey(event);
-          }
-          return KeyEventResult.ignored;
+          return _handleRemoteKey(event);
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(widget.paddingContainer),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.8),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: widget.isPasswordField ? Colors.orange : Colors.blue,
-              width: 2,
+              color: widget.colorBorder ?? (widget.isPasswordField ? Colors.orange : Colors.blue),
+              width: widget.borderWidth,
             ),
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Field indicator
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: widget.isPasswordField
-                      ? Colors.orange.withOpacity(0.2)
-                      : Colors.blue.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
+              if (widget.showHeaderIndicator)
+                Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: widget.isPasswordField ? Colors.orange.withOpacity(0.2) : Colors.blue.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.isPasswordField ? 'Contraseña' : 'Usuario',
+                        style: TextStyle(
+                          color: widget.isPasswordField ? Colors.orange : Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                child: Text(
-                  widget.isPasswordField ? 'Contraseña' : 'Usuario',
-                  style: TextStyle(
-                    color: widget.isPasswordField ? Colors.orange : Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               // Keyboard rows
               Container(
                 color: Color.fromRGBO(38, 38, 38, 1),
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Keyboard Grid
-                    Container(
-                      constraints: BoxConstraints(
-                        maxWidth: 500, // Ancho máximo del teclado
-                      ),
-                      child: Column(
-                        children: (_isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout).asMap().entries.map((entry) {
-                          int rowIndex = entry.key;
-                          List<String> row = entry.value;
-                          return Container(
-                            margin: const EdgeInsets.symmetric(vertical: 2),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: row.asMap().entries.map((keyEntry) {
-                                int colIndex = keyEntry.key;
-                                String key = keyEntry.value;
-                                bool isFocused = !_isEmailSuggestionFocused &&
-                                    !_isActionButtonFocused &&
-                                    !_isNavigationButtonFocused &&
-                                    _focusedRow == rowIndex &&
-                                    _focusedCol == colIndex;
-
-                                return Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                                    child: _buildKey(
-                                      key: key,
-                                      isFocused: isFocused,
-                                      onPressed: () => _handleKeyPress(key),
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                child: Column(children: [
+                  // Keyboard Grid
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: 500, // Ancho máximo del teclado
                     ),
-                    
-                    // Email suggestions grid
-                   
-                    if (!_isSymbolMode) Container(
+                    child: Column(
+                      children: (_isSymbolMode ? _symbolKeyboardLayout : _keyboardLayout).asMap().entries.map((entry) {
+                        int rowIndex = entry.key;
+                        List<String> row = entry.value;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: row.asMap().entries.map((keyEntry) {
+                              int colIndex = keyEntry.key;
+                              String key = keyEntry.value;
+                              bool isFocused = !_isEmailSuggestionFocused && !_isActionButtonFocused && !_isNavigationButtonFocused && _focusedRow == rowIndex && _focusedCol == colIndex;
+
+                              return Expanded(
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                                  child: _buildKey(
+                                    key: key,
+                                    isFocused: isFocused,
+                                    onPressed: () => _handleKeyPress(key),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  // Email suggestions grid
+
+                  if (!_isSymbolMode)
+                    Container(
                       constraints: BoxConstraints(
                         maxWidth: 500, // Mismo ancho que el teclado
                       ),
@@ -428,8 +427,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                         children: _emailSuggestions.asMap().entries.map((entry) {
                           int index = entry.key;
                           String suggestion = entry.value;
-                          bool isFocused = _isEmailSuggestionFocused &&
-                              _focusedEmailSuggestion == index;
+                          bool isFocused = _isEmailSuggestionFocused && _focusedEmailSuggestion == index;
                           return Expanded(
                             child: Container(
                               margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -439,50 +437,46 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
                         }).toList(),
                       ),
                     ),
-                    
-                    // Action buttons grid (⇧, ⌫, ⎵, ↵)
-                    Container(
-                      constraints: BoxConstraints(
-                        maxWidth: 500, // Ancho máximo para botones de acción
-                      ),
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: _filteredActionButtons.asMap().entries.map((entry) {
-                              int index = entry.key;
-                              String button = entry.value;
-                              bool isFocused = _isActionButtonFocused &&
-                                  _focusedActionButton == index;
 
-                              return Expanded(
-                                flex: (button == '⎵' || button == '⌫') ? 3 : 1, // Space y backspace más anchos
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                                  child: _buildActionKey(
-                                    key: button,
-                                    isFocused: isFocused,
-                                    onPressed: () => _handleActionKeyPress(button),
-                                  ),
-                                ),
-                              );
-                             }).toList(),
-                           ),
-                         ),
-                    
-               
-                    
-                    const SizedBox(height: 12),
-                    // Navigation buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: _buildActionButtons(),
+                  // Action buttons grid (⇧, ⌫, ⎵, ↵)
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: 500, // Ancho máximo para botones de acción
                     ),
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: _filteredActionButtons.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        String button = entry.value;
+                        bool isFocused = _isActionButtonFocused && _focusedActionButton == index;
+
+                        return Expanded(
+                          flex: (button == '⎵' || button == '⌫') ? 3 : 1, // Space y backspace más anchos
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 2),
+                            child: _buildActionKey(
+                              key: button,
+                              isFocused: isFocused,
+                              onPressed: () => _handleActionKeyPress(button),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+                  // Navigation buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: _buildActionButtons(),
+                  ),
                 ]),
               ),
               // Keyboard rows
 
               // Navigation buttons
-           
             ],
           ),
         ));
@@ -508,7 +502,6 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         decoration: BoxDecoration(
           color: isFocused ? Colors.white : Colors.grey[800],
           borderRadius: BorderRadius.circular(8),
- 
         ),
         child: Center(
           child: Text(
@@ -597,25 +590,29 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     List<Widget> buttons = [];
     int buttonIndex = 0;
 
+    if (widget.onNext == null && widget.onPrevious == null) {
+      buttons.add(Expanded(
+        child: _buildActionButton(widget.labelLastButton, widget.onEnter, isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
+      ));
+      return buttons;
+    }
+
     if (widget.isPasswordField) {
       // En campo contraseña: mostrar Anterior e Ingresar
       if (widget.onPrevious != null) {
         buttons.add(Expanded(
-          child: _buildActionButton('Anterior', widget.onPrevious!,
-              isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
+          child: _buildActionButton('Anterior', widget.onPrevious!, isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
         ));
         buttonIndex++;
       }
       buttons.add(Expanded(
-        child: _buildActionButton('Ingresar', widget.onEnter!,
-            isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
+        child: _buildActionButton('Ingresar', widget.onEnter, isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
       ));
     } else {
       // En campo usuario: solo mostrar Siguiente
       if (widget.onNext != null) {
         buttons.add(Expanded(
-          child: _buildActionButton('Siguiente', widget.onNext!,
-              isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
+          child: _buildActionButton('Siguiente', widget.onNext!, isFocused: _isNavigationButtonFocused && _focusedNavigationButton == buttonIndex),
         ));
       }
     }
@@ -631,7 +628,6 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           width: double.infinity,
-          
           decoration: BoxDecoration(
             color: isFocused ? Colors.white : Colors.grey[800],
             borderRadius: BorderRadius.circular(8),
@@ -703,6 +699,11 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   }
 
   void _handleActionButtonPress() {
+    if (widget.onNext == null && widget.onPrevious == null) {
+      // Caso único: solo Ingresar
+      widget.onEnter();
+      return;
+    }
     if (widget.isPasswordField) {
       // En campo contraseña: 0 = Anterior, 1 = Ingresar
       if (_focusedNavigationButton == 0 && widget.onPrevious != null) {
@@ -743,19 +744,20 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       setState(() {
         _isShiftPressed = !_isShiftPressed;
       });
-    } else if (key == '-') {
-      widget.onBackspace();
+    }
+    //  else if (key == '-') {
+    //   widget.onBackspace();
 
-      // Ignorar navegación automática temporalmente
-      _ignoreNavigation = true;
-      Future.delayed(const Duration(milliseconds: 200), () {
-        if (mounted) {
-          _ignoreNavigation = false;
-        }
-      });
-    } else {
-      String actualKey =
-          _isShiftPressed && key.length == 1 ? key.toUpperCase() : key;
+    //   // Ignorar navegación automática temporalmente
+    //   _ignoreNavigation = true;
+    //   Future.delayed(const Duration(milliseconds: 200), () {
+    //     if (mounted) {
+    //       _ignoreNavigation = false;
+    //     }
+    //   });
+    // }
+    else {
+      String actualKey = _isShiftPressed && key.length == 1 ? key.toUpperCase() : key;
       widget.onKeyPressed(actualKey);
       if (_isShiftPressed) {
         setState(() {

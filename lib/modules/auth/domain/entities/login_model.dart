@@ -8,11 +8,9 @@ class LoginModel with _$LoginModel {
   factory LoginModel({
     required String username,
     required String password,
+    required String deviceId,
+    required int platformId,
   }) = _LoginModel;
 
-  factory LoginModel.fromJson(Map<String, dynamic> json) =>
-      _$LoginModelFromJson(json);
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  factory LoginModel.fromJson(Map<String, dynamic> json) => _$LoginModelFromJson(json);
 }
