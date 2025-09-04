@@ -10,12 +10,17 @@ class VideoPlayerState with _$VideoPlayerState {
     required bool showSubtitlePanel,
     required bool showAudioPanel,
     required bool showQualityPanel,
+    required List<Map<String, String>> subtitleOptions,
+    required List<Map<String, String>> audioOptions,
+    required List<Map<String, String>> qualityOptions,
   }) = VideoPlayerStateLoaded;
 }
 
 enum VideoPlayerStatus {
   initial,
   loading,
+  initializeManagers,
   loaded,
+  setManagers,
   error,
 }

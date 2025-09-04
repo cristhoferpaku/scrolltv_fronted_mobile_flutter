@@ -21,7 +21,8 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/user/application/use_ca
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/inbound/user_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/outbound/user_repository_port.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/infrastructure/repositories/user_api_repository.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/bloc/video_player_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player_guia/video_player_bloc.dart' as videoPlayerBlocGuia;
 import 'package:scrolltv_frontend_mobile_flutter/services/app_api_service.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/bloc/custom_tab_bar_bloc.dart';
 
@@ -143,6 +144,12 @@ initSearchModule() {
 initVideoPlayerModule() {
   if (!GetIt.I.isRegistered<VideoPlayerBloc>()) {
     instance.registerLazySingleton<VideoPlayerBloc>(() => VideoPlayerBloc());
+  }
+}
+
+initVideoPlayerGuiaModule() {
+  if (!GetIt.I.isRegistered<videoPlayerBlocGuia.VideoPlayerBloc>()) {
+    instance.registerLazySingleton<videoPlayerBlocGuia.VideoPlayerBloc>(() => videoPlayerBlocGuia.VideoPlayerBloc());
   }
 }
 
