@@ -6,10 +6,12 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 
 class EpisodeCardList extends StatelessWidget {
+  final int seasonId;
   final List<EpisodeModel> episodes;
   const EpisodeCardList({
     super.key,
     required this.episodes,
+    required this.seasonId,
   });
 
   @override
@@ -21,7 +23,7 @@ class EpisodeCardList extends StatelessWidget {
         children: [
           ...List.generate(
             episodes.length,
-            (index) => EpisodeCard(episode: episodes[index]),
+            (index) => EpisodeCard(seasonId: seasonId, episode: episodes[index]),
           ),
         ],
       ).withPadding(top: AppPadding.p16.r),

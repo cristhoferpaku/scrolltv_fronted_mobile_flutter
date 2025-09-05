@@ -117,7 +117,12 @@ class _HomeHeroState extends State<HomeHero> {
                               ),
                           roundedButton: AppSize.s400,
                           press: () async {
-                            Navigator.pushNamed(context, Routes.videoRoute, arguments: VideoPageArguments(videoId: widget.video.id ?? 0, videoUrl: widget.video.videoUrl ?? ""));
+                            Navigator.pushNamed(context, Routes.videoRoute,
+                                arguments: VideoPageArguments(
+                                    videoId: widget.video.id ?? 0,
+                                    videoUrl: widget.video.videoUrl ?? "",
+                                    seasonId: widget.video.firstSeasonId ?? 0,
+                                    episodeNumber: widget.video.firstEpisodeNumber ?? 0));
                           },
                         ),
                       ),

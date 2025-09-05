@@ -9,17 +9,19 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 
 class EpisodeCard extends StatelessWidget {
+  final int seasonId;
   final EpisodeModel episode;
   const EpisodeCard({
     super.key,
     required this.episode,
+    required this.seasonId,
   });
 
   @override
   Widget build(BuildContext context) {
     return ContainerFocus(
       onTap: () {
-        Navigator.pushNamed(context, Routes.videoRoute, arguments: VideoPageArguments(videoId: episode.episodeId ?? 0, videoUrl: episode.videoUrl ?? ""));
+        Navigator.pushNamed(context, Routes.videoRoute, arguments: VideoPageArguments(videoId: 0, videoUrl: episode.videoUrl ?? "", episodeNumber: episode.episodeNumber ?? 0, seasonId: seasonId));
       },
       child: Stack(
         children: [
