@@ -18,6 +18,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/search/search_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/video_details/video_details_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/bloc/tv_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/application/use_cases/user_use_case_impl.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/inbound/user_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/outbound/user_repository_port.dart';
@@ -42,6 +43,7 @@ Future<void> initAppModule() async {
   initSearchDependencies();
   initVideoDependencies();
   initAuthDependencies();
+  initTvDependencies();
 }
 
 initAuthDependencies() {
@@ -82,6 +84,10 @@ initSearchDependencies() {
 
 initVideoDependencies() {
   initVideoPlayerModule();
+}
+
+initTvDependencies() {
+  initTvPlayerModule();
 }
 
 Future<void> listAppModule() async {
@@ -159,6 +165,12 @@ initVideoPlayerModule() {
 initVideoPlayerGuiaModule() {
   if (!GetIt.I.isRegistered<videoPlayerBlocGuia.VideoPlayerBloc>()) {
     instance.registerLazySingleton<videoPlayerBlocGuia.VideoPlayerBloc>(() => videoPlayerBlocGuia.VideoPlayerBloc());
+  }
+}
+
+initTvPlayerModule() {
+  if (!GetIt.I.isRegistered<TvPlayerBloc>()) {
+    instance.registerLazySingleton<TvPlayerBloc>(() => TvPlayerBloc());
   }
 }
 

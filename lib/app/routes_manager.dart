@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/colors_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/typography_page.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/templates/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/mobile.dart' as mobile;
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/collection_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/home_page.dart';
+import 'package:scrolltv_frontend_mobile_flutter/screens/shared/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/search_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/terms_and_conditions_page.dart';
