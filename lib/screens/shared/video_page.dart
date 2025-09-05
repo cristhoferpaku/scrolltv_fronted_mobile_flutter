@@ -5,6 +5,7 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/video_controls_manager.dart';
@@ -39,24 +40,28 @@ class _VideoPageState extends State<VideoPage> {
   bool showSubtitlePanel = false;
   bool showAudioPanel = false;
   bool showQualityPanel = false;
+  bool showEpisodePanel = false;
+
   final FocusNode _focusNode = FocusNode();
 
   // TV Focus System
-  int _currentFocusIndex = 0; // 0: play/pause, 1: slider, 2: restart, 3: audio, 4: subtitles, 5: settings
-  final int _maxFocusIndex = 5;
+  int _currentFocusIndex = 0; // 0: play/pause, 1: slider, 2: restart, 3: audio, 4: subtitles, 5: episodes (series only), 6: settings
+  int get _maxFocusIndex => type == 'series' ? 6 : 5;
 
   // Referencias a los paneles para navegación
   final GlobalKey<OptionPanelState> _subtitlePanelKey = GlobalKey<OptionPanelState>();
   final GlobalKey<OptionPanelState> _audioPanelKey = GlobalKey<OptionPanelState>();
   final GlobalKey<OptionPanelState> _qualityPanelKey = GlobalKey<OptionPanelState>();
+  final GlobalKey<OptionPanelState> _episodePanelKey = GlobalKey<OptionPanelState>();
 
   // Focus states
   bool get _isPlayPauseFocused => isTV && _currentFocusIndex == 0;
   bool get _isSliderFocused => isTV && _currentFocusIndex == 1;
-  bool get _isRestartFocused => isTV && _currentFocusIndex == 2;
-  bool get _isAudioFocused => isTV && _currentFocusIndex == 3;
-  bool get _isSubtitlesFocused => isTV && _currentFocusIndex == 4;
-  bool get _isSettingsFocused => isTV && _currentFocusIndex == 5;
+  bool get _isEpisodesFocused => isTV && type == 'series' && _currentFocusIndex == 2;
+  bool get _isRestartFocused => isTV && _currentFocusIndex == (type == 'series' ? 3 : 2);
+  bool get _isAudioFocused => isTV && _currentFocusIndex == (type == 'series' ? 4 : 3);
+  bool get _isSubtitlesFocused => isTV && _currentFocusIndex == (type == 'series' ? 5 : 4);
+  bool get _isSettingsFocused => isTV && _currentFocusIndex == (type == 'series' ? 6 : 5);
 
   @override
   void initState() {
@@ -70,6 +75,9 @@ class _VideoPageState extends State<VideoPage> {
       seasonId = args.seasonId;
       episodeNumber = args.episodeNumber;
       type = args.type;
+
+      // Los episodios se manejarán con lista estática temporal
+      // TODO: Implementar llamada al bloc para obtener episodios usando seasonId
 
       // Inicializar el video player con VideoPlayerBloc
       _videoPlayerBloc.add(VideoPlayerEvent.initialize(videoUrl: 'https://scroll-tv-movie-home-cdn.b-cdn.net/Pantera%20Negra.mp4'));
@@ -109,6 +117,7 @@ class _VideoPageState extends State<VideoPage> {
             showSubtitlePanel = false;
             showAudioPanel = false;
             showQualityPanel = false;
+            showEpisodePanel = false;
           });
         }
       },
@@ -134,6 +143,7 @@ class _VideoPageState extends State<VideoPage> {
       showSubtitlePanel = true;
       showAudioPanel = false;
       showQualityPanel = false;
+      showEpisodePanel = false;
     });
     // Reiniciar timer cuando se abre un panel
     _controlsManager?.resetTimer();
@@ -150,6 +160,7 @@ class _VideoPageState extends State<VideoPage> {
       showAudioPanel = true;
       showSubtitlePanel = false;
       showQualityPanel = false;
+      showEpisodePanel = false;
     });
     // Reiniciar timer cuando se abre un panel
     _controlsManager?.resetTimer();
@@ -166,6 +177,7 @@ class _VideoPageState extends State<VideoPage> {
       showQualityPanel = true;
       showSubtitlePanel = false;
       showAudioPanel = false;
+      showEpisodePanel = false;
     });
     // Reiniciar timer cuando se abre un panel
     _controlsManager?.resetTimer();
@@ -174,6 +186,28 @@ class _VideoPageState extends State<VideoPage> {
   void _hideQualityPanel() {
     setState(() {
       showQualityPanel = false;
+    });
+  }
+
+  void _showEpisodePanel() {
+    // Cargar episodios desde el bloc si es una serie y tenemos seasonId
+    if (type == 'series' && seasonId != null) {
+      _videoPlayerBloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId!));
+    }
+    
+    setState(() {
+      showEpisodePanel = true;
+      showSubtitlePanel = false;
+      showAudioPanel = false;
+      showQualityPanel = false;
+    });
+    // Reiniciar timer cuando se abre un panel
+    _controlsManager?.resetTimer();
+  }
+
+  void _hideEpisodePanel() {
+    setState(() {
+      showEpisodePanel = false;
     });
   }
 
@@ -213,6 +247,59 @@ class _VideoPageState extends State<VideoPage> {
     ];
   }
 
+  List<Map<String, String>> _getEpisodeOptions() {
+    // Obtener episodios del estado del bloc
+    final blocEpisodes = _videoPlayerBloc.state.episodes;
+    
+    if (blocEpisodes.isNotEmpty) {
+      return blocEpisodes.map<Map<String, String>>((episode) {
+        final episodeMap = episode as Map<String, dynamic>;
+        return {
+          'label': 'Ep ${episodeMap['episodeNumber']}: ${episodeMap['title']}',
+          'value': episodeMap['episodeNumber'].toString()
+        };
+      }).toList();
+    }
+    
+    // Si no hay episodios en el bloc y es una serie, mostrar mensaje de carga
+    if (type == 'series') {
+      return [
+        {'label': 'Cargando episodios...', 'value': '0'}
+      ];
+    }
+    
+    return [
+      {'label': 'No hay episodios disponibles', 'value': '1'}
+    ];
+  }
+
+  void _selectEpisode(String episodeNum) {
+    // Obtener episodios del estado del bloc
+    final blocEpisodes = _videoPlayerBloc.state.episodes;
+    
+    if (blocEpisodes.isNotEmpty && episodeNum != '0') {
+      final selectedEpisodeData = blocEpisodes.firstWhere(
+        (episode) {
+          final episodeMap = episode as Map<String, dynamic>;
+          return episodeMap['episodeNumber'].toString() == episodeNum;
+        },
+        orElse: () => blocEpisodes.first,
+      ) as Map<String, dynamic>;
+
+      _videoPlayerBloc.add(VideoPlayerEvent.initialize(
+        videoUrl: selectedEpisodeData['videoUrl'],
+      ));
+
+      setState(() {
+        episodeNumber = selectedEpisodeData['episodeNumber'];
+        videoId = selectedEpisodeData['id'] ?? 0;
+      });
+    }
+
+    // Cerrar el panel
+    _hideEpisodePanel();
+  }
+
   Widget _buildVideoPlayer(VideoPlayerState state) {
     return state.when(
       initial: () => Container(
@@ -231,7 +318,7 @@ class _VideoPageState extends State<VideoPage> {
           ),
         ),
       ),
-      ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => Center(
+      ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes) => Center(
         child: VlcPlayer(
           controller: controller,
           aspectRatio: 16 / 9,
@@ -277,6 +364,8 @@ class _VideoPageState extends State<VideoPage> {
       _audioPanelKey.currentState?.handleKeyEvent(event);
     } else if (showQualityPanel) {
       _qualityPanelKey.currentState?.handleKeyEvent(event);
+    } else if (showEpisodePanel) {
+      _episodePanelKey.currentState?.handleKeyEvent(event);
     }
   }
 
@@ -285,7 +374,7 @@ class _VideoPageState extends State<VideoPage> {
       switch (event.logicalKey) {
         case LogicalKeyboardKey.arrowRight:
           if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
+            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
               // En paneles, no hacer nada con derecha
               return;
             }
@@ -310,11 +399,12 @@ class _VideoPageState extends State<VideoPage> {
           break;
         case LogicalKeyboardKey.arrowLeft:
           if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
+            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
               // Salir de paneles con flecha izquierda
               _hideSubtitlePanel();
               _hideAudioPanel();
               _hideQualityPanel();
+              _hideEpisodePanel();
               _controlsManager?.resetTimer();
             } else if (_controlsManager!.showControls && _isSliderFocused) {
               // Control del slider: -10 segundos
@@ -339,7 +429,7 @@ class _VideoPageState extends State<VideoPage> {
           break;
         case LogicalKeyboardKey.arrowUp:
           if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
+            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
               // Delegar navegación a los paneles activos
               _delegateKeyEventToPanels(event);
               _controlsManager?.resetTimer();
@@ -362,7 +452,7 @@ class _VideoPageState extends State<VideoPage> {
           break;
         case LogicalKeyboardKey.arrowDown:
           if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
+            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
               // Delegar navegación a los paneles activos
               _delegateKeyEventToPanels(event);
               _controlsManager?.resetTimer();
@@ -386,7 +476,7 @@ class _VideoPageState extends State<VideoPage> {
         case LogicalKeyboardKey.select:
         case LogicalKeyboardKey.enter:
           if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
+            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
               // Delegar navegación a los paneles activos
               _delegateKeyEventToPanels(event);
               _controlsManager?.resetTimer();
@@ -402,17 +492,38 @@ class _VideoPageState extends State<VideoPage> {
                   break;
                 case 1: // Slider - no hacer nada en select
                   break;
-                case 2: // Restart
-                  _videoPlayerBloc.add(const VideoPlayerEvent.restart());
+                case 2: // Episodes (series only) or Restart (movies)
+                  if (type == 'series') {
+                    _showEpisodePanel();
+                  } else {
+                    _videoPlayerBloc.add(const VideoPlayerEvent.restart());
+                  }
                   break;
-                case 3: // Audio
-                  _showAudioPanel();
+                case 3: // Restart (series) or Audio (movies)
+                  if (type == 'series') {
+                    _videoPlayerBloc.add(const VideoPlayerEvent.restart());
+                  } else {
+                    _showAudioPanel();
+                  }
                   break;
-                case 4: // Subtitles
-                  _showSubtitlePanel();
+                case 4: // Audio (series) or Subtitles (movies)
+                  if (type == 'series') {
+                    _showAudioPanel();
+                  } else {
+                    _showSubtitlePanel();
+                  }
                   break;
-                case 5: // Settings/Quality
-                  _showQualityPanel();
+                case 5: // Subtitles (series) or Settings (movies)
+                  if (type == 'series') {
+                    _showSubtitlePanel();
+                  } else {
+                    _showQualityPanel();
+                  }
+                  break;
+                case 6: // Settings (series only)
+                  if (type == 'series') {
+                    _showQualityPanel();
+                  }
                   break;
               }
               _controlsManager?.resetTimer();
@@ -426,10 +537,11 @@ class _VideoPageState extends State<VideoPage> {
           break;
         case LogicalKeyboardKey.escape:
         case LogicalKeyboardKey.goBack:
-          if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
+          if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
             _hideSubtitlePanel();
             _hideAudioPanel();
             _hideQualityPanel();
+            _hideEpisodePanel();
             _controlsManager?.resetTimer();
           } else {
             // Limpiar recursos del video player antes de navegar
@@ -600,6 +712,30 @@ class _VideoPageState extends State<VideoPage> {
                                   Row(
                                     mainAxisAlignment: isTV ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
                                     children: [
+                                      // Botón de episodios (solo para series) - ahora va primero
+                                      if (type == 'series')
+                                        Container(
+                                          margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
+                                          decoration: isTV
+                                              ? BoxDecoration(
+                                                  color: Colors.black.withOpacity(0.2),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: _isEpisodesFocused
+                                                      ? Border.all(
+                                                          color: Colors.white,
+                                                          width: 2,
+                                                        )
+                                                      : null,
+                                                )
+                                              : null,
+                                          child: IconButton(
+                                            icon: Icon(Icons.list, color: Colors.white, size: isTV ? 40 : 32),
+                                            onPressed: () {
+                                              _showEpisodePanel();
+                                              _controlsManager?.resetTimer();
+                                            },
+                                          ),
+                                        ),
                                       Container(
                                         margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
                                         decoration: isTV
@@ -755,6 +891,20 @@ class _VideoPageState extends State<VideoPage> {
                       // No hacer nada - solo hay opción automática
                     },
                     onClose: _hideQualityPanel,
+                  ),
+
+                // Episode Panel - Solo para series
+                if (showEpisodePanel && type == 'series')
+                  OptionPanel(
+                    key: _episodePanelKey,
+                    title: 'Episodios',
+                    isVisible: showEpisodePanel,
+                    currentValue: episodeNumber?.toString() ?? '1',
+                    options: _getEpisodeOptions(),
+                    onValueChanged: (String episodeNum) {
+                      _selectEpisode(episodeNum);
+                    },
+                    onClose: _hideEpisodePanel,
                   ),
               ],
             ),

@@ -31,6 +31,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     on<_VideoPlayerEventUpdatePlayingState>(_onUpdatePlayingState);
     on<_VideoPlayerEventVideoEnded>(_onVideoEnded);
     on<_VideoPlayerEventTracksLoaded>(_onTracksLoaded);
+    on<_VideoPlayerEventLoadEpisodes>(_onLoadEpisodes);
     on<_VideoPlayerEventError>(_onError);
   }
 
@@ -391,6 +392,28 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         currentAudioIndex: 0,
       ));
     }
+  }
+
+  void _onLoadEpisodes(_VideoPlayerEventLoadEpisodes event, Emitter<VideoPlayerState> emit) {
+    final currentState = state;
+    if (currentState is _VideoPlayerStateReady) {
+      // Simular datos estáticos de episodios usando el seasonId
+      final episodes = _generateStaticEpisodes(event.seasonId);
+      emit(currentState.copyWith(episodes: episodes));
+    }
+  }
+
+  List<Map<String, dynamic>> _generateStaticEpisodes(int seasonId) {
+    // Generar episodios estáticos basados en el seasonId
+    return List.generate(10, (index) => {
+      'id': seasonId * 100 + index + 1,
+      'episodeNumber': index + 1,
+      'title': 'Episodio ${index + 1}',
+      'description': 'Descripción del episodio ${index + 1} de la temporada $seasonId',
+      'videoUrl': 'https://scroll-tv-movie-home-cdn.b-cdn.net/Pantera%20Negra.mp4',
+      'duration': '45:00',
+      'thumbnail': 'https://via.placeholder.com/300x200?text=Episodio+${index + 1}'
+    });
   }
 
   void _onError(_VideoPlayerEventError event, Emitter<VideoPlayerState> emit) {

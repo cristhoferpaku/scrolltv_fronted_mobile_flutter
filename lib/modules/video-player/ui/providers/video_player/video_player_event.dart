@@ -32,6 +32,9 @@ class VideoPlayerEvent with _$VideoPlayerEvent {
     required List<Map<String, String>> audioTracks,
   }) = _VideoPlayerEventTracksLoaded;
   
+  // Episodes events
+  const factory VideoPlayerEvent.loadEpisodes({required int seasonId}) = _VideoPlayerEventLoadEpisodes;
+  
   // Error events
   const factory VideoPlayerEvent.error({required String message}) = _VideoPlayerEventError;
 }
