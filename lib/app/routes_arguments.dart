@@ -14,5 +14,6 @@ class VideoPageArguments {
   final String videoUrl;
   final int? seasonId;
   final int? episodeNumber;
-  VideoPageArguments({required this.videoId, required this.videoUrl, this.episodeNumber, this.seasonId});
+  final String? type;
+  VideoPageArguments({required this.videoId, required this.videoUrl, this.episodeNumber, this.seasonId, this.type});
 }

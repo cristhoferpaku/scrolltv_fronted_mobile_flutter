@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/video_controls_manager.dart';
@@ -27,6 +29,9 @@ class VideoPageWrapper extends StatelessWidget {
 class _VideoPageState extends State<VideoPage> {
   String videoUrl = '';
   int videoId = 0;
+  int? seasonId;
+  int? episodeNumber;
+  String? type;
   final bool isTV = PlatformUtils.isTV;
   String deviceId = "";
   VideoControlsManager? _controlsManager;
@@ -62,6 +67,9 @@ class _VideoPageState extends State<VideoPage> {
       final args = ModalRoute.of(context)!.settings.arguments as VideoPageArguments;
       videoUrl = args.videoUrl;
       videoId = args.videoId;
+      seasonId = args.seasonId;
+      episodeNumber = args.episodeNumber;
+      type = args.type;
 
       // Inicializar el video player con VideoPlayerBloc
       _videoPlayerBloc.add(VideoPlayerEvent.initialize(videoUrl: 'https://scroll-tv-movie-home-cdn.b-cdn.net/Pantera%20Negra.mp4'));
@@ -94,6 +102,16 @@ class _VideoPageState extends State<VideoPage> {
           setState(() {});
         }
       },
+      onControlsHidden: () {
+        if (mounted) {
+          // Cerrar todos los paneles cuando los controles se oculten automáticamente
+          setState(() {
+            showSubtitlePanel = false;
+            showAudioPanel = false;
+            showQualityPanel = false;
+          });
+        }
+      },
     );
   }
 
@@ -117,6 +135,8 @@ class _VideoPageState extends State<VideoPage> {
       showAudioPanel = false;
       showQualityPanel = false;
     });
+    // Reiniciar timer cuando se abre un panel
+    _controlsManager?.resetTimer();
   }
 
   void _hideSubtitlePanel() {
@@ -131,6 +151,8 @@ class _VideoPageState extends State<VideoPage> {
       showSubtitlePanel = false;
       showQualityPanel = false;
     });
+    // Reiniciar timer cuando se abre un panel
+    _controlsManager?.resetTimer();
   }
 
   void _hideAudioPanel() {
@@ -145,6 +167,8 @@ class _VideoPageState extends State<VideoPage> {
       showSubtitlePanel = false;
       showAudioPanel = false;
     });
+    // Reiniciar timer cuando se abre un panel
+    _controlsManager?.resetTimer();
   }
 
   void _hideQualityPanel() {
@@ -291,6 +315,7 @@ class _VideoPageState extends State<VideoPage> {
               _hideSubtitlePanel();
               _hideAudioPanel();
               _hideQualityPanel();
+              _controlsManager?.resetTimer();
             } else if (_controlsManager!.showControls && _isSliderFocused) {
               // Control del slider: -10 segundos
               _videoPlayerBloc.add(const VideoPlayerEvent.skipBackward(seconds: 10));
@@ -317,6 +342,7 @@ class _VideoPageState extends State<VideoPage> {
             if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
               // Delegar navegación a los paneles activos
               _delegateKeyEventToPanels(event);
+              _controlsManager?.resetTimer();
               return;
             }
             if (!_controlsManager!.showControls) {
@@ -339,6 +365,7 @@ class _VideoPageState extends State<VideoPage> {
             if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
               // Delegar navegación a los paneles activos
               _delegateKeyEventToPanels(event);
+              _controlsManager?.resetTimer();
               return;
             }
             if (!_controlsManager!.showControls) {
@@ -362,6 +389,7 @@ class _VideoPageState extends State<VideoPage> {
             if (showSubtitlePanel || showAudioPanel || showQualityPanel) {
               // Delegar navegación a los paneles activos
               _delegateKeyEventToPanels(event);
+              _controlsManager?.resetTimer();
               return;
             }
             if (!_controlsManager!.showControls) {
@@ -402,8 +430,19 @@ class _VideoPageState extends State<VideoPage> {
             _hideSubtitlePanel();
             _hideAudioPanel();
             _hideQualityPanel();
+            _controlsManager?.resetTimer();
           } else {
-            Navigator.pop(context);
+            // Limpiar recursos del video player antes de navegar
+            _videoPlayerBloc.add(const VideoPlayerEvent.dispose());
+            _controlsManager?.dispose();
+
+            if (Navigator.canPop(context)) {
+              print('There is a previous page to return to');
+              Navigator.pop(context);
+            } else {
+              print('No previous page available');
+              Navigator.pushReplacementNamed(context, Routes.homeRoute);
+            }
           }
           break;
       }
@@ -412,11 +451,9 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<VideoPlayerState>(
-      stream: _videoPlayerBloc.stream,
-      builder: (context, snapshot) {
-        final state = snapshot.data ?? const VideoPlayerState.initial();
-
+    return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+      bloc: _videoPlayerBloc,
+      builder: (context, state) {
         return Scaffold(
           backgroundColor: Colors.black,
           body: KeyboardListener(

@@ -21,7 +21,8 @@ class EpisodeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ContainerFocus(
       onTap: () {
-        Navigator.pushNamed(context, Routes.videoRoute, arguments: VideoPageArguments(videoId: 0, videoUrl: episode.videoUrl ?? "", episodeNumber: episode.episodeNumber ?? 0, seasonId: seasonId));
+        Navigator.pushNamed(context, Routes.videoRoute,
+            arguments: VideoPageArguments(videoId: 0, videoUrl: episode.videoUrl ?? "", episodeNumber: episode.episodeNumber ?? 0, seasonId: seasonId, type: "series"));
       },
       child: Stack(
         children: [

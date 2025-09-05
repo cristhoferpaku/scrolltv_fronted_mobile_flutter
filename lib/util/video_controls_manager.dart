@@ -1,24 +1,30 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 class VideoControlsManager {
   bool _showControls = true;
   Timer? _hideTimer;
   VoidCallback? _onControlsChanged;
+  VoidCallback? _onControlsHidden;
 
   // Getter
   bool get showControls => _showControls;
 
-  // Initialize with callback
-  void initialize({VoidCallback? onControlsChanged}) {
+  // Initialize with callbacks
+  void initialize({
+    VoidCallback? onControlsChanged,
+    VoidCallback? onControlsHidden,
+  }) {
     _onControlsChanged = onControlsChanged;
+    _onControlsHidden = onControlsHidden;
   }
 
   // Toggle controls visibility
   void toggleControls() {
     _showControls = !_showControls;
     _notifyChange();
-    
+
     if (_showControls) {
       _startHideTimer();
     } else {
@@ -47,8 +53,12 @@ class VideoControlsManager {
   // Start auto-hide timer
   void _startHideTimer() {
     _cancelHideTimer();
-    _hideTimer = Timer(Duration(seconds: 10), () {
+    _hideTimer = Timer(Duration(seconds: 4), () {
       hideControls();
+      // Notificar que los controles se ocultaron automáticamente
+      if (_onControlsHidden != null) {
+        _onControlsHidden!();
+      }
     });
   }
 
