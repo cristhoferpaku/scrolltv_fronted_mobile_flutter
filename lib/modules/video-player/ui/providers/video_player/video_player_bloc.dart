@@ -63,7 +63,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       _disposeController();
       // Usar la misma lógica simple del VideoControllerManager que funcionaba
       print('🔄 Inicializando reproductor con URL: ${event.videoUrl}');
-      
+
       final controller = VlcPlayerController.network(
         event.videoUrl,
         hwAcc: HwAcc.full,
@@ -85,7 +85,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       await Future.delayed(const Duration(milliseconds: 3000));
 
       _controller = controller;
-      
+
       // Setup listeners
       _setupListeners();
 
@@ -96,7 +96,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
       // Load tracks with retry mechanism como en VideoControllerManager
       _loadTracksWithRetry();
-      
+
       print('🎬 Reproductor inicializado correctamente con URL: ${event.videoUrl}');
     } catch (e) {
       print('💥 Error crítico al inicializar el reproductor: $e');
@@ -153,45 +153,60 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     if (_controller == null) return false;
 
     try {
-      // En flutter_vlc_player, las pistas se obtienen de manera diferente
-      // Por ahora, agregamos pistas por defecto
-      final subtitleTracks = <int, String>{};
-      final audioTracks = <int, String>{};
-
       bool foundSubtitles = false;
       bool foundAudio = false;
+      final subtitleList = <Map<String, String>>[];
+      final audioList = <Map<String, String>>[];
 
       print('\n=== INFORMACIÓN DE PISTAS DE VIDEO ===');
 
-      // Process subtitles
-      if (subtitleTracks.isNotEmpty) {
-        print('📝 SUBTÍTULOS ENCONTRADOS: ${subtitleTracks.length} pistas');
-        for (var track in subtitleTracks.entries) {
-          print('   ID: ${track.key} - Nombre: ${track.value}');
+      // Try to get real subtitle tracks from VLC (same as VideoControllerManager)
+      try {
+        final spuCount = await _controller!.getSpuTracks();
+        // Add "Desactivados" option first
+        subtitleList.add({'id': '-1', 'name': 'Desactivados'});
+        if (spuCount.isNotEmpty) {
+          final sortedTracks = spuCount.entries.toList()..sort((a, b) => a.value.compareTo(b.value));
+          // Add real subtitle tracks from video stream in alphabetical order
+          for (final entry in sortedTracks) {
+            subtitleList.add({'id': entry.key.toString(), 'name': entry.value});
+          }
+          foundSubtitles = true;
+          print('📝 SUBTÍTULOS ENCONTRADOS: ${spuCount.length} pistas');
+          for (var track in spuCount.entries) {
+            print('   ID: ${track.key} - Nombre: ${track.value}');
+          }
+        } else {
+          print('❌ No se encontraron pistas de subtítulos');
         }
-        foundSubtitles = true;
-      } else {
-        print('❌ No se encontraron pistas de subtítulos');
+      } catch (e) {
+        subtitleList.add({'id': '-1', 'name': 'Desactivados'});
+        print('❌ Error obteniendo subtítulos: $e');
       }
 
-      // Process audio tracks
-      if (audioTracks.isNotEmpty) {
-        print('🔊 AUDIOS ENCONTRADOS: ${audioTracks.length} pistas');
-        for (var track in audioTracks.entries) {
-          print('   ID: ${track.key} - Nombre: ${track.value}');
+      // Try to get real audio tracks from VLC (same as VideoControllerManager)
+      try {
+        final audio = await _controller!.getAudioTracks();
+        if (audio.isNotEmpty) {
+          final sortedAudioTracks = audio.entries.toList()..sort((a, b) => a.value.compareTo(b.value));
+          for (final entry in sortedAudioTracks) {
+            audioList.add({'id': entry.key.toString(), 'name': entry.value});
+          }
+          foundAudio = true;
+          print('🔊 AUDIOS ENCONTRADOS: ${audio.length} pistas');
+          for (var track in audio.entries) {
+            print('   ID: ${track.key} - Nombre: ${track.value}');
+          }
+        } else {
+          print('❌ No se encontraron pistas de audio específicas');
         }
-        foundAudio = true;
-      } else {
-        print('❌ No se encontraron pistas de audio específicas');
+      } catch (e) {
+        print('❌ Error obteniendo audio: $e');
       }
 
       print('=====================================\n');
 
       if (foundSubtitles || foundAudio) {
-        // Convert to List<Map<String, String>> format
-        final subtitleList = subtitleTracks.entries.map((e) => {'id': e.key.toString(), 'name': e.value}).toList();
-        final audioList = audioTracks.entries.map((e) => {'id': e.key.toString(), 'name': e.value}).toList();
-
         add(VideoPlayerEvent.tracksLoaded(
           subtitleTracks: subtitleList,
           audioTracks: audioList,
@@ -208,10 +223,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
   void _addDefaultTracks() {
     final defaultSubtitles = [
-      {'id': '-1', 'name': 'Sin subtítulos'}
+      {'id': '-1', 'name': 'Desactivados'}
     ];
     final defaultAudio = [
-      {'id': '-1', 'name': 'Audio principal'}
+      {'id': '0', 'name': 'Audio Principal'}
     ];
 
     add(VideoPlayerEvent.tracksLoaded(
@@ -280,11 +295,20 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     final currentState = state;
     if (currentState is _VideoPlayerStateReady) {
       try {
-        await _controller?.setSpuTrack(event.index);
-
+        // Obtener el ID real de la pista desde el array
+        String? trackId;
         String? currentSubtitle;
+        
         if (event.index >= 0 && event.index < currentState.subtitleTracks.length) {
+          trackId = currentState.subtitleTracks[event.index]['id'];
           currentSubtitle = currentState.subtitleTracks[event.index]['name'];
+        }
+        
+        // Usar el ID real de la pista, no el índice del array
+        if (trackId != null) {
+          final realTrackId = int.tryParse(trackId) ?? -1;
+          await _controller?.setSpuTrack(realTrackId);
+          print('🎬 Cambiando subtítulo a pista ID: $realTrackId (índice: ${event.index})');
         }
 
         emit(currentState.copyWith(
@@ -292,6 +316,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           currentSubtitle: currentSubtitle ?? '',
         ));
       } catch (e) {
+        print('❌ Error cambiando pista de subtítulos: $e');
         add(VideoPlayerEvent.error(message: 'Error changing subtitle track: $e'));
       }
     }
@@ -301,12 +326,25 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     final currentState = state;
     if (currentState is _VideoPlayerStateReady) {
       try {
-        await _controller?.setAudioTrack(event.index);
+        // Obtener el ID real de la pista desde el array
+        String? trackId;
+        
+        if (event.index >= 0 && event.index < currentState.audioTracks.length) {
+          trackId = currentState.audioTracks[event.index]['id'];
+        }
+        
+        // Usar el ID real de la pista, no el índice del array
+        if (trackId != null) {
+          final realTrackId = int.tryParse(trackId) ?? 0;
+          await _controller?.setAudioTrack(realTrackId);
+          print('🎵 Cambiando audio a pista ID: $realTrackId (índice: ${event.index})');
+        }
 
         emit(currentState.copyWith(
           currentAudioIndex: event.index,
         ));
       } catch (e) {
+        print('❌ Error cambiando pista de audio: $e');
         add(VideoPlayerEvent.error(message: 'Error changing audio track: $e'));
       }
     }
@@ -343,9 +381,14 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   void _onTracksLoaded(_VideoPlayerEventTracksLoaded event, Emitter<VideoPlayerState> emit) {
     final currentState = state;
     if (currentState is _VideoPlayerStateReady) {
+      // Inicializar con los índices por defecto
+      // Subtítulos: índice 0 ("Desactivados")
+      // Audio: índice 0 ("Audio Principal")
       emit(currentState.copyWith(
         subtitleTracks: event.subtitleTracks,
         audioTracks: event.audioTracks,
+        currentSubtitleIndex: 0,
+        currentAudioIndex: 0,
       ));
     }
   }

@@ -63,6 +63,16 @@ extension VideoPlayerStateExtension on VideoPlayerState {
     orElse: () => [],
   );
   
+  int get currentSubtitleIndex => maybeWhen(
+    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => currentSubtitleIndex,
+    orElse: () => 0,
+  );
+  
+  int get currentAudioIndex => maybeWhen(
+    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => currentAudioIndex,
+    orElse: () => 0,
+  );
+  
   String? get errorMessage => maybeWhen(
     error: (message) => message,
     orElse: () => null,
