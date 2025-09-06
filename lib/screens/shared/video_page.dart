@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,10 +7,10 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/video_controls_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/episode_panel.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/option_panel.dart';
 
 class VideoPage extends StatefulWidget {
@@ -53,6 +55,12 @@ class _VideoPageState extends State<VideoPage> {
   final GlobalKey<OptionPanelState> _audioPanelKey = GlobalKey<OptionPanelState>();
   final GlobalKey<OptionPanelState> _qualityPanelKey = GlobalKey<OptionPanelState>();
   final GlobalKey<OptionPanelState> _episodePanelKey = GlobalKey<OptionPanelState>();
+
+  // Sistema de repetición de teclas
+  Timer? _keyRepeatTimer;
+  LogicalKeyboardKey? _currentRepeatingKey;
+  static const Duration _keyRepeatDelay = Duration(milliseconds: 500); // Delay inicial
+  static const Duration _keyRepeatInterval = Duration(milliseconds: 100); // Intervalo de repetición
 
   // Focus states
   bool get _isPlayPauseFocused => isTV && _currentFocusIndex == 0;
@@ -126,6 +134,7 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   void dispose() {
+    _stopKeyRepeat();
     _videoPlayerBloc.add(const VideoPlayerEvent.dispose());
     _controlsManager?.dispose();
     _focusNode.dispose();
@@ -194,7 +203,7 @@ class _VideoPageState extends State<VideoPage> {
     if (type == 'series' && seasonId != null) {
       _videoPlayerBloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId!));
     }
-    
+
     setState(() {
       showEpisodePanel = true;
       showSubtitlePanel = false;
@@ -247,48 +256,84 @@ class _VideoPageState extends State<VideoPage> {
     ];
   }
 
-  List<Map<String, String>> _getEpisodeOptions() {
+  List<Map<String, dynamic>> _getEpisodeOptions() {
     // Obtener episodios del estado del bloc
     final blocEpisodes = _videoPlayerBloc.state.episodes;
-    
+
     if (blocEpisodes.isNotEmpty) {
-      return blocEpisodes.map<Map<String, String>>((episode) {
+      return blocEpisodes.map<Map<String, dynamic>>((episode) {
         final episodeMap = episode as Map<String, dynamic>;
         return {
-          'label': 'Ep ${episodeMap['episodeNumber']}: ${episodeMap['title']}',
-          'value': episodeMap['episodeNumber'].toString()
+          'episodeNumber': episodeMap['episodeNumber'],
+          'title': episodeMap['title'] ?? 'Episodio ${episodeMap['episodeNumber']}',
+          'coverImage': episodeMap['coverImage'] ?? '',
+          'id': episodeMap['id'],
+          'videoUrl': episodeMap['videoUrl'],
         };
       }).toList();
     }
-    
-    // Si no hay episodios en el bloc y es una serie, mostrar mensaje de carga
+
+    // Si no hay episodios en el bloc y es una serie, mostrar episodios de ejemplo
     if (type == 'series') {
       return [
-        {'label': 'Cargando episodios...', 'value': '0'}
+        {
+          'episodeNumber': 1,
+          'title': 'Episodio 1',
+          'coverImage': '',
+          'id': 1,
+          'videoUrl': '',
+        },
+        {
+          'episodeNumber': 2,
+          'title': 'Episodio 2',
+          'coverImage': '',
+          'id': 2,
+          'videoUrl': '',
+        },
+        {
+          'episodeNumber': 3,
+          'title': 'Episodio 3',
+          'coverImage': '',
+          'id': 3,
+          'videoUrl': '',
+        },
+        {
+          'episodeNumber': 4,
+          'title': 'Episodio 4',
+          'coverImage': '',
+          'id': 4,
+          'videoUrl': '',
+        },
       ];
     }
-    
+
     return [
-      {'label': 'No hay episodios disponibles', 'value': '1'}
+      {
+        'episodeNumber': 1,
+        'title': 'No hay episodios disponibles',
+        'coverImage': '',
+        'id': 1,
+        'videoUrl': '',
+      }
     ];
   }
 
   void _selectEpisode(String episodeNum) {
-    // Obtener episodios del estado del bloc
-    final blocEpisodes = _videoPlayerBloc.state.episodes;
-    
-    if (blocEpisodes.isNotEmpty && episodeNum != '0') {
-      final selectedEpisodeData = blocEpisodes.firstWhere(
-        (episode) {
-          final episodeMap = episode as Map<String, dynamic>;
-          return episodeMap['episodeNumber'].toString() == episodeNum;
-        },
-        orElse: () => blocEpisodes.first,
-      ) as Map<String, dynamic>;
+    // Obtener episodios usando el método _getEpisodeOptions
+    final episodes = _getEpisodeOptions();
 
-      _videoPlayerBloc.add(VideoPlayerEvent.initialize(
-        videoUrl: selectedEpisodeData['videoUrl'],
-      ));
+    if (episodes.isNotEmpty && episodeNum != '0') {
+      final selectedEpisodeData = episodes.firstWhere(
+        (episode) => episode['episodeNumber'].toString() == episodeNum,
+        orElse: () => episodes.first,
+      );
+
+      // Solo inicializar el reproductor si hay una URL válida
+      if (selectedEpisodeData['videoUrl'] != null && selectedEpisodeData['videoUrl'].isNotEmpty) {
+        _videoPlayerBloc.add(VideoPlayerEvent.initialize(
+          videoUrl: selectedEpisodeData['videoUrl'],
+        ));
+      }
 
       setState(() {
         episodeNumber = selectedEpisodeData['episodeNumber'];
@@ -357,19 +402,60 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   // Método para delegar eventos de teclado a los paneles activos
-  void _delegateKeyEventToPanels(KeyEvent event) {
+  bool _delegateKeyEventToPanels(KeyEvent event) {
     if (showSubtitlePanel) {
-      _subtitlePanelKey.currentState?.handleKeyEvent(event);
+      return _subtitlePanelKey.currentState?.handleKeyEvent(event) ?? false;
     } else if (showAudioPanel) {
-      _audioPanelKey.currentState?.handleKeyEvent(event);
+      return _audioPanelKey.currentState?.handleKeyEvent(event) ?? false;
     } else if (showQualityPanel) {
-      _qualityPanelKey.currentState?.handleKeyEvent(event);
+      return _qualityPanelKey.currentState?.handleKeyEvent(event) ?? false;
     } else if (showEpisodePanel) {
-      _episodePanelKey.currentState?.handleKeyEvent(event);
+      return _episodePanelKey.currentState?.handleKeyEvent(event) ?? false;
     }
+    return false;
+  }
+
+  // Métodos para manejar repetición de teclas
+  void _startKeyRepeat(LogicalKeyboardKey key, VoidCallback action) {
+    _stopKeyRepeat();
+    _currentRepeatingKey = key;
+
+    // Ejecutar la acción inmediatamente
+    action();
+
+    // Iniciar el timer de repetición después del delay inicial
+    _keyRepeatTimer = Timer(_keyRepeatDelay, () {
+      _keyRepeatTimer = Timer.periodic(_keyRepeatInterval, (timer) {
+        action();
+      });
+    });
+  }
+
+  void _stopKeyRepeat() {
+    _keyRepeatTimer?.cancel();
+    _keyRepeatTimer = null;
+    _currentRepeatingKey = null;
+  }
+
+  // Método para ejecutar acciones de seek
+  void _performSeekAction(LogicalKeyboardKey key) {
+    if (key == LogicalKeyboardKey.arrowRight) {
+      _videoPlayerBloc.add(const VideoPlayerEvent.skipForward(seconds: 10));
+    } else if (key == LogicalKeyboardKey.arrowLeft) {
+      _videoPlayerBloc.add(const VideoPlayerEvent.skipBackward(seconds: 10));
+    }
+    _controlsManager?.resetTimer();
   }
 
   void _handleKeyEvent(KeyEvent event) {
+    // Manejar KeyUpEvent para cancelar repetición
+    if (event is KeyUpEvent) {
+      if (_currentRepeatingKey == event.logicalKey) {
+        _stopKeyRepeat();
+      }
+      return;
+    }
+
     if (event is KeyDownEvent) {
       switch (event.logicalKey) {
         case LogicalKeyboardKey.arrowRight:
@@ -381,9 +467,8 @@ class _VideoPageState extends State<VideoPage> {
             if (!_controlsManager!.showControls) {
               _controlsManager?.show();
             } else if (_isSliderFocused) {
-              // Control del slider: +10 segundos
-              _videoPlayerBloc.add(const VideoPlayerEvent.skipForward(seconds: 10));
-              _controlsManager?.resetTimer();
+              // Control del slider con repetición: +10 segundos
+              _startKeyRepeat(event.logicalKey, () => _performSeekAction(event.logicalKey));
             } else {
               // Navegar a la derecha entre controles
               setState(() {
@@ -400,16 +485,19 @@ class _VideoPageState extends State<VideoPage> {
         case LogicalKeyboardKey.arrowLeft:
           if (isTV) {
             if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
-              // Salir de paneles con flecha izquierda
-              _hideSubtitlePanel();
-              _hideAudioPanel();
-              _hideQualityPanel();
-              _hideEpisodePanel();
-              _controlsManager?.resetTimer();
+              // Primero delegar al panel activo para navegación interna
+              bool eventHandled = _delegateKeyEventToPanels(event);
+              // Solo cerrar paneles si no hay navegación interna disponible
+              if (!eventHandled) {
+                _hideSubtitlePanel();
+                _hideAudioPanel();
+                _hideQualityPanel();
+                _hideEpisodePanel();
+                _controlsManager?.resetTimer();
+              }
             } else if (_controlsManager!.showControls && _isSliderFocused) {
-              // Control del slider: -10 segundos
-              _videoPlayerBloc.add(const VideoPlayerEvent.skipBackward(seconds: 10));
-              _controlsManager?.resetTimer();
+              // Control del slider con repetición: -10 segundos
+              _startKeyRepeat(event.logicalKey, () => _performSeekAction(event.logicalKey));
             } else if (_controlsManager!.showControls) {
               // Navegar a la izquierda entre controles
               setState(() {
@@ -431,7 +519,7 @@ class _VideoPageState extends State<VideoPage> {
           if (isTV) {
             if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
               // Delegar navegación a los paneles activos
-              _delegateKeyEventToPanels(event);
+              bool eventHandled = _delegateKeyEventToPanels(event);
               _controlsManager?.resetTimer();
               return;
             }
@@ -454,7 +542,7 @@ class _VideoPageState extends State<VideoPage> {
           if (isTV) {
             if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
               // Delegar navegación a los paneles activos
-              _delegateKeyEventToPanels(event);
+              bool eventHandled = _delegateKeyEventToPanels(event);
               _controlsManager?.resetTimer();
               return;
             }
@@ -478,7 +566,7 @@ class _VideoPageState extends State<VideoPage> {
           if (isTV) {
             if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
               // Delegar navegación a los paneles activos
-              _delegateKeyEventToPanels(event);
+              bool eventHandled = _delegateKeyEventToPanels(event);
               _controlsManager?.resetTimer();
               return;
             }
@@ -895,12 +983,12 @@ class _VideoPageState extends State<VideoPage> {
 
                 // Episode Panel - Solo para series
                 if (showEpisodePanel && type == 'series')
-                  OptionPanel(
+                  EpisodePanel(
                     key: _episodePanelKey,
                     title: 'Episodios',
                     isVisible: showEpisodePanel,
                     currentValue: episodeNumber?.toString() ?? '1',
-                    options: _getEpisodeOptions(),
+                    episodes: _getEpisodeOptions(),
                     onValueChanged: (String episodeNum) {
                       _selectEpisode(episodeNum);
                     },
