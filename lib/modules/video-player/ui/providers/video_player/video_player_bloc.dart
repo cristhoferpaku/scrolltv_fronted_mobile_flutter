@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/episode_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/inbound/multimedia_use_case.dart';
 
 part 'video_player_bloc.freezed.dart';
 part 'video_player_event.dart';
@@ -12,6 +15,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   VlcPlayerController? _controller;
   StreamSubscription<Duration>? _positionSubscription;
   Timer? _positionTimer;
+  final MultimediaUseCase _multimediaUseCase = instance<MultimediaUseCase>();
 
   VideoPlayerBloc() : super(const VideoPlayerState.initial()) {
     on<_VideoPlayerEventInitialize>(_onInitialize);
@@ -67,7 +71,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
       final controller = VlcPlayerController.network(
         event.videoUrl,
-        hwAcc: HwAcc.full,
+        hwAcc: HwAcc.auto, // HwAcc.auto funciona mejor en dispositivos móviles
         autoPlay: true,
         options: VlcPlayerOptions(), // Usar opciones simples como el VideoControllerManager
       );
@@ -299,12 +303,12 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         // Obtener el ID real de la pista desde el array
         String? trackId;
         String? currentSubtitle;
-        
+
         if (event.index >= 0 && event.index < currentState.subtitleTracks.length) {
           trackId = currentState.subtitleTracks[event.index]['id'];
           currentSubtitle = currentState.subtitleTracks[event.index]['name'];
         }
-        
+
         // Usar el ID real de la pista, no el índice del array
         if (trackId != null) {
           final realTrackId = int.tryParse(trackId) ?? -1;
@@ -329,11 +333,11 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       try {
         // Obtener el ID real de la pista desde el array
         String? trackId;
-        
+
         if (event.index >= 0 && event.index < currentState.audioTracks.length) {
           trackId = currentState.audioTracks[event.index]['id'];
         }
-        
+
         // Usar el ID real de la pista, no el índice del array
         if (trackId != null) {
           final realTrackId = int.tryParse(trackId) ?? 0;
@@ -390,30 +394,24 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         audioTracks: event.audioTracks,
         currentSubtitleIndex: 0,
         currentAudioIndex: 0,
+        tracksLoaded: true,
       ));
     }
   }
 
-  void _onLoadEpisodes(_VideoPlayerEventLoadEpisodes event, Emitter<VideoPlayerState> emit) {
+  void _onLoadEpisodes(_VideoPlayerEventLoadEpisodes event, Emitter<VideoPlayerState> emit) async {
     final currentState = state;
     if (currentState is _VideoPlayerStateReady) {
       // Simular datos estáticos de episodios usando el seasonId
       final episodes = _generateStaticEpisodes(event.seasonId);
-      emit(currentState.copyWith(episodes: episodes));
+      emit(currentState.copyWith(episodes: await episodes));
     }
   }
 
-  List<Map<String, dynamic>> _generateStaticEpisodes(int seasonId) {
-    // Generar episodios estáticos basados en el seasonId
-    return List.generate(10, (index) => {
-      'id': seasonId * 100 + index + 1,
-      'episodeNumber': index + 1,
-      'title': 'Episodio ${index + 1}',
-      'description': 'Descripción del episodio ${index + 1} de la temporada $seasonId',
-      'videoUrl': 'https://scroll-tv-movie-home-cdn.b-cdn.net/Pantera%20Negra.mp4',
-      'duration': '45:00',
-      'thumbnail': 'https://via.placeholder.com/300x200?text=Episodio+${index + 1}'
-    });
+  Future<List<EpisodeModel>> _generateStaticEpisodes(int seasonId) async {
+    // Obtener episodios reales usando el seasonId y mapper
+    final response = await _multimediaUseCase.getEpisodesBySeasonId(seasonId);
+    return response.data;
   }
 
   void _onError(_VideoPlayerEventError event, Emitter<VideoPlayerState> emit) {

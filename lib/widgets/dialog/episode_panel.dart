@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../modules/multimedia/domain/entities/episode_model.dart';
 import '../../util/platform_utils.dart';
+import '../skeleton/episodes_list_skeleton.dart';
 
 class EpisodePanel extends StatefulWidget {
   final String title;
   final bool isVisible;
   final String currentValue;
-  final List<Map<String, dynamic>> episodes;
+  final List<EpisodeModel> episodes;
   final Function(String) onValueChanged;
   final VoidCallback onClose;
 
@@ -22,10 +24,10 @@ class EpisodePanel extends StatefulWidget {
   });
 
   @override
-  State<EpisodePanel> createState() => _EpisodePanelState();
+  State<EpisodePanel> createState() => EpisodePanelState();
 }
 
-class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixin {
+class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   int selectedIndex = 0;
   late AnimationController _animationController;
@@ -41,7 +43,7 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
       vsync: this,
     );
     _slideAnimation = Tween<double>(
-      begin: 1.0,
+      begin: -1.0,
       end: 0.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
@@ -58,7 +60,7 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
   @override
   void didUpdateWidget(EpisodePanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.currentValue != widget.currentValue) {
+    if (oldWidget.currentValue != widget.currentValue || oldWidget.episodes.length != widget.episodes.length) {
       _updateSelectedIndex();
     }
     if (oldWidget.isVisible != widget.isVisible) {
@@ -72,9 +74,11 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
 
   void _updateSelectedIndex() {
     final currentEpisodeNumber = int.tryParse(widget.currentValue) ?? 1;
+
     selectedIndex = widget.episodes.indexWhere(
-      (episode) => episode['episodeNumber'] == currentEpisodeNumber,
+      (episode) => episode.episodeNumber == currentEpisodeNumber,
     );
+
     if (selectedIndex == -1) selectedIndex = 0;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -110,9 +114,15 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
   void _confirmSelection() {
     if (selectedIndex >= 0 && selectedIndex < widget.episodes.length) {
       final episode = widget.episodes[selectedIndex];
-      widget.onValueChanged(episode['episodeNumber'].toString());
-      widget.onClose();
+      widget.onValueChanged(episode.episodeNumber.toString());
+      // No cerrar inmediatamente, dejar que video_page.dart maneje el cierre
+      // con el delay apropiado para mostrar la selección
     }
+  }
+
+  // Método público para forzar actualización del índice seleccionado
+  void forceUpdateSelectedIndex() {
+    _updateSelectedIndex();
   }
 
   // Método público para ser llamado desde video_page.dart
@@ -139,8 +149,6 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
     }
     return false; // Evento no manejado
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -221,125 +229,127 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
 
                   // Episodes List
                   Expanded(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: isTV ? 24 : 16),
-                      itemCount: widget.episodes.length,
-                      itemBuilder: (context, index) {
-                        final isSelected = index == selectedIndex;
-                        final episode = widget.episodes[index];
-                        final itemWidth = isTV ? 200.0 : 120.0;
-                        final itemHeight = isTV ? 120.0 : 80.0;
+                    child: widget.episodes.isEmpty
+                        ? const EpisodesListSkeleton()
+                        : ListView.builder(
+                            controller: _scrollController,
+                            scrollDirection: Axis.horizontal,
+                            padding: EdgeInsets.symmetric(horizontal: isTV ? 24 : 16),
+                            itemCount: widget.episodes.length,
+                            itemBuilder: (context, index) {
+                              final isSelected = index == selectedIndex;
+                              final episode = widget.episodes[index];
+                              final itemWidth = isTV ? 200.0 : 120.0;
+                              final itemHeight = isTV ? 120.0 : 80.0;
 
-                        return Container(
-                          width: itemWidth,
-                          margin: EdgeInsets.only(
-                            right: isTV ? 16 : 12,
-                            bottom: isTV ? 16 : 12,
-                          ),
-                          child: GestureDetector(
-                            onTap: () {
-                              _navigateToIndex(index);
-                              _confirmSelection();
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeInOut,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(isTV ? 12 : 8),
-                                border: isSelected ? Border.all(color: const Color(0xFF2DD4BF), width: isTV ? 4 : 3) : Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: const Color(0xFF2DD4BF).withOpacity(0.5),
-                                          blurRadius: isTV ? 15 : 8,
-                                          spreadRadius: isTV ? 2 : 1,
-                                        ),
-                                      ]
-                                    : null,
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(isTV ? 12 : 8),
-                                child: Stack(
-                                  children: [
-                                    // Episode Cover Image
-                                    SizedBox(
-                                      width: itemWidth,
-                                      height: itemHeight,
-                                      child: episode['coverImage'] != null && episode['coverImage'].isNotEmpty
-                                          ? Image.network(
-                                              episode['coverImage'],
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return _buildPlaceholder(episode, itemWidth, itemHeight);
-                                              },
-                                              loadingBuilder: (context, child, loadingProgress) {
-                                                if (loadingProgress == null) return child;
-                                                return _buildPlaceholder(episode, itemWidth, itemHeight);
-                                              },
-                                            )
-                                          : _buildPlaceholder(episode, itemWidth, itemHeight),
-                                    ),
-
-                                    // Episode Number Overlay
-                                    Positioned(
-                                      top: 8,
-                                      left: 8,
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: isTV ? 8 : 6,
-                                          vertical: isTV ? 4 : 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.8),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          'Ep ${episode['episodeNumber']}',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: isTV ? 14 : 10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    // Selected Indicator
-                                    if (isSelected)
-                                      Positioned(
-                                        bottom: 8,
-                                        right: 8,
-                                        child: Container(
-                                          width: isTV ? 24 : 16,
-                                          height: isTV ? 24 : 16,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF2DD4BF),
-                                            shape: BoxShape.circle,
-                                            boxShadow: [
+                              return Container(
+                                width: itemWidth,
+                                margin: EdgeInsets.only(
+                                  right: isTV ? 16 : 12,
+                                  bottom: isTV ? 16 : 12,
+                                ),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    _navigateToIndex(index);
+                                    _confirmSelection();
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    curve: Curves.easeInOut,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(isTV ? 12 : 8),
+                                      border: isSelected ? Border.all(color: const Color(0xFF2DD4BF), width: isTV ? 4 : 3) : Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                                      boxShadow: isSelected
+                                          ? [
                                               BoxShadow(
                                                 color: const Color(0xFF2DD4BF).withOpacity(0.5),
-                                                blurRadius: 4,
-                                                spreadRadius: 1,
+                                                blurRadius: isTV ? 15 : 8,
+                                                spreadRadius: isTV ? 2 : 1,
                                               ),
-                                            ],
+                                            ]
+                                          : null,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(isTV ? 12 : 8),
+                                      child: Stack(
+                                        children: [
+                                          // Episode Cover Image
+                                          SizedBox(
+                                            width: itemWidth,
+                                            height: itemHeight,
+                                            child: episode.coverImage != null && episode.coverImage!.isNotEmpty
+                                                ? Image.network(
+                                                    episode.coverImage!,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) {
+                                                      return _buildPlaceholder(episode, itemWidth, itemHeight);
+                                                    },
+                                                    loadingBuilder: (context, child, loadingProgress) {
+                                                      if (loadingProgress == null) return child;
+                                                      return _buildPlaceholder(episode, itemWidth, itemHeight);
+                                                    },
+                                                  )
+                                                : _buildPlaceholder(episode, itemWidth, itemHeight),
                                           ),
-                                          child: Icon(
-                                            Icons.check,
-                                            color: Colors.white,
-                                            size: isTV ? 16 : 12,
+
+                                          // Episode Number Overlay
+                                          Positioned(
+                                            top: 8,
+                                            left: 8,
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: isTV ? 8 : 6,
+                                                vertical: isTV ? 4 : 2,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withOpacity(0.8),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                'Ep ${episode.episodeNumber}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: isTV ? 14 : 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        ),
+
+                                          // Selected Indicator
+                                          if (isSelected)
+                                            Positioned(
+                                              bottom: 8,
+                                              right: 8,
+                                              child: Container(
+                                                width: isTV ? 24 : 16,
+                                                height: isTV ? 24 : 16,
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF2DD4BF),
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: const Color(0xFF2DD4BF).withOpacity(0.5),
+                                                      blurRadius: 4,
+                                                      spreadRadius: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Icon(
+                                                  Icons.check,
+                                                  color: Colors.white,
+                                                  size: isTV ? 16 : 12,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
                                       ),
-                                  ],
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),
@@ -350,7 +360,7 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
     );
   }
 
-  Widget _buildPlaceholder(Map<String, dynamic> episode, double width, double height) {
+  Widget _buildPlaceholder(EpisodeModel episode, double width, double height) {
     return Container(
       width: width,
       height: height,
@@ -374,7 +384,7 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
           ),
           SizedBox(height: isTV ? 8 : 4),
           Text(
-            'Ep ${episode['episodeNumber']}',
+            'Ep ${episode.episodeNumber}',
             style: TextStyle(
               color: Colors.white.withOpacity(0.9),
               fontSize: isTV ? 16 : 12,
@@ -382,11 +392,11 @@ class _EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMix
             ),
             textAlign: TextAlign.center,
           ),
-          if (episode['title'] != null && episode['title'].isNotEmpty)
+          if (episode.description != null && episode.description!.isNotEmpty)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: isTV ? 8 : 4),
               child: Text(
-                episode['title'],
+                episode.description!,
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.7),
                   fontSize: isTV ? 12 : 10,
