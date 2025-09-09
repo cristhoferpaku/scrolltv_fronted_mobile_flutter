@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
@@ -15,7 +16,12 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   VlcPlayerController? _controller;
   StreamSubscription<Duration>? _positionSubscription;
   Timer? _positionTimer;
+  VoidCallback? _controllerListener;
   final MultimediaUseCase _multimediaUseCase = instance<MultimediaUseCase>();
+
+  // Caché para episodios por seasonId
+  final Map<int, List<EpisodeModel>> _episodesCache = {};
+  int? _currentSeasonId;
 
   VideoPlayerBloc() : super(const VideoPlayerState.initial()) {
     on<_VideoPlayerEventInitialize>(_onInitialize);
@@ -48,16 +54,27 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   void _disposeController() {
     _positionTimer?.cancel();
     _positionSubscription?.cancel();
-    try {
-      // Solo hacer dispose si el controlador está inicializado
-      if (_controller != null && _controller!.value.isInitialized) {
-        _controller!.dispose();
+
+    if (_controller != null) {
+      try {
+        // Remover el listener específico si existe
+        if (_controllerListener != null) {
+          _controller!.removeListener(_controllerListener!);
+          _controllerListener = null;
+        }
+
+        // Solo hacer dispose si el controlador está inicializado
+        if (_controller!.value.isInitialized) {
+          _controller!.dispose();
+        }
+      } catch (e) {
+        // Ignorar errores de dispose en controladores no inicializados
+        print('⚠️ Error al hacer dispose del controlador: $e');
+      } finally {
+        // Asegurar que el controlador se establezca como null
+        _controller = null;
       }
-    } catch (e) {
-      // Ignorar errores de dispose en controladores no inicializados
-      print('⚠️ Error al hacer dispose del controlador: $e');
     }
-    _controller = null;
   }
 
   Future<void> _onInitialize(_VideoPlayerEventInitialize event, Emitter<VideoPlayerState> emit) async {
@@ -66,6 +83,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
       // Dispose previous controller if exists
       _disposeController();
+
+      // Esperar un momento para asegurar que el dispose anterior se complete
+      await Future.delayed(const Duration(milliseconds: 500));
+
       // Usar la misma lógica simple del VideoControllerManager que funcionaba
       print('🔄 Inicializando reproductor con URL: ${event.videoUrl}');
 
@@ -112,26 +133,39 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   void _setupListeners() {
     if (_controller == null) return;
 
-    // Add listener to VLC controller
-    _controller!.addListener(() {
-      final isPlaying = _controller!.value.isPlaying;
-      final currentPosition = _controller!.value.position;
-      final duration = _controller!.value.duration;
-
-      // Update position
-      add(VideoPlayerEvent.updatePosition(position: currentPosition));
-
-      // Update duration
-      add(VideoPlayerEvent.updateDuration(duration: duration));
-
-      // Update playing state
-      add(VideoPlayerEvent.updatePlayingState(isPlaying: isPlaying));
-
-      // Check if video has ended
-      if (duration.inMilliseconds > 0 && currentPosition.inMilliseconds >= duration.inMilliseconds - 1000) {
-        add(VideoPlayerEvent.videoEnded());
+    // Crear el listener y almacenar la referencia
+    _controllerListener = () {
+      // Verificar que el controlador aún existe y está inicializado antes de acceder a sus propiedades
+      if (_controller == null || !_controller!.value.isInitialized) {
+        return;
       }
-    });
+
+      try {
+        final isPlaying = _controller!.value.isPlaying;
+        final currentPosition = _controller!.value.position;
+        final duration = _controller!.value.duration;
+
+        // Update position
+        add(VideoPlayerEvent.updatePosition(position: currentPosition));
+
+        // Update duration
+        add(VideoPlayerEvent.updateDuration(duration: duration));
+
+        // Update playing state
+        add(VideoPlayerEvent.updatePlayingState(isPlaying: isPlaying));
+
+        // Check if video has ended
+        if (duration.inMilliseconds > 0 && currentPosition.inMilliseconds >= duration.inMilliseconds - 1000) {
+          add(VideoPlayerEvent.videoEnded());
+        }
+      } catch (e) {
+        // Ignorar errores cuando el controlador está siendo dispuesto
+        print('⚠️ Error en listener del controlador (probablemente durante dispose): $e');
+      }
+    };
+
+    // Add listener to VLC controller
+    _controller!.addListener(_controllerListener!);
   }
 
   Future<void> _loadTracksWithRetry() async {
@@ -395,7 +429,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     final currentState = state;
     if (currentState is _VideoPlayerStateReady) {
       emit(currentState.copyWith(isPlaying: false, hasEnded: true));
-      
+
       // Fix para el bug de flutter_vlc_player: cuando el video termina,
       // el controller queda en un estado donde no puede volver a reproducir.
       // La solución es hacer stop() para resetear el estado interno de libVLC.
@@ -427,9 +461,22 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   void _onLoadEpisodes(_VideoPlayerEventLoadEpisodes event, Emitter<VideoPlayerState> emit) async {
     final currentState = state;
     if (currentState is _VideoPlayerStateReady) {
-      // Simular datos estáticos de episodios usando el seasonId
-      final episodes = _generateStaticEpisodes(event.seasonId);
-      emit(currentState.copyWith(episodes: await episodes));
+      // Verificar si ya tenemos los episodios en caché para este seasonId
+      if (_episodesCache.containsKey(event.seasonId) && _currentSeasonId == event.seasonId) {
+        print('📋 Episodios obtenidos desde caché para seasonId: ${event.seasonId}');
+        emit(currentState.copyWith(episodes: _episodesCache[event.seasonId]!));
+        return;
+      }
+
+      // Si no están en caché o es un seasonId diferente, cargar desde API
+      print('🌐 Cargando episodios desde API para seasonId: ${event.seasonId}');
+      final episodes = await _generateStaticEpisodes(event.seasonId);
+
+      // Guardar en caché
+      _episodesCache[event.seasonId] = episodes;
+      _currentSeasonId = event.seasonId;
+
+      emit(currentState.copyWith(episodes: episodes));
     }
   }
 

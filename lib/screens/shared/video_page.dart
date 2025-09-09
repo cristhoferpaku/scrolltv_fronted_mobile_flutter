@@ -91,14 +91,9 @@ class _VideoPageState extends State<VideoPage> {
       // Los episodios se manejarán con lista estática temporal
       // TODO: Implementar llamada al bloc para obtener episodios usando seasonId
 
-      // Si es una serie y no hay episodeNumber definido, establecer el primer episodio
-      if (type == 'series' && episodeNumber == null) {
-        // Cargar episodios primero si es necesario
-        if (seasonId != null) {
-          _videoPlayerBloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId!));
-        }
-        // El episodeNumber se establecerá cuando se carguen los episodios
-      }
+      // Si es una serie y no hay episodeNumber definido, los episodios se cargarán
+      // automáticamente cuando sea necesario a través de _getEpisodeOptions()
+      // Esto evita cargas prematuras y duplicadas
 
       // Inicializar el video player con VideoPlayerBloc
       _videoPlayerBloc.add(VideoPlayerEvent.initialize(videoUrl: videoUrl));
@@ -223,11 +218,9 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   void _showEpisodePanel() {
-    // Cargar episodios desde el bloc si es una serie y tenemos seasonId
-    if (type == 'series' && seasonId != null) {
-      _videoPlayerBloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId!));
-    }
-
+    // La carga de episodios ahora se maneja automáticamente en _getEpisodeOptions()
+    // cuando el EpisodePanel se renderiza, evitando llamadas duplicadas
+    
     setState(() {
       showEpisodePanel = true;
       showSubtitlePanel = false;
@@ -320,13 +313,23 @@ class _VideoPageState extends State<VideoPage> {
     // Obtener episodios del estado del bloc
     final blocEpisodes = _videoPlayerBloc.state.episodes;
 
+    // Si ya tenemos episodios, devolverlos directamente
     if (blocEpisodes.isNotEmpty) {
       return blocEpisodes;
     }
 
-    // Si no hay episodios en el bloc, cargar desde el bloc usando seasonId
+    // Solo hacer la llamada si es una serie, tenemos seasonId y NO estamos en estado de carga
+    // Esto evita llamadas múltiples durante el renderizado
     if (type == 'series' && seasonId != null) {
-      _videoPlayerBloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId!));
+      final currentState = _videoPlayerBloc.state;
+      // Solo cargar si no estamos ya en proceso de carga
+      if (!currentState.maybeWhen(
+        loading: (_) => true,
+        orElse: () => false,
+      )) {
+        print('🔄 Solicitando carga de episodios para seasonId: $seasonId');
+        _videoPlayerBloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId!));
+      }
     }
 
     // Retornar lista vacía mientras cargan los episodios
