@@ -1,10 +1,10 @@
 // ignore_for_file: library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/color_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -299,9 +299,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
-                    _isPasswordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility,
+                    _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
                     color: ColorManager.lightHintColorText,
                     size: iconSize,
                   ),

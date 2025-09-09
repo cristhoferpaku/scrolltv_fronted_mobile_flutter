@@ -100,8 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                         onBackspace: _handleBackspace,
                         onSpace: _handleSpace,
                         onEnter: _handleLogin,
-                        onPrevious:
-                            _isPasswordField ? _goToPreviousField : null,
+                        onPrevious: _isPasswordField ? _goToPreviousField : null,
                         onNext: !_isPasswordField ? _goToNextField : null,
                       ),
                     ),
@@ -142,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                           _buildTextField(
                             controller: tcPassword,
                             focusNode: _passwordFocus,
-                            isPassword: true,
+                            isPassword: false,
                           ),
                         ],
                       ),
@@ -167,9 +166,7 @@ class _LoginPageState extends State<LoginPage> {
         color: Colors.grey[800],
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: focusNode.hasFocus
-              ? ColorManager.primaryContainer
-              : Colors.transparent,
+          color: focusNode.hasFocus ? ColorManager.primaryContainer : Colors.transparent,
           width: 2,
         ),
       ),
@@ -179,9 +176,7 @@ class _LoginPageState extends State<LoginPage> {
         obscureText: isPassword,
         readOnly: true,
         enableInteractiveSelection: false,
-        validator: (value) => isPassword
-            ? ValidatorManager.validatePassword(value ?? '')
-            : ValidatorManager.validateUsername(value ?? ''),
+        validator: (value) => isPassword ? ValidatorManager.validatePassword(value ?? '') : ValidatorManager.validateUsername(value ?? ''),
         style: const TextStyle(
           color: Colors.white,
           fontSize: 16,
@@ -227,8 +222,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (currentController.text.isNotEmpty) {
       setState(() {
-        final newText = currentController.text
-            .substring(0, currentController.text.length - 1);
+        final newText = currentController.text.substring(0, currentController.text.length - 1);
         currentController.value = TextEditingValue(
           text: newText,
           selection: TextSelection.collapsed(offset: newText.length),

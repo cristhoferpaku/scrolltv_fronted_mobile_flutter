@@ -28,6 +28,6 @@ void loginListener(BuildContext context, LoginState state) {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     }
-    Navigator.pushNamed(context, Routes.homeRoute);
+    Navigator.pushNamedAndRemoveUntil(context, Routes.homeRoute, (route) => false);
   }
 }

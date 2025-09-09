@@ -18,6 +18,10 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/search/search_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/video_details/video_details_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/application/tv_player_use_case_impl.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/ports/inbound/tv_player_use_case.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/ports/outbound/tv_player_repository_port.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/infrastructure/repositories/tv_player_api_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/bloc/tv_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/application/use_cases/user_use_case_impl.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/user/domain/ports/inbound/user_use_case.dart';
@@ -87,6 +91,8 @@ initVideoDependencies() {
 }
 
 initTvDependencies() {
+  initTvPlayerRepositoryPort();
+  initTvPlayerUseCase();
   initTvPlayerModule();
 }
 
@@ -212,6 +218,18 @@ initMultimediaUseCase() {
 initMultimediaRepositoryPort() {
   if (!GetIt.I.isRegistered<MultimediaRepositoryPort>()) {
     instance.registerFactory<MultimediaRepositoryPort>(() => MultimediaApiRepository());
+  }
+}
+
+initTvPlayerUseCase() {
+  if (!GetIt.I.isRegistered<TvPlayerUseCase>()) {
+    instance.registerFactory<TvPlayerUseCase>(() => TvPlayerUseCaseImpl(instance<TvPlayerRepositoryPort>()));
+  }
+}
+
+initTvPlayerRepositoryPort() {
+  if (!GetIt.I.isRegistered<TvPlayerRepositoryPort>()) {
+    instance.registerFactory<TvPlayerRepositoryPort>(() => TvPlayerApiRepository());
   }
 }
 

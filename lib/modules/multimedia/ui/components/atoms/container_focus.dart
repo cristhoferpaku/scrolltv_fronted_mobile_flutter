@@ -7,12 +7,16 @@ class ContainerFocus extends StatefulWidget {
     this.onTap,
     this.borderRadius = 12,
     this.focusNode,
+    this.autofocus = false,
+    this.canRequestFocus = true,
   });
 
   final FocusNode? focusNode;
   final Widget child;
   final VoidCallback? onTap;
   final double borderRadius;
+  final bool autofocus;
+  final bool canRequestFocus;
 
   @override
   State<ContainerFocus> createState() => _ContainerFocusState();
@@ -24,8 +28,8 @@ class _ContainerFocusState extends State<ContainerFocus> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      autofocus: widget.focusNode?.hasFocus ?? false,
-      canRequestFocus: true,
+      autofocus: widget.autofocus,
+      canRequestFocus: widget.canRequestFocus,
       onFocusChange: (hasFocus) {
         setState(() => _isFocused = hasFocus);
       },

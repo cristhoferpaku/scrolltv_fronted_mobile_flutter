@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
-class CustomGridTraversalPolicy extends FocusTraversalPolicy
-    with DirectionalFocusTraversalPolicyMixin {
+class CustomGridTraversalPolicy extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
   @override
   @override
   bool inDirection(FocusNode currentNode, TraversalDirection direction) {
@@ -14,8 +14,7 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy
     }
 
     // Si es horizontal y no hay candidato, bloquea
-    if (direction == TraversalDirection.left ||
-        direction == TraversalDirection.right) {
+    if (direction == TraversalDirection.left || direction == TraversalDirection.right) {
       return true; // no hacer nada → no salta de fila
     }
 
@@ -44,8 +43,7 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy
     final currentPos = renderBox.localToGlobal(Offset.zero);
 
     final scope = FocusScope.of(context);
-    final nodes = scope.traversalDescendants
-        .where((n) => n != currentNode && n.canRequestFocus);
+    final nodes = scope.traversalDescendants.where((n) => n != currentNode && n.canRequestFocus);
 
     FocusNode? closest;
     double minDistance = double.infinity;
@@ -68,12 +66,10 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy
           isValid = nodePos.dy > currentPos.dy + 10;
           break;
         case TraversalDirection.left:
-          isValid = (nodePos.dx < currentPos.dx - 10) &&
-              (nodePos.dy - currentPos.dy).abs() < toleranceY;
+          isValid = (nodePos.dx < currentPos.dx - 10) && (nodePos.dy - currentPos.dy).abs() < toleranceY;
           break;
         case TraversalDirection.right:
-          isValid = (nodePos.dx > currentPos.dx + 10) &&
-              (nodePos.dy - currentPos.dy).abs() < toleranceY;
+          isValid = (nodePos.dx > currentPos.dx + 10) && (nodePos.dy - currentPos.dy).abs() < toleranceY;
           break;
       }
 
@@ -90,16 +86,11 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy
   }
 
   @override
-  Iterable<FocusNode> sortDescendants(
-      Iterable<FocusNode> descendants, FocusNode currentNode) {
+  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants, FocusNode currentNode) {
     final sorted = descendants.toList()
       ..sort((a, b) {
-        final aPos = (a.context?.findRenderObject() as RenderBox?)
-                ?.localToGlobal(Offset.zero) ??
-            Offset.zero;
-        final bPos = (b.context?.findRenderObject() as RenderBox?)
-                ?.localToGlobal(Offset.zero) ??
-            Offset.zero;
+        final aPos = (a.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        final bPos = (b.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
         if ((aPos.dy - bPos.dy).abs() < 10) {
           return aPos.dx.compareTo(bPos.dx);
         }
@@ -109,8 +100,7 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy
   }
 }
 
-class CustomGridTraversalPolicyStrictVertical extends FocusTraversalPolicy
-    with DirectionalFocusTraversalPolicyMixin {
+class CustomGridTraversalPolicyStrictVertical extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
   @override
   bool inDirection(FocusNode currentNode, TraversalDirection direction) {
     final next = _findClosestStrict(currentNode, direction);
@@ -122,8 +112,7 @@ class CustomGridTraversalPolicyStrictVertical extends FocusTraversalPolicy
     }
 
     // Horizontal: bloqueamos si no hay candidato
-    if (direction == TraversalDirection.left ||
-        direction == TraversalDirection.right) {
+    if (direction == TraversalDirection.left || direction == TraversalDirection.right) {
       return true;
     }
 
@@ -139,8 +128,7 @@ class CustomGridTraversalPolicyStrictVertical extends FocusTraversalPolicy
         final screenHeight = MediaQuery.of(node.context!).size.height;
 
         final isAboveScreen = objectOffset.dy < 0;
-        final isBelowScreen =
-            objectOffset.dy + renderObject.size.height > screenHeight;
+        final isBelowScreen = objectOffset.dy + renderObject.size.height > screenHeight;
 
         if (isAboveScreen || isBelowScreen) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -156,8 +144,7 @@ class CustomGridTraversalPolicyStrictVertical extends FocusTraversalPolicy
     }
   }
 
-  FocusNode? _findClosestStrict(
-      FocusNode currentNode, TraversalDirection direction) {
+  FocusNode? _findClosestStrict(FocusNode currentNode, TraversalDirection direction) {
     final context = currentNode.context;
     if (context == null) return null;
 
@@ -165,8 +152,7 @@ class CustomGridTraversalPolicyStrictVertical extends FocusTraversalPolicy
     final currentPos = renderBox.localToGlobal(Offset.zero);
 
     final scope = FocusScope.of(context);
-    final nodes = scope.traversalDescendants
-        .where((n) => n != currentNode && n.canRequestFocus);
+    final nodes = scope.traversalDescendants.where((n) => n != currentNode && n.canRequestFocus);
 
     FocusNode? closest;
     double minDistanceY = double.infinity;
@@ -188,22 +174,17 @@ class CustomGridTraversalPolicyStrictVertical extends FocusTraversalPolicy
           isValid = nodePos.dy > currentPos.dy + 1; // todo nodo abajo
           break;
         case TraversalDirection.left:
-          isValid = nodePos.dx < currentPos.dx - 10 &&
-              (nodePos.dy - currentPos.dy).abs() < 20;
+          isValid = nodePos.dx < currentPos.dx - 10 && (nodePos.dy - currentPos.dy).abs() < 20;
           break;
         case TraversalDirection.right:
-          isValid = nodePos.dx > currentPos.dx + 10 &&
-              (nodePos.dy - currentPos.dy).abs() < 20;
+          isValid = nodePos.dx > currentPos.dx + 10 && (nodePos.dy - currentPos.dy).abs() < 20;
           break;
       }
 
       if (!isValid) continue;
 
       // Vertical: solo comparamos distancia y
-      final distance = (direction == TraversalDirection.up ||
-              direction == TraversalDirection.down)
-          ? (nodePos.dy - currentPos.dy).abs()
-          : (nodePos - currentPos).distance;
+      final distance = (direction == TraversalDirection.up || direction == TraversalDirection.down) ? (nodePos.dy - currentPos.dy).abs() : (nodePos - currentPos).distance;
 
       if (distance < minDistanceY) {
         minDistanceY = distance;
@@ -215,16 +196,325 @@ class CustomGridTraversalPolicyStrictVertical extends FocusTraversalPolicy
   }
 
   @override
-  Iterable<FocusNode> sortDescendants(
-      Iterable<FocusNode> descendants, FocusNode currentNode) {
+  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants, FocusNode currentNode) {
     final sorted = descendants.toList()
       ..sort((a, b) {
-        final aPos = (a.context?.findRenderObject() as RenderBox?)
-                ?.localToGlobal(Offset.zero) ??
-            Offset.zero;
-        final bPos = (b.context?.findRenderObject() as RenderBox?)
-                ?.localToGlobal(Offset.zero) ??
-            Offset.zero;
+        final aPos = (a.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        final bPos = (b.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        if ((aPos.dy - bPos.dy).abs() < 10) {
+          return aPos.dx.compareTo(bPos.dx);
+        }
+        return aPos.dy.compareTo(bPos.dy);
+      });
+    return sorted;
+  }
+}
+
+class CustomGridTraversalPolicyStrictVerticalTV extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
+  @override
+  bool inDirection(FocusNode currentNode, TraversalDirection direction) {
+    final next = _findClosestStrict(currentNode, direction);
+
+    if (next != null) {
+      _scrollIntoView(next);
+      next.requestFocus();
+      return true;
+    }
+
+    // Horizontal: bloqueamos si no hay candidato
+    if (direction == TraversalDirection.left || direction == TraversalDirection.right) {
+      return true;
+    }
+
+    // Vertical: dejamos que Flutter haga lo suyo si no encontró
+    return super.inDirection(currentNode, direction);
+  }
+
+  void _scrollIntoView(FocusNode node) {
+    if (node.context != null) {
+      final renderObject = node.context!.findRenderObject();
+      if (renderObject is RenderBox) {
+        final objectOffset = renderObject.localToGlobal(Offset.zero);
+        final objectHeight = renderObject.size.height;
+
+        final viewport = RenderAbstractViewport.of(renderObject);
+        final scrollable = Scrollable.of(node.context!);
+
+        final offset = scrollable.position;
+        final revealedOffset = viewport.getOffsetToReveal(renderObject, 0.3).offset;
+
+        if (revealedOffset != offset.pixels) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            offset.animateTo(
+              revealedOffset,
+              duration: const Duration(milliseconds: 1),
+              curve: Curves.easeOut,
+            );
+          });
+        }
+      }
+    }
+  }
+
+  FocusNode? _findClosestStrict(FocusNode currentNode, TraversalDirection direction) {
+    final context = currentNode.context;
+    if (context == null) return null;
+
+    final renderBox = context.findRenderObject() as RenderBox;
+    final currentPos = renderBox.localToGlobal(Offset.zero);
+
+    final scope = FocusScope.of(context);
+    final nodes = scope.traversalDescendants.where((n) => n != currentNode && n.canRequestFocus);
+
+    FocusNode? closest;
+    double minDistanceY = double.infinity;
+
+    for (final node in nodes) {
+      final nodeContext = node.context;
+      if (nodeContext == null) continue;
+
+      final nodeBox = nodeContext.findRenderObject() as RenderBox;
+      final nodePos = nodeBox.localToGlobal(Offset.zero);
+
+      bool isValid = false;
+
+      switch (direction) {
+        case TraversalDirection.up:
+          isValid = nodePos.dy < currentPos.dy - 1; // todo nodo arriba
+          break;
+        case TraversalDirection.down:
+          isValid = nodePos.dy > currentPos.dy + 1; // todo nodo abajo
+          break;
+        case TraversalDirection.left:
+          isValid = nodePos.dx < currentPos.dx - 10 && (nodePos.dy - currentPos.dy).abs() < 20;
+          break;
+        case TraversalDirection.right:
+          isValid = nodePos.dx > currentPos.dx + 10 && (nodePos.dy - currentPos.dy).abs() < 20;
+          break;
+      }
+
+      if (!isValid) continue;
+
+      // Vertical: solo comparamos distancia y
+      final distance = (direction == TraversalDirection.up || direction == TraversalDirection.down) ? (nodePos.dy - currentPos.dy).abs() : (nodePos - currentPos).distance;
+
+      if (distance < minDistanceY) {
+        minDistanceY = distance;
+        closest = node;
+      }
+    }
+
+    return closest;
+  }
+
+  @override
+  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants, FocusNode currentNode) {
+    final sorted = descendants.toList()
+      ..sort((a, b) {
+        final aPos = (a.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        final bPos = (b.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        if ((aPos.dy - bPos.dy).abs() < 10) {
+          return aPos.dx.compareTo(bPos.dx);
+        }
+        return aPos.dy.compareTo(bPos.dy);
+      });
+    return sorted;
+  }
+}
+
+class CustomGridTraversalPolicyList extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
+  @override
+  bool inDirection(FocusNode currentNode, TraversalDirection direction) {
+    if (direction == TraversalDirection.up || direction == TraversalDirection.down) {
+      final next = _findClosestStrict(currentNode, direction);
+
+      if (next != null) {
+        _scrollIntoView(next);
+        next.requestFocus();
+        return true; // nodo vertical encontrado y enfocado
+      }
+
+      // Si no hay nodo vertical válido, dejamos que Flutter decida
+      return false;
+    }
+
+    return super.inDirection(currentNode, direction);
+  }
+
+  void _scrollIntoView(FocusNode node) {
+    if (node.context == null) return;
+
+    final renderObject = node.context!.findRenderObject();
+    if (renderObject is! RenderBox) return;
+
+    final viewport = RenderAbstractViewport.of(renderObject);
+    final scrollable = Scrollable.of(node.context!);
+
+    final offset = scrollable.position;
+    final revealedOffset = viewport.getOffsetToReveal(renderObject, 0.3).offset;
+
+    if ((revealedOffset - offset.pixels).abs() > 1.0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        offset.animateTo(
+          revealedOffset,
+          duration: const Duration(milliseconds: 1),
+          curve: Curves.easeOut,
+        );
+      });
+    }
+  }
+
+  FocusNode? _findClosestStrict(FocusNode currentNode, TraversalDirection direction) {
+    final context = currentNode.context;
+    if (context == null) return null;
+
+    final renderBox = context.findRenderObject() as RenderBox;
+    final currentPos = renderBox.localToGlobal(Offset.zero);
+
+    final scope = FocusScope.of(context);
+    final nodes = scope.traversalDescendants.where((n) => n != currentNode && n.canRequestFocus);
+
+    FocusNode? closest;
+    double minDistance = double.infinity;
+
+    const double xTolerance = 40.0;
+    const double minVerticalDelta = 1.0;
+
+    for (final node in nodes) {
+      final nodeContext = node.context;
+      if (nodeContext == null) continue;
+
+      final nodeBox = nodeContext.findRenderObject() as RenderBox;
+      final nodePos = nodeBox.localToGlobal(Offset.zero);
+
+      bool isValid = false;
+      if (direction == TraversalDirection.up) {
+        isValid = nodePos.dy < currentPos.dy - minVerticalDelta && (nodePos.dx - currentPos.dx).abs() < xTolerance;
+      } else if (direction == TraversalDirection.down) {
+        isValid = nodePos.dy > currentPos.dy + minVerticalDelta && (nodePos.dx - currentPos.dx).abs() < xTolerance;
+      }
+
+      if (!isValid) continue;
+
+      final distance = (nodePos.dy - currentPos.dy).abs();
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = node;
+      }
+    }
+
+    return closest;
+  }
+
+  @override
+  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants, FocusNode currentNode) {
+    final sorted = descendants.toList()
+      ..sort((a, b) {
+        final aPos = (a.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        final bPos = (b.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+
+        if ((aPos.dy - bPos.dy).abs() < 10) {
+          return aPos.dx.compareTo(bPos.dx);
+        }
+        return aPos.dy.compareTo(bPos.dy);
+      });
+    return sorted;
+  }
+}
+
+class NoVerticalOverflowPolicy extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
+  final List<FocusNode> nodes;
+
+  NoVerticalOverflowPolicy(this.nodes);
+
+  @override
+  bool inDirection(FocusNode currentNode, TraversalDirection direction) {
+    // Solo intervenimos en vertical
+    if (direction == TraversalDirection.up && currentNode == nodes.first) {
+      return true; // bloquea salto hacia arriba en el primer nodo
+    }
+
+    if (direction == TraversalDirection.down && currentNode == nodes.last) {
+      return true; // bloquea salto hacia abajo en el último nodo
+    }
+
+    // Para los demás casos, dejamos que Flutter haga lo suyo
+    return super.inDirection(currentNode, direction);
+  }
+
+  @override
+  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants, FocusNode currentNode) {
+    // Mantenemos orden por defecto
+    return descendants;
+  }
+}
+
+class VerticalEdgeBlockPolicy extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
+  final double xTolerance;
+
+  VerticalEdgeBlockPolicy({this.xTolerance = 40.0});
+
+  @override
+  bool inDirection(FocusNode currentNode, TraversalDirection direction) {
+    if (direction != TraversalDirection.up && direction != TraversalDirection.down) {
+      return super.inDirection(currentNode, direction);
+    }
+
+    final nodesInColumn = _getNodesInSameColumn(currentNode);
+    if (nodesInColumn.isEmpty) return super.inDirection(currentNode, direction);
+
+    // Bloquea solo el primer y último nodo vertical de la columna
+    if (direction == TraversalDirection.up && currentNode == nodesInColumn.first) {
+      return true; // bloquea salto hacia arriba
+    }
+    if (direction == TraversalDirection.down && currentNode == nodesInColumn.last) {
+      return true; // bloquea salto hacia abajo
+    }
+
+    // Para los demás casos, dejamos que Flutter haga su comportamiento por defecto
+    return super.inDirection(currentNode, direction);
+  }
+
+  /// Obtiene todos los nodos que están en la misma "columna vertical" del nodo actual
+  List<FocusNode> _getNodesInSameColumn(FocusNode currentNode) {
+    final currentContext = currentNode.context;
+    if (currentContext == null) return [];
+
+    final renderBox = currentContext.findRenderObject() as RenderBox;
+    final currentDx = renderBox.localToGlobal(Offset.zero).dx;
+
+    final scope = FocusScope.of(currentContext);
+    final allNodes = scope.traversalDescendants.where((n) => n != currentNode && n.canRequestFocus);
+
+    final nodesInColumn = allNodes.where((node) {
+      final ctx = node.context;
+      if (ctx == null) return false;
+
+      final nodeBox = ctx.findRenderObject() as RenderBox;
+      final nodeDx = nodeBox.localToGlobal(Offset.zero).dx;
+
+      return (nodeDx - currentDx).abs() < xTolerance;
+    }).toList();
+
+    // Incluye el nodo actual y ordena por posición vertical
+    nodesInColumn.add(currentNode);
+    nodesInColumn.sort((a, b) {
+      final aDy = (a.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero).dy ?? 0;
+      final bDy = (b.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero).dy ?? 0;
+      return aDy.compareTo(bDy);
+    });
+
+    return nodesInColumn;
+  }
+
+  @override
+  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants, FocusNode currentNode) {
+    final sorted = descendants.toList()
+      ..sort((a, b) {
+        final aPos = (a.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        final bPos = (b.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+
+        // Orden vertical primero, horizontal después
         if ((aPos.dy - bPos.dy).abs() < 10) {
           return aPos.dx.compareTo(bPos.dx);
         }

@@ -2,9 +2,9 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/channel_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/inbound/multimedia_use_case.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/entities/channel_model.dart';
 
 part 'home_bloc.freezed.dart';
 part 'home_event.dart';
@@ -28,10 +28,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(HomeState.loaded(
           channels: selectedChannel, movies: moviesSection, series: seriesSection, animes: animesSection, dramas: dramasSection, kids: kidsSection, status: HomeStateStatus.loadingChannels));
       try {
-        if (selectedChannel == null) {
-          final channelsResponse = await multimediaUseCase.fetchChannels();
-          selectedChannel = channelsResponse.data;
-        }
+        // final channelsResponse = await multimediaUseCase.fetchChannels();
+        // selectedChannel = channelsResponse.data;
 
         emit(HomeState.loaded(
             channels: selectedChannel, movies: moviesSection, series: seriesSection, animes: animesSection, dramas: dramasSection, kids: kidsSection, status: HomeStateStatus.loadedChannels));

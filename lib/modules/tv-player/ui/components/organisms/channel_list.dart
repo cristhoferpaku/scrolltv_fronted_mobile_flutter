@@ -1,0 +1,93 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/entities/channel_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/molecules/channel_card.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_category_bar.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/constants/focus_enum.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/bloc/tv_player_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
+
+class ChannelList extends StatefulWidget {
+  const ChannelList({
+    super.key,
+    required this.channels,
+    required this.focusNodes,
+  });
+
+  final List<ChannelModel> channels;
+  final List<FocusNode> focusNodes;
+
+  @override
+  State<ChannelList> createState() => _ChannelListState();
+}
+
+class _ChannelListState extends State<ChannelList> {
+  final TvPlayerBloc tvPlayerBloc = instance<TvPlayerBloc>();
+
+  final bool isTv = PlatformUtils.isTV;
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TvPlayerBloc, TvPlayerState>(
+      bloc: tvPlayerBloc,
+      builder: (context, state) {
+        return Focus(
+          canRequestFocus: false,
+          onFocusChange: (hasFocus) {
+            if (hasFocus) {
+              tvPlayerBloc.add(TvPlayerEvent.changeFocus(FocusEnum.channelList));
+            }
+          },
+          onKeyEvent: (FocusNode node, event) {
+            if (event is KeyDownEvent) {
+              if (widget.focusNodes.first.hasFocus && event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                return KeyEventResult.handled;
+              }
+              if (widget.focusNodes.last.hasFocus && event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                return KeyEventResult.handled;
+              }
+              if (state.focusEnum == FocusEnum.channelList && event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                tvPlayerBloc.add(TvPlayerEvent.showPanelChannel(false));
+                return KeyEventResult.ignored;
+              }
+            }
+            return KeyEventResult.ignored;
+          },
+          child: Column(
+            children: [
+              if (!isTv) ChannelCategoryBar(categories: state.categories, selectedCategoryIndex: state.selectedCategoryIndex),
+              Expanded(
+                child: ListView.separated(
+                  addAutomaticKeepAlives: true,
+                  addRepaintBoundaries: false,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: widget.channels.length,
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(height: 8);
+                  },
+                  itemBuilder: (context, index) {
+                    final channel = widget.channels[index];
+
+                    return ChannelCard(tvPlayerBloc: tvPlayerBloc, channel: channel, focusNode: widget.focusNodes.isNotEmpty ? widget.focusNodes[index] : null);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

@@ -1,75 +1,67 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/entities/channel_category_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/entities/channel_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/ports/inbound/tv_player_use_case.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/constants/focus_enum.dart';
 
 part 'tv_player_bloc.freezed.dart';
 part 'tv_player_event.dart';
 part 'tv_player_state.dart';
 
 class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
-  TvPlayerBloc() : super(TvPlayerState(status: TVPlayerStatus.initial, channels: [], selectedChannelIndex: 0)) {
-    final List<Map<String, String>> channels = [
-      {'name': 'BBC NEWS', 'subtitle': 'Noticias internacionales'},
-      {'name': 'ESPN', 'subtitle': 'Deportes en vivo'},
-      {'name': 'CNN', 'subtitle': 'Noticias 24/7'},
-      {'name': 'Televisa', 'subtitle': 'Entretenimiento'},
-      {'name': 'Discovery', 'subtitle': 'Documentales'},
-      {'name': 'National Geographic', 'subtitle': 'Naturaleza'},
-      {'name': 'HBO', 'subtitle': 'Películas y series'},
-      {'name': 'Disney Channel', 'subtitle': 'Entretenimiento familiar'},
-      {'name': 'MTV', 'subtitle': 'Música y entretenimiento'},
-      {'name': 'History Channel', 'subtitle': 'Historia y documentales'},
-      {'name': 'Cartoon Network', 'subtitle': 'Animación'},
-      {'name': 'Fox Sports', 'subtitle': 'Deportes'},
-      {'name': 'Animal Planet', 'subtitle': 'Mundo animal'},
-      {'name': 'AXN', 'subtitle': 'Series y películas'},
-      {'name': 'Nickelodeon', 'subtitle': 'Infantil'},
-      {'name': 'Warner Channel', 'subtitle': 'Series y películas'},
-      {'name': 'Food Network', 'subtitle': 'Cocina y gastronomía'},
-      {'name': 'Comedy Central', 'subtitle': 'Comedia'},
-      {'name': 'Universal Channel', 'subtitle': 'Entretenimiento variado'},
-      {'name': 'Sony Channel', 'subtitle': 'Series y películas'},
-      {'name': 'Space', 'subtitle': 'Ciencia ficción'},
-      {'name': 'TNT', 'subtitle': 'Películas'},
-      {'name': 'Cinemax', 'subtitle': 'Cine'},
-      {'name': 'TCM', 'subtitle': 'Cine clásico'},
-      {'name': 'Syfy', 'subtitle': 'Ciencia ficción'},
-      {'name': 'Paramount Channel', 'subtitle': 'Películas'},
-      {'name': 'BBC NEWS', 'subtitle': 'Noticias internacionales'},
-      {'name': 'ESPN', 'subtitle': 'Deportes en vivo'},
-      {'name': 'CNN', 'subtitle': 'Noticias 24/7'},
-      {'name': 'Televisa', 'subtitle': 'Entretenimiento'},
-      {'name': 'Discovery', 'subtitle': 'Documentales'},
-      {'name': 'National Geographic', 'subtitle': 'Naturaleza'},
-      {'name': 'HBO', 'subtitle': 'Películas y series'},
-      {'name': 'Disney Channel', 'subtitle': 'Entretenimiento familiar'},
-      {'name': 'MTV', 'subtitle': 'Música y entretenimiento'},
-      {'name': 'History Channel', 'subtitle': 'Historia y documentales'},
-      {'name': 'Cartoon Network', 'subtitle': 'Animación'},
-      {'name': 'Fox Sports', 'subtitle': 'Deportes'},
-      {'name': 'Animal Planet', 'subtitle': 'Mundo animal'},
-      {'name': 'AXN', 'subtitle': 'Series y películas'},
-      {'name': 'Nickelodeon', 'subtitle': 'Infantil'},
-      {'name': 'Warner Channel', 'subtitle': 'Series y películas'},
-      {'name': 'Food Network', 'subtitle': 'Cocina y gastronomía'},
-      {'name': 'Comedy Central', 'subtitle': 'Comedia'},
-      {'name': 'Universal Channel', 'subtitle': 'Entretenimiento variado'},
-      {'name': 'Sony Channel', 'subtitle': 'Series y películas'},
-      {'name': 'Space', 'subtitle': 'Ciencia ficción'},
-      {'name': 'TNT', 'subtitle': 'Películas'},
-      {'name': 'Cinemax', 'subtitle': 'Cine'},
-      {'name': 'TCM', 'subtitle': 'Cine clásico'},
-      {'name': 'Syfy', 'subtitle': 'Ciencia ficción'},
-      {'name': 'Paramount Channel', 'subtitle': 'Películas'}
-    ];
-
-    int selectedChannelIndex = 0;
+  TvPlayerBloc()
+      : super(TvPlayerState(
+          status: TVPlayerStatus.initial,
+          channels: [],
+          selectedChannelIndex: null,
+          showChannelList: false,
+          selectedCategoryIndex: 0,
+          focusEnum: FocusEnum.channelView,
+          categories: [],
+          allChannels: [],
+        )) {
+    TvPlayerUseCase tvPlayerUseCase = instance<TvPlayerUseCase>();
+    ChannelModel? selectedChannelIndex;
+    int selectedCategoryIndex = 0;
+    bool showChannelList = false;
+    FocusEnum focusEnum = FocusEnum.channelView;
+    List<ChannelModel> allChannels = [];
+    List<ChannelModel> channels = [];
+    List<ChannelCategoryModel> categories = [];
     on<TvPlayerEvent>((event, emit) {});
-    on<_TVPlayerEventStarted>((event, emit) {
-      emit(state.copyWith(status: TVPlayerStatus.loading, channels: channels, selectedChannelIndex: selectedChannelIndex));
+    on<_TVPlayerEventStarted>((event, emit) async {
+      add(_TVPlayerEventLoadChannels());
+    });
+
+    on<_TVPlayerEventLoadChannels>((event, emit) async {
+      final channelsResponse = await tvPlayerUseCase.getChannels();
+      allChannels = channelsResponse.data;
+      channels = channelsResponse.data;
+      emit(state.copyWith(status: TVPlayerStatus.loadedChannels, channels: channels, allChannels: allChannels));
+      add(_TVPlayerEventLoadCategories());
+    });
+    on<_TVPlayerEventLoadCategories>((event, emit) async {
+      categories = tvPlayerUseCase.getCategories(channels);
+      emit(state.copyWith(status: TVPlayerStatus.loadedCategories, categories: categories));
     });
     on<_TVPlayerEventChangeChannel>((event, emit) {
       selectedChannelIndex = event.channelIndex;
-      emit(state.copyWith(selectedChannelIndex: selectedChannelIndex));
+      emit(state.copyWith(selectedChannelIndex: selectedChannelIndex, showChannelList: showChannelList, selectedCategoryIndex: selectedCategoryIndex, focusEnum: focusEnum));
+    });
+    on<_TVPlayerEventShowPanelChannel>((event, emit) {
+      showChannelList = event.value;
+      emit(state.copyWith(showChannelList: showChannelList, selectedCategoryIndex: selectedCategoryIndex, focusEnum: focusEnum));
+    });
+    on<_TVPlayerEventChangeCategory>((event, emit) {
+      selectedCategoryIndex = event.categoryIndex;
+      channels = tvPlayerUseCase.getChannelsByCategory(allChannels, categories[selectedCategoryIndex].name);
+      emit(state.copyWith(selectedCategoryIndex: selectedCategoryIndex, showChannelList: showChannelList, focusEnum: focusEnum, channels: channels));
+    });
+    on<_TVPlayerEventChangeFocus>((event, emit) {
+      focusEnum = event.focusEnum;
+      emit(state.copyWith(focusEnum: focusEnum));
     });
   }
 }

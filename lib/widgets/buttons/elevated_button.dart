@@ -23,6 +23,7 @@ class ElevatedButtonApp extends StatelessWidget {
   final bool hasShadow;
   final bool enabled;
   final Size minimumSize;
+  final FocusNode? focusNode;
 
   const ElevatedButtonApp(
       {required this.press,
@@ -45,6 +46,7 @@ class ElevatedButtonApp extends StatelessWidget {
       this.hasShadow = false,
       this.enabled = true,
       this.minimumSize = Size.zero,
+      this.focusNode,
       super.key});
 
   // Función por defecto para longPress
@@ -59,29 +61,22 @@ class ElevatedButtonApp extends StatelessWidget {
           decoration: hasShadow ? getBoxDecorationShadow() : null,
           child: SizedBox(
               child: ElevatedButton(
+            focusNode: focusNode,
             onPressed: enabled ? press : null,
             style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all<Color?>(colorButton),
-                textStyle: WidgetStateProperty.all<TextStyle?>(
-                    textStyleButton ?? Theme.of(context).textTheme.titleSmall),
+                textStyle: WidgetStateProperty.all<TextStyle?>(textStyleButton ?? Theme.of(context).textTheme.titleSmall),
                 alignment: alignmentButton,
                 elevation: WidgetStateProperty.all<double>(evelationButton),
-                padding: WidgetStateProperty.all<EdgeInsets>(
-                    EdgeInsets.symmetric(
-                        horizontal: paddingHorizontal,
-                        vertical: paddingVertical)),
+                padding: WidgetStateProperty.all<EdgeInsets>(EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical)),
                 minimumSize: WidgetStateProperty.all<Size>(minimumSize),
-                side: WidgetStateProperty.all<BorderSide>(
-                    BorderSide(color: colorBorder, width: widthBorder)),
-                shape: WidgetStateProperty.all<OutlinedBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(roundedButton)))),
+                side: WidgetStateProperty.all<BorderSide>(BorderSide(color: colorBorder, width: widthBorder)),
+                shape: WidgetStateProperty.all<OutlinedBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(roundedButton)))),
             child: Row(
               mainAxisSize: MainAxisSize.min, // Ajuste al contenido
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(textButton,
-                    style: textStyleButton, textAlign: TextAlign.center),
+                Expanded(child: Text(textButton, style: textStyleButton, textAlign: TextAlign.center)),
                 if (rightIconButton != null) ...[
                   const SizedBox(width: 8),
                   rightIconButton!,
@@ -89,9 +84,7 @@ class ElevatedButtonApp extends StatelessWidget {
               ],
             ),
           )));
-      return isExpanded
-          ? SizedBox(width: double.infinity, child: buttonApp)
-          : IntrinsicWidth(child: buttonApp);
+      return isExpanded ? SizedBox(width: double.infinity, child: buttonApp) : IntrinsicWidth(child: buttonApp);
     } else {
       return IntrinsicWidth(
         child: Container(
@@ -101,20 +94,12 @@ class ElevatedButtonApp extends StatelessWidget {
               icon: iconData ?? const SizedBox.shrink(),
               style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all<Color?>(colorButton),
-                  textStyle: WidgetStateProperty.all<TextStyle?>(
-                      textStyleButton ??
-                          Theme.of(context).textTheme.headlineMedium),
+                  textStyle: WidgetStateProperty.all<TextStyle?>(textStyleButton ?? Theme.of(context).textTheme.headlineMedium),
                   alignment: alignmentButton,
                   elevation: WidgetStateProperty.all<double>(evelationButton),
-                  padding: WidgetStateProperty.all<EdgeInsets>(
-                      EdgeInsets.symmetric(
-                          horizontal: paddingHorizontal,
-                          vertical: paddingVertical)),
-                  side: WidgetStateProperty.all<BorderSide>(
-                      BorderSide(color: colorBorder, width: widthBorder)),
-                  shape: WidgetStateProperty.all<OutlinedBorder>(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(roundedButton)))),
+                  padding: WidgetStateProperty.all<EdgeInsets>(EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical)),
+                  side: WidgetStateProperty.all<BorderSide>(BorderSide(color: colorBorder, width: widthBorder)),
+                  shape: WidgetStateProperty.all<OutlinedBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(roundedButton)))),
               label: Center(child: Text(textButton, style: textStyleButton)),
             )),
       );
