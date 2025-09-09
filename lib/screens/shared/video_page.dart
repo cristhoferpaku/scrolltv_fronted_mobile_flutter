@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_listener.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/video_controller_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/video_controls_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/option_panel.dart';
 
@@ -17,11 +16,22 @@ class VideoPage extends StatefulWidget {
   State<VideoPage> createState() => _VideoPageState();
 }
 
+class VideoPageWrapper extends StatelessWidget {
+  const VideoPageWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const VideoPage();
+  }
+}
+
 class _VideoPageState extends State<VideoPage> {
+  String videoUrl = '';
+  int videoId = 0;
   final bool isTV = PlatformUtils.isTV;
   String deviceId = "";
-  VideoControllerManager? _videoManager;
   VideoControlsManager? _controlsManager;
+  late VideoPlayerBloc _videoPlayerBloc;
   bool showSubtitlePanel = false;
   bool showAudioPanel = false;
   bool showQualityPanel = false;
@@ -49,6 +59,19 @@ class _VideoPageState extends State<VideoPage> {
   void initState() {
     authBloc.add(AuthEvent.validateExpiration());
     super.initState();
+    _videoPlayerBloc = instance<VideoPlayerBloc>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)!.settings.arguments as VideoPageArguments;
+      videoUrl = args.videoUrl;
+      videoId = args.videoId;
+
+      // Inicializar el video player con VideoPlayerBloc
+      _videoPlayerBloc.add(VideoPlayerEvent.initialize(videoUrl: 'https://scroll-tv-movie-home-cdn.b-cdn.net/Pantera%20Negra.mp4'));
+
+      _focusNode.requestFocus();
+    });
+
     if (!isTV) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
@@ -62,25 +85,11 @@ class _VideoPageState extends State<VideoPage> {
       });
     });
 
-    _initializeManagers();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
+    _initializeControlsManager();
   }
 
-  void _initializeManagers() {
-    _videoManager = VideoControllerManager();
+  void _initializeControlsManager() {
     _controlsManager = VideoControlsManager();
-
-    _videoManager?.initializePlayer(
-      'https://vz-62f65928-e3c.b-cdn.net/e924310a-57e3-44e2-ba63-3caf67ba0a36/playlist.m3u8',
-      onStateChanged: () {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-    );
 
     _controlsManager?.initialize(
       onControlsChanged: () {
@@ -93,7 +102,7 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   void dispose() {
-    _videoManager?.dispose();
+    _videoPlayerBloc.add(const VideoPlayerEvent.dispose());
     _controlsManager?.dispose();
     _focusNode.dispose();
     if (!isTV) {
@@ -148,65 +157,104 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   // Helper methods to get dynamic options
-  List<Map<String, String>> _getSubtitleOptions() {
-    final subtitleTracks = _videoManager?.subtitleTracks ?? [];
-
-    if (subtitleTracks.isEmpty) {
-      return [
-        {'label': 'No hay más subtítulos por el momento.', 'value': '0'}
-      ];
+  List<Map<String, String>> _getSubtitleOptions(VideoPlayerState state) {
+    if (state.subtitleTracks.isNotEmpty) {
+      return state.subtitleTracks.asMap().entries.map((entry) {
+        final index = entry.key;
+        final track = entry.value;
+        return {'label': track['name'] ?? 'Subtítulo ${index + 1}', 'value': index.toString()};
+      }).toList();
     }
 
-    return subtitleTracks.asMap().entries.map((entry) {
-      final index = entry.key;
-      final track = entry.value;
-      return {'label': track['name'] ?? 'Subtítulo ${index + 1}', 'value': index.toString()};
-    }).toList();
+    return [
+      {'label': 'No hay más subtítulos por el momento.', 'value': '0'}
+    ];
   }
 
-  List<Map<String, String>> _getAudioOptions() {
-    final audioTracks = _videoManager?.audioTracks ?? [];
-
-    if (audioTracks.isEmpty) {
-      return [
-        {'label': 'No hay más audio por el momento.', 'value': '0'}
-      ];
+  List<Map<String, String>> _getAudioOptions(VideoPlayerState state) {
+    if (state.audioTracks.isNotEmpty) {
+      return state.audioTracks.asMap().entries.map((entry) {
+        final index = entry.key;
+        final track = entry.value;
+        return {'label': track['name'] ?? 'Audio ${index + 1}', 'value': index.toString()};
+      }).toList();
     }
 
-    return audioTracks.asMap().entries.map((entry) {
-      final index = entry.key;
-      final track = entry.value;
-      return {'label': track['name'] ?? 'Audio ${index + 1}', 'value': index.toString()};
-    }).toList();
+    return [
+      {'label': 'No hay más audio por el momento.', 'value': '0'}
+    ];
   }
 
   List<Map<String, String>> _getQualityOptions() {
-    final qualityLevels = _videoManager?.qualityLevels ?? [];
+    // Solo mostrar opción automática - funcionalidad de calidad eliminada
+    return [
+      {'label': 'Automática', 'value': '0'}
+    ];
+  }
 
-    if (qualityLevels.isEmpty) {
-      return [
-        {'label': 'No hay más calidad por el momento.', 'value': '0'}
-      ];
+  Widget _buildVideoPlayer(VideoPlayerState state) {
+    return state.when(
+      initial: () => Container(
+        color: Colors.black,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.white,
+          ),
+        ),
+      ),
+      loading: (url) => Container(
+        color: Colors.black,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.white,
+          ),
+        ),
+      ),
+      ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => Center(
+        child: VlcPlayer(
+          controller: controller,
+          aspectRatio: 16 / 9,
+          placeholder: Container(
+            color: Colors.black,
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+      error: (message) => Container(
+        color: Colors.black,
+        child: Center(
+          child: Text(
+            'Error: $message',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+
+    if (duration.inHours > 0) {
+      return '${duration.inHours}:$twoDigitMinutes:$twoDigitSeconds';
+    } else {
+      return '$twoDigitMinutes:$twoDigitSeconds';
     }
-
-    return qualityLevels.asMap().entries.map((entry) {
-      final index = entry.key;
-      final level = entry.value;
-      return {'label': level['name'] ?? 'Calidad ${index + 1}', 'value': index.toString()};
-    }).toList();
   }
 
   // Método para delegar eventos de teclado a los paneles activos
   void _delegateKeyEventToPanels(KeyEvent event) {
-    print('Delegating key event: ${event.logicalKey}');
     if (showSubtitlePanel) {
-      print('Delegating to subtitle panel');
       _subtitlePanelKey.currentState?.handleKeyEvent(event);
     } else if (showAudioPanel) {
-      print('Delegating to audio panel');
       _audioPanelKey.currentState?.handleKeyEvent(event);
     } else if (showQualityPanel) {
-      print('Delegating to quality panel');
       _qualityPanelKey.currentState?.handleKeyEvent(event);
     }
   }
@@ -224,10 +272,7 @@ class _VideoPageState extends State<VideoPage> {
               _controlsManager?.show();
             } else if (_isSliderFocused) {
               // Control del slider: +10 segundos
-              final currentPos = _videoManager?.currentPosition ?? Duration.zero;
-              final newPos = currentPos + Duration(seconds: 10);
-              final maxPos = _videoManager?.totalDuration ?? Duration.zero;
-              _videoManager?.seekTo(newPos > maxPos ? maxPos : newPos);
+              _videoPlayerBloc.add(const VideoPlayerEvent.skipForward(seconds: 10));
               _controlsManager?.resetTimer();
             } else {
               // Navegar a la derecha entre controles
@@ -251,9 +296,7 @@ class _VideoPageState extends State<VideoPage> {
               _hideQualityPanel();
             } else if (_controlsManager!.showControls && _isSliderFocused) {
               // Control del slider: -10 segundos
-              final currentPos = _videoManager?.currentPosition ?? Duration.zero;
-              final newPos = currentPos - Duration(seconds: 10);
-              _videoManager?.seekTo(newPos < Duration.zero ? Duration.zero : newPos);
+              _videoPlayerBloc.add(const VideoPlayerEvent.skipBackward(seconds: 10));
               _controlsManager?.resetTimer();
             } else if (_controlsManager!.showControls) {
               // Navegar a la izquierda entre controles
@@ -330,12 +373,12 @@ class _VideoPageState extends State<VideoPage> {
               // Activar el elemento con focus
               switch (_currentFocusIndex) {
                 case 0: // Play/Pause
-                  _videoManager?.togglePlayPause();
+                  _videoPlayerBloc.add(const VideoPlayerEvent.togglePlayPause());
                   break;
                 case 1: // Slider - no hacer nada en select
                   break;
                 case 2: // Restart
-                  _videoManager?.restart();
+                  _videoPlayerBloc.add(const VideoPlayerEvent.restart());
                   break;
                 case 3: // Audio
                   _showAudioPanel();
@@ -353,7 +396,7 @@ class _VideoPageState extends State<VideoPage> {
           break;
         case LogicalKeyboardKey.space:
           // Play/Pause para ambas plataformas
-          _videoManager?.togglePlayPause();
+          _videoPlayerBloc.add(const VideoPlayerEvent.togglePlayPause());
           _controlsManager?.resetTimer();
           break;
         case LogicalKeyboardKey.escape:
@@ -372,343 +415,318 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<AuthBloc, AuthState>(
-            bloc: authBloc,
-            listener: (context, state) {
-              authListener(context, state, authBloc);
-            },
-          ),
-        ],
-        child: KeyboardListener(
-          focusNode: _focusNode,
-          onKeyEvent: _handleKeyEvent,
-          child: Stack(
-            children: [
-              // Video Player
-              if (_videoManager?.controller != null)
-                Center(
-                  child: VlcPlayer(
-                    controller: _videoManager!.controller!,
-                    aspectRatio: 16 / 9,
-                    placeholder: Container(
-                      color: Colors.black,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
+    return StreamBuilder<VideoPlayerState>(
+      stream: _videoPlayerBloc.stream,
+      builder: (context, snapshot) {
+        final state = snapshot.data ?? const VideoPlayerState.initial();
+
+        return Scaffold(
+          backgroundColor: Colors.black,
+          body: KeyboardListener(
+            focusNode: _focusNode,
+            onKeyEvent: _handleKeyEvent,
+            child: Stack(
+              children: [
+                // Video Player
+                _buildVideoPlayer(state),
+
+                // Controls Overlay
+                if (_controlsManager?.showControls == true)
+                  Stack(
+                    children: [
+                      // Background tap to hide controls
+                      GestureDetector(
+                        onTap: () {
+                          _controlsManager?.hideControls();
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          color: Colors.black.withOpacity(0.5),
                         ),
                       ),
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  color: Colors.black,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-
-              // Controls Overlay
-              if (_controlsManager?.showControls == true)
-                Stack(
-                  children: [
-                    // Background tap to hide controls
-                    GestureDetector(
-                      onTap: () {
-                        _controlsManager?.hideControls();
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        color: Colors.black.withOpacity(0.5),
-                      ),
-                    ),
-                    // Controls that don't hide when tapped
-                    GestureDetector(
-                      onTap: () {
-                        _controlsManager?.resetTimer();
-                      }, // Prevent tap from propagating
-                      child: Column(
-                        children: [
-                          // Top Bar
-                          SafeArea(
-                            child: Padding(
-                              padding: EdgeInsets.all(isTV ? 24 : 16),
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: isTV ? 36 : 28),
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                  Spacer(),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          Spacer(),
-                          //CONTROLS
-                          Padding(
-                            padding: EdgeInsets.all(isTV ? 32 : 16),
-                            child: Column(
-                              children: [
-                                // Play/Pause Button and Times Row (above slider)
-                                Row(
+                      // Controls that don't hide when tapped
+                      GestureDetector(
+                        onTap: () {
+                          _controlsManager?.resetTimer();
+                        }, // Prevent tap from propagating
+                        child: Column(
+                          children: [
+                            // Top Bar
+                            SafeArea(
+                              child: Padding(
+                                padding: EdgeInsets.all(isTV ? 24 : 16),
+                                child: Row(
                                   children: [
-                                    // Play/Pause Button (Left)
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        shape: BoxShape.circle,
-                                        border: _isPlayPauseFocused
-                                            ? Border.all(
-                                                color: Colors.white,
-                                                width: 3,
-                                              )
-                                            : null,
-                                      ),
-                                      child: IconButton(
-                                        icon: Icon(
-                                          _videoManager?.hasEnded == true ? Icons.replay : (_videoManager?.isPlaying == true ? Icons.pause : Icons.play_arrow),
-                                          color: Colors.white,
-                                          size: isTV ? 48 : 32,
-                                        ),
-                                        onPressed: () async {
-                                          await _videoManager?.togglePlayPause();
-                                          _controlsManager?.resetTimer();
-                                        },
-                                      ),
-                                    ),
-                                    SizedBox(width: isTV ? 24 : 16),
-                                    // Times
-                                    Text(
-                                      '//${_videoManager?.formatDuration(_videoManager?.currentPosition ?? Duration.zero) ?? '0:00'} / ${_videoManager?.formatDuration(_videoManager?.totalDuration ?? Duration.zero) ?? '0:00'}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: isTV ? 18 : 14,
-                                        fontWeight: isTV ? FontWeight.w500 : FontWeight.normal,
-                                      ),
+                                    IconButton(
+                                      icon: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: isTV ? 36 : 28),
+                                      onPressed: () => Navigator.pop(context),
                                     ),
                                     Spacer(),
                                   ],
                                 ),
+                              ),
+                            ),
 
-                                SizedBox(height: isTV ? 16 : 8),
-
-                                // Progress Bar
-                                Container(
-                                  decoration: _isSliderFocused
-                                      ? BoxDecoration(
-                                          border: Border.all(
+                            Spacer(),
+                            //CONTROLS
+                            Padding(
+                              padding: EdgeInsets.all(isTV ? 32 : 16),
+                              child: Column(
+                                children: [
+                                  // Play/Pause Button and Times Row (above slider)
+                                  Row(
+                                    children: [
+                                      // Play/Pause Button (Left)
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.3),
+                                          shape: BoxShape.circle,
+                                          border: _isPlayPauseFocused
+                                              ? Border.all(
+                                                  color: Colors.white,
+                                                  width: 3,
+                                                )
+                                              : null,
+                                        ),
+                                        child: IconButton(
+                                          icon: Icon(
+                                            state.hasEnded ? Icons.replay : (state.isPlaying ? Icons.pause : Icons.play_arrow),
                                             color: Colors.white,
-                                            width: 2,
+                                            size: isTV ? 48 : 32,
                                           ),
-                                          borderRadius: BorderRadius.circular(8),
-                                        )
-                                      : null,
-                                  padding: _isSliderFocused ? EdgeInsets.all(4) : EdgeInsets.zero,
-                                  child: SliderTheme(
-                                    data: SliderTheme.of(context).copyWith(
-                                      trackHeight: isTV ? 6 : 4,
-                                      thumbShape: RoundSliderThumbShape(
-                                        enabledThumbRadius: isTV ? 12 : 8,
+                                          onPressed: () async {
+                                            if (state.hasEnded) {
+                                              _videoPlayerBloc.add(const VideoPlayerEvent.restart());
+                                            } else {
+                                              _videoPlayerBloc.add(const VideoPlayerEvent.togglePlayPause());
+                                            }
+                                            _controlsManager?.resetTimer();
+                                          },
+                                        ),
                                       ),
-                                      overlayShape: RoundSliderOverlayShape(
-                                        overlayRadius: isTV ? 20 : 16,
+                                      SizedBox(width: isTV ? 24 : 16),
+                                      // Times
+                                      Text(
+                                        '${_formatDuration(state.currentPosition)} / ${_formatDuration(state.duration)}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: isTV ? 18 : 14,
+                                          fontWeight: isTV ? FontWeight.w500 : FontWeight.normal,
+                                        ),
                                       ),
-                                    ),
-                                    child: Slider(
-                                      value: (_videoManager?.totalDuration.inMilliseconds ?? 0) > 0
-                                          ? (_videoManager?.currentPosition.inMilliseconds ?? 0) / (_videoManager?.totalDuration.inMilliseconds ?? 1)
-                                          : 0.0,
-                                      onChanged: (value) {
-                                        if (_videoManager?.controller != null && (_videoManager?.totalDuration.inMilliseconds ?? 0) > 0) {
-                                          final position = Duration(
-                                            milliseconds: (value * (_videoManager?.totalDuration.inMilliseconds ?? 0)).round(),
-                                          );
-                                          _videoManager?.seekTo(position);
-                                          _controlsManager?.resetTimer();
-                                        }
-                                      },
-                                      activeColor: Colors.white,
-                                      inactiveColor: Colors.white.withOpacity(0.3),
+                                      Spacer(),
+                                    ],
+                                  ),
+
+                                  SizedBox(height: isTV ? 16 : 8),
+
+                                  // Progress Bar
+                                  Container(
+                                    decoration: _isSliderFocused
+                                        ? BoxDecoration(
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 2,
+                                            ),
+                                            borderRadius: BorderRadius.circular(8),
+                                          )
+                                        : null,
+                                    padding: _isSliderFocused ? EdgeInsets.all(4) : EdgeInsets.zero,
+                                    child: SliderTheme(
+                                      data: SliderTheme.of(context).copyWith(
+                                        trackHeight: isTV ? 6 : 4,
+                                        thumbShape: RoundSliderThumbShape(
+                                          enabledThumbRadius: isTV ? 12 : 8,
+                                        ),
+                                        overlayShape: RoundSliderOverlayShape(
+                                          overlayRadius: isTV ? 20 : 16,
+                                        ),
+                                      ),
+                                      child: Slider(
+                                        value: state.duration.inMilliseconds > 0 ? state.currentPosition.inMilliseconds / state.duration.inMilliseconds : 0.0,
+                                        onChanged: (value) {
+                                          if (state.duration.inMilliseconds > 0) {
+                                            final position = Duration(
+                                              milliseconds: (value * state.duration.inMilliseconds).round(),
+                                            );
+                                            _videoPlayerBloc.add(VideoPlayerEvent.seekTo(position: position));
+                                            _controlsManager?.resetTimer();
+                                          }
+                                        },
+                                        activeColor: Colors.white,
+                                        inactiveColor: Colors.white.withOpacity(0.3),
+                                      ),
                                     ),
                                   ),
-                                ),
 
-                                SizedBox(height: isTV ? 16 : 8),
+                                  SizedBox(height: isTV ? 16 : 8),
 
-                                // Control Buttons
-                                Row(
-                                  mainAxisAlignment: isTV ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
-                                      decoration: isTV
-                                          ? BoxDecoration(
-                                              color: Colors.black.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: _isRestartFocused
-                                                  ? Border.all(
-                                                      color: Colors.white,
-                                                      width: 2,
-                                                    )
-                                                  : null,
-                                            )
-                                          : null,
-                                      child: IconButton(
-                                        icon: Icon(Icons.replay, color: Colors.white, size: isTV ? 40 : 32),
-                                        onPressed: () async {
-                                          await _videoManager?.restart();
-                                          _controlsManager?.resetTimer();
-                                        },
+                                  // Control Buttons
+                                  Row(
+                                    mainAxisAlignment: isTV ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
+                                        decoration: isTV
+                                            ? BoxDecoration(
+                                                color: Colors.black.withOpacity(0.2),
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: _isRestartFocused
+                                                    ? Border.all(
+                                                        color: Colors.white,
+                                                        width: 2,
+                                                      )
+                                                    : null,
+                                              )
+                                            : null,
+                                        child: IconButton(
+                                          icon: Icon(Icons.replay, color: Colors.white, size: isTV ? 40 : 32),
+                                          onPressed: () async {
+                                            _videoPlayerBloc.add(const VideoPlayerEvent.restart());
+                                            _controlsManager?.resetTimer();
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
-                                      decoration: isTV
-                                          ? BoxDecoration(
-                                              color: Colors.black.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: _isAudioFocused
-                                                  ? Border.all(
-                                                      color: Colors.white,
-                                                      width: 2,
-                                                    )
-                                                  : null,
-                                            )
-                                          : null,
-                                      child: IconButton(
-                                        icon: Icon(Icons.volume_up, color: Colors.white, size: isTV ? 40 : 32),
-                                        onPressed: () {
-                                          _showAudioPanel();
-                                          _controlsManager?.resetTimer();
-                                        },
+                                      Container(
+                                        margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
+                                        decoration: isTV
+                                            ? BoxDecoration(
+                                                color: Colors.black.withOpacity(0.2),
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: _isAudioFocused
+                                                    ? Border.all(
+                                                        color: Colors.white,
+                                                        width: 2,
+                                                      )
+                                                    : null,
+                                              )
+                                            : null,
+                                        child: IconButton(
+                                          icon: Icon(Icons.volume_up, color: Colors.white, size: isTV ? 40 : 32),
+                                          onPressed: () {
+                                            _showAudioPanel();
+                                            _controlsManager?.resetTimer();
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
-                                      decoration: isTV
-                                          ? BoxDecoration(
-                                              color: Colors.black.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: _isSubtitlesFocused
-                                                  ? Border.all(
-                                                      color: Colors.white,
-                                                      width: 2,
-                                                    )
-                                                  : null,
-                                            )
-                                          : null,
-                                      child: IconButton(
-                                        icon: Icon(Icons.closed_caption, color: Colors.white, size: isTV ? 40 : 32),
-                                        onPressed: () {
-                                          _showSubtitlePanel();
-                                          _controlsManager?.resetTimer();
-                                        },
+                                      Container(
+                                        margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
+                                        decoration: isTV
+                                            ? BoxDecoration(
+                                                color: Colors.black.withOpacity(0.2),
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: _isSubtitlesFocused
+                                                    ? Border.all(
+                                                        color: Colors.white,
+                                                        width: 2,
+                                                      )
+                                                    : null,
+                                              )
+                                            : null,
+                                        child: IconButton(
+                                          icon: Icon(Icons.closed_caption, color: Colors.white, size: isTV ? 40 : 32),
+                                          onPressed: () {
+                                            _showSubtitlePanel();
+                                            _controlsManager?.resetTimer();
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
-                                      decoration: isTV
-                                          ? BoxDecoration(
-                                              color: Colors.black.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: _isSettingsFocused
-                                                  ? Border.all(
-                                                      color: Colors.white,
-                                                      width: 2,
-                                                    )
-                                                  : null,
-                                            )
-                                          : null,
-                                      child: IconButton(
-                                        icon: Icon(Icons.settings, color: Colors.white, size: isTV ? 40 : 32),
-                                        onPressed: () {
-                                          _showQualityPanel();
-                                          _controlsManager?.resetTimer();
-                                        },
+                                      Container(
+                                        margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
+                                        decoration: isTV
+                                            ? BoxDecoration(
+                                                color: Colors.black.withOpacity(0.2),
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: _isSettingsFocused
+                                                    ? Border.all(
+                                                        color: Colors.white,
+                                                        width: 2,
+                                                      )
+                                                    : null,
+                                              )
+                                            : null,
+                                        child: IconButton(
+                                          icon: Icon(Icons.settings, color: Colors.white, size: isTV ? 40 : 32),
+                                          onPressed: () {
+                                            _showQualityPanel();
+                                            _controlsManager?.resetTimer();
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                    if (!isTV) Spacer()
-                                  ],
-                                ),
-                              ],
+                                      if (!isTV) Spacer()
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-
-              // Invisible tap area to show controls
-              if (_controlsManager?.showControls != true)
-                GestureDetector(
-                  onTap: () {
-                    _controlsManager?.show();
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Colors.transparent,
+                    ],
                   ),
-                ),
 
-              // Subtitle Panel
-              if (showSubtitlePanel)
-                OptionPanel(
-                  key: _subtitlePanelKey,
-                  title: 'Subtítulos',
-                  isVisible: showSubtitlePanel,
-                  currentValue: _videoManager?.currentSubtitleIndex.toString() ?? '0',
-                  options: _getSubtitleOptions(),
-                  onValueChanged: (String index) {
-                    final selectedIndex = int.tryParse(index) ?? 0;
-                    _videoManager?.changeSubtitleTrack(selectedIndex);
-                  },
-                  onClose: _hideSubtitlePanel,
-                ),
+                // Invisible tap area to show controls
+                if (_controlsManager?.showControls != true)
+                  GestureDetector(
+                    onTap: () {
+                      _controlsManager?.show();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Colors.transparent,
+                    ),
+                  ),
 
-              // Audio Panel
-              if (showAudioPanel)
-                OptionPanel(
-                  key: _audioPanelKey,
-                  title: 'Audio',
-                  isVisible: showAudioPanel,
-                  currentValue: _videoManager?.currentAudioIndex.toString() ?? '0',
-                  options: _getAudioOptions(),
-                  onValueChanged: (String index) {
-                    final selectedIndex = int.tryParse(index) ?? 0;
-                    _videoManager?.changeAudioTrack(selectedIndex);
-                  },
-                  onClose: _hideAudioPanel,
-                ),
+                // Subtitle Panel
+                if (showSubtitlePanel)
+                  OptionPanel(
+                    key: _subtitlePanelKey,
+                    title: 'Subtítulos',
+                    isVisible: showSubtitlePanel,
+                    currentValue: state.currentSubtitleIndex.toString(),
+                    options: _getSubtitleOptions(state),
+                    onValueChanged: (String index) {
+                      final selectedIndex = int.tryParse(index) ?? 0;
+                      _videoPlayerBloc.add(VideoPlayerEvent.changeSubtitleTrack(index: selectedIndex));
+                    },
+                    onClose: _hideSubtitlePanel,
+                  ),
 
-              // Quality Panel
-              if (showQualityPanel)
-                OptionPanel(
-                  key: _qualityPanelKey,
-                  title: 'Calidad',
-                  isVisible: showQualityPanel,
-                  currentValue: _videoManager?.currentQualityIndex.toString() ?? '0',
-                  options: _getQualityOptions(),
-                  onValueChanged: (String index) {
-                    final selectedIndex = int.tryParse(index) ?? 0;
-                    _videoManager?.changeQualityLevel(selectedIndex);
-                  },
-                  onClose: _hideQualityPanel,
-                ),
-            ],
+                // Audio Panel
+                if (showAudioPanel)
+                  OptionPanel(
+                    key: _audioPanelKey,
+                    title: 'Audio',
+                    isVisible: showAudioPanel,
+                    currentValue: state.currentAudioIndex.toString(),
+                    options: _getAudioOptions(state),
+                    onValueChanged: (String index) {
+                      final selectedIndex = int.tryParse(index) ?? 0;
+                      _videoPlayerBloc.add(VideoPlayerEvent.changeAudioTrack(index: selectedIndex));
+                    },
+                    onClose: _hideAudioPanel,
+                  ),
+
+                // Quality Panel - Solo muestra opción automática
+                if (showQualityPanel)
+                  OptionPanel(
+                    key: _qualityPanelKey,
+                    title: 'Calidad',
+                    isVisible: showQualityPanel,
+                    currentValue: '0', // Siempre automática
+                    options: _getQualityOptions(),
+                    onValueChanged: (String index) {
+                      // No hacer nada - solo hay opción automática
+                    },
+                    onClose: _hideQualityPanel,
+                  ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
