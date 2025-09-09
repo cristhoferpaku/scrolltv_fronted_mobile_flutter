@@ -44,7 +44,14 @@ class _VideoPageState extends State<VideoPage> {
   bool showAudioPanel = false;
   bool showQualityPanel = false;
   bool showEpisodePanel = false;
-  
+
+  // Estado local para pistas de audio y subtítulos (como en la demo oficial)
+  List<Map<String, String>> _subtitleTracks = [];
+  List<Map<String, String>> _audioTracks = [];
+  int _currentSubtitleIndex = 0;
+  int _currentAudioIndex = 0;
+  bool _tracksLoaded = false;
+
   // Timer específico para el episode panel
   Timer? _episodePanelTimer;
 
@@ -80,6 +87,9 @@ class _VideoPageState extends State<VideoPage> {
     super.initState();
     _videoPlayerBloc = instance<VideoPlayerBloc>();
 
+    // Resetear estado de pistas para nuevo video
+    _resetTracksState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)!.settings.arguments as VideoPageArguments;
       videoUrl = args.videoUrl;
@@ -100,7 +110,20 @@ class _VideoPageState extends State<VideoPage> {
 
       _focusNode.requestFocus();
     });
+  }
 
+  // Resetear estado de pistas cuando se carga un nuevo video
+  void _resetTracksState() {
+    _subtitleTracks = [];
+    _audioTracks = [];
+    _currentSubtitleIndex = 0;
+    _currentAudioIndex = 0;
+    _tracksLoaded = false;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     if (!isTV) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
@@ -220,7 +243,7 @@ class _VideoPageState extends State<VideoPage> {
   void _showEpisodePanel() {
     // La carga de episodios ahora se maneja automáticamente en _getEpisodeOptions()
     // cuando el EpisodePanel se renderiza, evitando llamadas duplicadas
-    
+
     setState(() {
       showEpisodePanel = true;
       showSubtitlePanel = false;
@@ -263,8 +286,8 @@ class _VideoPageState extends State<VideoPage> {
 
   // Helper methods to get dynamic options
   List<Map<String, String>> _getSubtitleOptions(VideoPlayerState state) {
-    if (state.subtitleTracks.isNotEmpty) {
-      return state.subtitleTracks.asMap().entries.map((entry) {
+    if (_subtitleTracks.isNotEmpty) {
+      return _subtitleTracks.asMap().entries.map((entry) {
         final index = entry.key;
         final track = entry.value;
         return {'label': track['name'] ?? 'Subtítulo ${index + 1}', 'value': index.toString()};
@@ -272,7 +295,7 @@ class _VideoPageState extends State<VideoPage> {
     }
 
     // Si las pistas ya se cargaron pero están vacías, mostrar mensaje
-    if (state.tracksLoaded && state.subtitleTracks.isEmpty) {
+    if (_tracksLoaded && _subtitleTracks.isEmpty) {
       return [
         {'label': 'No hay más subtítulos por el momento.', 'value': '0'}
       ];
@@ -283,8 +306,8 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   List<Map<String, String>> _getAudioOptions(VideoPlayerState state) {
-    if (state.audioTracks.isNotEmpty) {
-      return state.audioTracks.asMap().entries.map((entry) {
+    if (_audioTracks.isNotEmpty) {
+      return _audioTracks.asMap().entries.map((entry) {
         final index = entry.key;
         final track = entry.value;
         return {'label': track['name'] ?? 'Audio ${index + 1}', 'value': index.toString()};
@@ -292,7 +315,7 @@ class _VideoPageState extends State<VideoPage> {
     }
 
     // Si las pistas ya se cargaron pero están vacías, mostrar mensaje
-    if (state.tracksLoaded) {
+    if (_tracksLoaded) {
       return [
         {'label': 'No hay más audio por el momento.', 'value': '0'}
       ];
@@ -367,7 +390,7 @@ class _VideoPageState extends State<VideoPage> {
         (episode) => episode.episodeNumber.toString() == episodeNum,
         orElse: () => episodes.first,
       );
-      
+
       // Actualizar el estado primero para que el panel muestre la selección correcta
       setState(() {
         episodeNumber = selectedEpisodeData.episodeNumber;
@@ -402,36 +425,60 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   Widget _buildVideoPlayer(VideoPlayerState state) {
-    return state.when(
-      initial: () => Container(
-        color: Colors.black,
-        child: const VideoPlayerSkeleton(),
-      ),
-      loading: (url) => const VideoPlayerSkeleton(),
-      ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) => Center(
-        child: VlcPlayer(
-          controller: controller,
-          aspectRatio: 16 / 9,
-          placeholder: Container(
-            color: Colors.black,
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ),
-      error: (message) => Container(
+    // Siempre renderizar VlcPlayer como en la demo oficial
+    // El controller se obtiene del state o del Bloc como fallback
+    final controller = state.controller ?? _videoPlayerBloc.controller;
+
+    // Si hay error, mostrar mensaje de error
+    if (state.maybeWhen(
+      error: (message) => true,
+      orElse: () => false,
+    )) {
+      return Container(
         color: Colors.black,
         child: Center(
           child: Text(
-            'Error: $message',
+            'Error: ${state.maybeWhen(error: (message) => message, orElse: () => "")}',
             style: const TextStyle(color: Colors.white),
           ),
         ),
-      ),
+      );
+    }
+
+    // Agregar listener para cargar pistas cuando el video esté reproduciéndose
+    if (controller != null && !_tracksLoaded) {
+      controller.addListener(() {
+        if (controller.value.isPlaying && !_tracksLoaded) {
+          // Esperar un poco para que el video se estabilice antes de cargar pistas
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            if (mounted) {
+              _loadVideoTracks(controller);
+            }
+          });
+        }
+      });
+    }
+
+    // Mostrar VlcPlayer si tenemos controlador, sino skeleton
+    return Center(
+      child: controller != null
+          ? VlcPlayer(
+              controller: controller,
+              aspectRatio: 16 / 9,
+              placeholder: const VideoPlayerSkeleton(),
+            )
+          : const CircularProgressIndicator(),
     );
+
+    // return Center(
+    //   child: controller != null
+    //       ? VlcPlayer(
+    //           controller: controller,
+    //           aspectRatio: 16 / 9,
+    //           placeholder: const VideoPlayerSkeleton(),
+    //         )
+    //       : const VideoPlayerSkeleton(),
+    // );
   }
 
   String _formatDuration(Duration duration) {
@@ -443,6 +490,181 @@ class _VideoPageState extends State<VideoPage> {
       return '${duration.inHours}:$twoDigitMinutes:$twoDigitSeconds';
     } else {
       return '$twoDigitMinutes:$twoDigitSeconds';
+    }
+  }
+
+  // Cargar pistas de audio y subtítulos directamente del VLC (como en la demo oficial)
+  Future<void> _loadVideoTracks(VlcPlayerController controller) async {
+    if (_tracksLoaded) return;
+
+    try {
+      bool foundSubtitles = false;
+      bool foundAudio = false;
+      final subtitleList = <Map<String, String>>[];
+      final audioList = <Map<String, String>>[];
+
+      print('\n=== CARGANDO PISTAS DE VIDEO (DIRECTO) ===');
+
+      // Cargar subtítulos con timeout
+      try {
+        final spuCount = await controller.getSpuTracks().timeout(
+          const Duration(milliseconds: 1000),
+          onTimeout: () {
+            print('⏱️ Timeout obteniendo subtítulos');
+            return <int, String>{};
+          },
+        );
+
+        // Agregar opción "Desactivados" primero
+        subtitleList.add({'id': '-1', 'name': 'Desactivados'});
+        if (spuCount.isNotEmpty) {
+          final sortedTracks = spuCount.entries.toList()..sort((a, b) => a.value.compareTo(b.value));
+          for (final entry in sortedTracks) {
+            subtitleList.add({'id': entry.key.toString(), 'name': entry.value});
+          }
+          foundSubtitles = true;
+          print('📝 SUBTÍTULOS ENCONTRADOS: ${spuCount.length} pistas');
+        } else {
+          print('❌ No se encontraron pistas de subtítulos');
+        }
+      } catch (e) {
+        subtitleList.add({'id': '-1', 'name': 'Desactivados'});
+        print('❌ Error obteniendo subtítulos: $e');
+      }
+
+      // Cargar audio con timeout
+      try {
+        final audio = await controller.getAudioTracks().timeout(
+          const Duration(milliseconds: 1000),
+          onTimeout: () {
+            print('⏱️ Timeout obteniendo audio');
+            return <int, String>{};
+          },
+        );
+
+        if (audio.isNotEmpty) {
+          final sortedAudioTracks = audio.entries.toList()..sort((a, b) => a.value.compareTo(b.value));
+          for (final entry in sortedAudioTracks) {
+            audioList.add({'id': entry.key.toString(), 'name': entry.value});
+          }
+          foundAudio = true;
+          print('🔊 AUDIOS ENCONTRADOS: ${audio.length} pistas');
+        } else {
+          print('❌ No se encontraron pistas de audio específicas');
+        }
+      } catch (e) {
+        print('❌ Error obteniendo audio: $e');
+      }
+
+      print('=====================================\n');
+
+      // Actualizar estado local
+      if (mounted) {
+        setState(() {
+          _subtitleTracks = subtitleList;
+          _audioTracks = audioList.isNotEmpty
+              ? audioList
+              : [
+                  {'id': '0', 'name': 'Audio Principal'}
+                ];
+          _currentSubtitleIndex = 0; // Desactivados por defecto
+          _currentAudioIndex = 0;
+          _tracksLoaded = true;
+        });
+      }
+    } catch (e) {
+      print('❌ Error al cargar pistas: $e');
+      if (mounted) {
+        setState(() {
+          _subtitleTracks = [
+            {'id': '-1', 'name': 'Desactivados'}
+          ];
+          _audioTracks = [
+            {'id': '0', 'name': 'Audio Principal'}
+          ];
+          _currentSubtitleIndex = 0;
+          _currentAudioIndex = 0;
+          _tracksLoaded = true;
+        });
+      }
+    }
+  }
+
+  // Cambiar pista de subtítulos directamente (como en la demo oficial)
+  Future<void> _changeSubtitleTrack(VlcPlayerController controller, int index) async {
+    if (index >= _subtitleTracks.length) return;
+
+    try {
+      if (index == 0) {
+        // Desactivar subtítulos
+        await controller.setSpuTrack(-1);
+        print('🔇 Subtítulos desactivados');
+      } else {
+        // Obtener el nombre de la pista deseada
+        final desiredTrackName = _subtitleTracks[index]['name'];
+        // Obtener pistas actuales del VLC para obtener los IDs reales
+        final currentTracks = await controller.getSpuTracks();
+
+        if (currentTracks.isNotEmpty) {
+          // Encontrar el ID de la pista que coincide con el nombre deseado
+          int? targetTrackId;
+          for (final entry in currentTracks.entries) {
+            if (entry.value == desiredTrackName) {
+              targetTrackId = entry.key;
+              break;
+            }
+          }
+
+          if (targetTrackId != null) {
+            await controller.setSpuTrack(targetTrackId);
+            print('📝 Subtítulo cambiado a: $desiredTrackName (ID: $targetTrackId)');
+          }
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentSubtitleIndex = index;
+        });
+      }
+    } catch (e) {
+      print('❌ Error cambiando subtítulo: $e');
+    }
+  }
+
+  // Cambiar pista de audio directamente (como en la demo oficial)
+  Future<void> _changeAudioTrack(VlcPlayerController controller, int index) async {
+    if (index >= _audioTracks.length) return;
+
+    try {
+      // Obtener el nombre de la pista deseada
+      final desiredTrackName = _audioTracks[index]['name'];
+      // Obtener pistas actuales del VLC para obtener los IDs reales
+      final currentTracks = await controller.getAudioTracks();
+
+      if (currentTracks.isNotEmpty) {
+        // Encontrar el ID de la pista que coincide con el nombre deseado
+        int? targetTrackId;
+        for (final entry in currentTracks.entries) {
+          if (entry.value == desiredTrackName) {
+            targetTrackId = entry.key;
+            break;
+          }
+        }
+
+        if (targetTrackId != null) {
+          await controller.setAudioTrack(targetTrackId);
+          print('🔊 Audio cambiado a: $desiredTrackName (ID: $targetTrackId)');
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentAudioIndex = index;
+        });
+      }
+    } catch (e) {
+      print('❌ Error cambiando audio: $e');
     }
   }
 
@@ -583,13 +805,13 @@ class _VideoPageState extends State<VideoPage> {
               // Delegar navegación a los paneles activos
               bool eventHandled = _delegateKeyEventToPanels(event);
               if (eventHandled) {
-                 // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
-                 _controlsManager?.resetTimer();
-                 // Si es el episode panel, resetear su timer específico
-                 if (showEpisodePanel) {
-                   _resetEpisodePanelTimer();
-                 }
-               }
+                // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
+                _controlsManager?.resetTimer();
+                // Si es el episode panel, resetear su timer específico
+                if (showEpisodePanel) {
+                  _resetEpisodePanelTimer();
+                }
+              }
               return;
             }
             if (!_controlsManager!.showControls) {
@@ -613,13 +835,13 @@ class _VideoPageState extends State<VideoPage> {
               // Delegar navegación a los paneles activos
               bool eventHandled = _delegateKeyEventToPanels(event);
               if (eventHandled) {
-                 // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
-                 _controlsManager?.resetTimer();
-                 // Si es el episode panel, resetear su timer específico
-                 if (showEpisodePanel) {
-                   _resetEpisodePanelTimer();
-                 }
-               }
+                // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
+                _controlsManager?.resetTimer();
+                // Si es el episode panel, resetear su timer específico
+                if (showEpisodePanel) {
+                  _resetEpisodePanelTimer();
+                }
+              }
               return;
             }
             if (!_controlsManager!.showControls) {
@@ -644,13 +866,13 @@ class _VideoPageState extends State<VideoPage> {
               // Delegar navegación a los paneles activos
               bool eventHandled = _delegateKeyEventToPanels(event);
               if (eventHandled) {
-                 // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
-                 _controlsManager?.resetTimer();
-                 // Si es el episode panel, resetear su timer específico
-                 if (showEpisodePanel) {
-                   _resetEpisodePanelTimer();
-                 }
-               }
+                // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
+                _controlsManager?.resetTimer();
+                // Si es el episode panel, resetear su timer específico
+                if (showEpisodePanel) {
+                  _resetEpisodePanelTimer();
+                }
+              }
               return;
             }
             if (!_controlsManager!.showControls) {
@@ -720,7 +942,6 @@ class _VideoPageState extends State<VideoPage> {
             _controlsManager?.dispose();
 
             if (Navigator.canPop(context)) {
-              print('There is a previous page to return to');
               // Navigator.pop(context);
             } else {
               print('No previous page available');
@@ -739,16 +960,14 @@ class _VideoPageState extends State<VideoPage> {
       listener: (context, state) {
         // Establecer episodeNumber cuando se carguen los episodios por primera vez
         state.whenOrNull(
-           ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, 
-                  subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, 
-                  currentSubtitle, episodes, tracksLoaded) {
-             if (type == 'series' && episodeNumber == null && episodes.isNotEmpty) {
-               setState(() {
-                 episodeNumber = episodes.first.episodeNumber;
-               });
-             }
-           },
-         );
+          ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) {
+            if (type == 'series' && episodeNumber == null && episodes.isNotEmpty) {
+              setState(() {
+                episodeNumber = episodes.first.episodeNumber;
+              });
+            }
+          },
+        );
       },
       builder: (context, state) {
         return WillPopScope(
@@ -785,7 +1004,7 @@ class _VideoPageState extends State<VideoPage> {
                           child: Container(
                             width: double.infinity,
                             height: double.infinity,
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withOpacity(0.5), // inicio
                           ),
                         ),
                         // Controls that don't hide when tapped
@@ -1064,11 +1283,14 @@ class _VideoPageState extends State<VideoPage> {
                       key: _subtitlePanelKey,
                       title: 'Subtítulos',
                       isVisible: showSubtitlePanel,
-                      currentValue: state.currentSubtitleIndex.toString(),
+                      currentValue: _currentSubtitleIndex.toString(),
                       options: _getSubtitleOptions(state),
                       onValueChanged: (String index) {
                         final selectedIndex = int.tryParse(index) ?? 0;
-                        _videoPlayerBloc.add(VideoPlayerEvent.changeSubtitleTrack(index: selectedIndex));
+                        final controller = state.controller ?? _videoPlayerBloc.controller;
+                        if (controller != null) {
+                          _changeSubtitleTrack(controller, selectedIndex);
+                        }
                       },
                       onClose: _hideSubtitlePanel,
                     ),
@@ -1079,11 +1301,14 @@ class _VideoPageState extends State<VideoPage> {
                       key: _audioPanelKey,
                       title: 'Audio',
                       isVisible: showAudioPanel,
-                      currentValue: state.currentAudioIndex.toString(),
+                      currentValue: _currentAudioIndex.toString(),
                       options: _getAudioOptions(state),
                       onValueChanged: (String index) {
                         final selectedIndex = int.tryParse(index) ?? 0;
-                        _videoPlayerBloc.add(VideoPlayerEvent.changeAudioTrack(index: selectedIndex));
+                        final controller = state.controller ?? _videoPlayerBloc.controller;
+                        if (controller != null) {
+                          _changeAudioTrack(controller, selectedIndex);
+                        }
                       },
                       onClose: _hideAudioPanel,
                     ),

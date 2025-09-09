@@ -23,6 +23,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   final Map<int, List<EpisodeModel>> _episodesCache = {};
   int? _currentSeasonId;
 
+  // Getter público para el controller (fallback para UI)
+  VlcPlayerController? get controller => _controller;
+
   VideoPlayerBloc() : super(const VideoPlayerState.initial()) {
     on<_VideoPlayerEventInitialize>(_onInitialize);
     on<_VideoPlayerEventDispose>(_onDispose);
@@ -45,6 +48,63 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     on<_VideoPlayerEventError>(_onError);
   }
 
+  // Método para intentar inicialización con configuración simplificada
+  Future<void> _trySimpleInitialization(String videoUrl, Emitter<VideoPlayerState> emit) async {
+    try {
+      print('🔄 Intentando inicialización simplificada...');
+
+      // Dispose del controlador anterior
+      _disposeController();
+
+      // Crear controlador con configuración mínima
+      final simpleController = VlcPlayerController.network(
+        videoUrl,
+        hwAcc: HwAcc.full,
+        autoPlay: true,
+        options: VlcPlayerOptions(
+          advanced: VlcAdvancedOptions([
+            VlcAdvancedOptions.networkCaching(1000),
+          ]),
+        ),
+      );
+
+      _controller = simpleController;
+
+      // Listener de inicialización
+      simpleController.addOnInitListener(() async {
+        try {
+          await simpleController.startRendererScanning();
+          print('✅ Controlador simplificado inicializado');
+        } catch (e) {
+          print('⚠️ Error en scanning simplificado: $e');
+        }
+      });
+
+      // Esperar inicialización con timeout reducido
+      int attempts = 0;
+      const maxAttempts = 50; // 5 segundos para el intento simplificado
+      while (!simpleController.value.isInitialized && attempts < maxAttempts) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        attempts++;
+      }
+
+      if (simpleController.value.isInitialized) {
+        print('✅ Inicialización simplificada exitosa');
+        emit(VideoPlayerState.loading(url: videoUrl));
+
+        _setupListeners();
+        _loadTracksWithRetry();
+        print('🎬 Reproductor inicializado con configuración simplificada');
+      } else {
+        print('❌ Falló también la inicialización simplificada');
+        emit(VideoPlayerState.error(message: 'No se pudo inicializar el reproductor. Verifique la conexión de red y el formato del video.'));
+      }
+    } catch (e) {
+      print('💥 Error en inicialización simplificada: $e');
+      emit(VideoPlayerState.error(message: 'Error crítico al inicializar el reproductor: $e'));
+    }
+  }
+
   @override
   Future<void> close() {
     _disposeController();
@@ -65,7 +125,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
         // Solo hacer dispose si el controlador está inicializado
         if (_controller!.value.isInitialized) {
-          _controller!.dispose();
+          _controller?.dispose();
         }
       } catch (e) {
         // Ignorar errores de dispose en controladores no inicializados
@@ -84,43 +144,69 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       // Dispose previous controller if exists
       _disposeController();
 
-      // Esperar un momento para asegurar que el dispose anterior se complete
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Eliminar delay innecesario para inicialización inmediata
+      // await Future.delayed(const Duration(milliseconds: 100));
 
       // Usar la misma lógica simple del VideoControllerManager que funcionaba
       print('🔄 Inicializando reproductor con URL: ${event.videoUrl}');
 
       final controller = VlcPlayerController.network(
         event.videoUrl,
-        hwAcc: HwAcc.auto, // HwAcc.auto funciona mejor en dispositivos móviles
+        hwAcc: HwAcc.auto,
         autoPlay: true,
-        options: VlcPlayerOptions(), // Usar opciones simples como el VideoControllerManager
+        options: VlcPlayerOptions(
+          advanced: VlcAdvancedOptions([
+            VlcAdvancedOptions.networkCaching(1000),
+          ]),
+          http: VlcHttpOptions([
+            VlcHttpOptions.httpReconnect(true),
+          ]),
+        ),
       );
+
+      _controller = controller;
 
       // Agregar listener de inicialización como en VideoControllerManager
       controller.addOnInitListener(() async {
         try {
           await controller.startRendererScanning();
-          print('✅ Controlador VLC inicializado correctamente');
         } catch (e) {
           print('⚠️ Error en startRendererScanning: $e');
         }
       });
 
-      // Esperar tiempo suficiente para la inicialización como en VideoControllerManager
-      await Future.delayed(const Duration(milliseconds: 3000));
+      // Esperar a que el controlador VLC se inicialice con timeout extendido
+      int attempts = 0;
+      const maxAttempts = 150; // 15 segundos para HLS y CDN con latencia
+      while (!controller.value.isInitialized && attempts < maxAttempts) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        attempts++;
 
-      _controller = controller;
+        // Log de progreso cada 2 segundos
+        if (attempts % 20 == 0) {
+          print('⏳ Esperando inicialización... ${attempts * 100}ms');
+        }
 
-      // Setup listeners
+        // Emitir estado de loading con progreso cada 5 segundos
+        if (attempts % 50 == 0) {
+          emit(VideoPlayerState.loading(url: event.videoUrl));
+        }
+      }
+
+      if (!controller.value.isInitialized) {
+        print('❌ Controlador aún no inicializado después de ${maxAttempts * 100}ms');
+        // Intentar una vez más con configuración simplificada
+        await _trySimpleInitialization(event.videoUrl, emit);
+        return;
+      }
+
+      // Emitir estado loading mientras el video se carga
+      emit(VideoPlayerState.loading(url: event.videoUrl));
+
+      // Setup listeners después de la inicialización (fuera del callback)
       _setupListeners();
 
-      emit(VideoPlayerState.ready(
-        url: event.videoUrl,
-        controller: controller,
-      ));
-
-      // Load tracks with retry mechanism como en VideoControllerManager
+      // Load tracks después de la inicialización (sin await para evitar bloqueo)
       _loadTracksWithRetry();
 
       print('🎬 Reproductor inicializado correctamente con URL: ${event.videoUrl}');
@@ -133,6 +219,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   void _setupListeners() {
     if (_controller == null) return;
 
+    // Variable para controlar si ya se emitió el estado ready
+    bool hasEmittedReady = false;
+
     // Crear el listener y almacenar la referencia
     _controllerListener = () {
       // Verificar que el controlador aún existe y está inicializado antes de acceder a sus propiedades
@@ -141,9 +230,47 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       }
 
       try {
+        // Verificar que el BLoC no esté cerrado antes de emitir eventos
+        if (isClosed) return;
+
         final isPlaying = _controller!.value.isPlaying;
         final currentPosition = _controller!.value.position;
         final duration = _controller!.value.duration;
+
+        // Detectar cuando el video está completamente cargado usando isBuffering
+        final isBuffering = _controller!.value.isBuffering;
+
+        // Log del estado de buffering para debugging
+        if (isBuffering) {
+          print('⏳ Video en buffering... Duración: ${duration.inSeconds}s, Reproduciendo: $isPlaying');
+        }
+
+        // Emitir estado 'ready' cuando el video no esté en buffering, esté reproduciendo y tenga duración
+        if (!hasEmittedReady && !isBuffering && isPlaying && duration.inMilliseconds > 0) {
+          hasEmittedReady = true;
+          print('✅ Video cargado completamente - sin buffering y reproduciéndose');
+          print('📊 Duración: ${duration.inSeconds}s');
+          print('🎮 Buffering: $isBuffering');
+          print('▶️ Reproduciendo: $isPlaying');
+
+          // Obtener la URL del estado actual
+          final currentState = state;
+          String videoUrl = '';
+          if (currentState is _VideoPlayerStateLoading) {
+            videoUrl = currentState.url;
+          }
+
+          // Emitir estado ready con el controlador y la URL
+          if (!isClosed && _controller != null) {
+            emit(VideoPlayerState.ready(
+              url: videoUrl,
+              controller: _controller!,
+              currentPosition: currentPosition,
+              duration: duration,
+              isPlaying: isPlaying,
+            ));
+          }
+        }
 
         // Update position
         add(VideoPlayerEvent.updatePosition(position: currentPosition));
@@ -169,22 +296,43 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   }
 
   Future<void> _loadTracksWithRetry() async {
-    await Future.delayed(const Duration(seconds: 3));
+    // Verificar que el controlador esté inicializado
+    if (_controller == null || !_controller!.value.isInitialized) {
+      print('⚠️ Controlador no inicializado, esperando...');
+      // Esperar menos tiempo para inicialización
+      await Future.delayed(const Duration(milliseconds: 300));
 
-    for (int attempt = 0; attempt < 5; attempt++) {
+      if (_controller == null || !_controller!.value.isInitialized) {
+        print('❌ Controlador aún no inicializado después de esperar');
+        _addDefaultTracks();
+        return;
+      }
+    }
+
+    // Delay mínimo para asegurar que VLC esté listo
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    // Primer intento inmediato
+    final firstAttempt = await _loadVideoTracks();
+    if (firstAttempt) {
+      print('✅ Pistas cargadas exitosamente en el primer intento');
+      return;
+    }
+
+    // Si el primer intento falla, hacer solo 2 intentos más con delays cortos
+    // Esto es suficiente para la mayoría de casos y evita esperas innecesarias
+    for (int attempt = 1; attempt < 3; attempt++) {
+      print('⏳ Intento ${attempt + 1}, reintentando en 300ms...');
+      await Future.delayed(const Duration(milliseconds: 300));
+
       final hasTracksLoaded = await _loadVideoTracks();
       if (hasTracksLoaded) {
         print('✅ Pistas cargadas exitosamente en el intento ${attempt + 1}');
         return;
       }
-
-      if (attempt < 4) {
-        print('⏳ Intento ${attempt + 1} fallido, reintentando en 2 segundos...');
-        await Future.delayed(const Duration(seconds: 2));
-      }
     }
 
-    print('❌ No se pudieron cargar las pistas después de 5 intentos');
+    print('❌ No se encontraron pistas después de 3 intentos - usando pistas por defecto');
     _addDefaultTracks();
   }
 
@@ -199,9 +347,16 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
       print('\n=== INFORMACIÓN DE PISTAS DE VIDEO ===');
 
-      // Try to get real subtitle tracks from VLC (same as VideoControllerManager)
+      // Try to get real subtitle tracks from VLC with timeout
       try {
-        final spuCount = await _controller!.getSpuTracks();
+        final spuCount = await _controller!.getSpuTracks().timeout(
+          const Duration(milliseconds: 500),
+          onTimeout: () {
+            print('⏱️ Timeout obteniendo subtítulos - probablemente no hay pistas');
+            return <int, String>{};
+          },
+        );
+
         // Add "Desactivados" option first
         subtitleList.add({'id': '-1', 'name': 'Desactivados'});
         if (spuCount.isNotEmpty) {
@@ -223,9 +378,16 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         print('❌ Error obteniendo subtítulos: $e');
       }
 
-      // Try to get real audio tracks from VLC (same as VideoControllerManager)
+      // Try to get real audio tracks from VLC with timeout
       try {
-        final audio = await _controller!.getAudioTracks();
+        final audio = await _controller!.getAudioTracks().timeout(
+          const Duration(milliseconds: 500),
+          onTimeout: () {
+            print('⏱️ Timeout obteniendo audio - probablemente no hay pistas múltiples');
+            return <int, String>{};
+          },
+        );
+
         if (audio.isNotEmpty) {
           final sortedAudioTracks = audio.entries.toList()..sort((a, b) => a.value.compareTo(b.value));
           for (final entry in sortedAudioTracks) {
@@ -245,14 +407,21 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
       print('=====================================\n');
 
+      // Si encontramos pistas reales, las cargamos
       if (foundSubtitles || foundAudio) {
-        add(VideoPlayerEvent.tracksLoaded(
-          subtitleTracks: subtitleList,
-          audioTracks: audioList,
-        ));
+        // Verificar que el BLoC no esté cerrado antes de agregar evento
+        if (!isClosed) {
+          add(VideoPlayerEvent.tracksLoaded(
+            subtitleTracks: subtitleList,
+            audioTracks: audioList,
+          ));
+        }
         return true;
       }
 
+      // Si no encontramos pistas después del primer intento,
+      // es muy probable que el video no tenga pistas múltiples
+      print('ℹ️ Video sin pistas múltiples detectado');
       return false;
     } catch (e) {
       print('❌ Error al cargar pistas: $e');
@@ -268,10 +437,13 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       {'id': '0', 'name': 'Audio Principal'}
     ];
 
-    add(VideoPlayerEvent.tracksLoaded(
-      subtitleTracks: defaultSubtitles,
-      audioTracks: defaultAudio,
-    ));
+    // Verificar que el BLoC no esté cerrado antes de agregar evento
+    if (!isClosed) {
+      add(VideoPlayerEvent.tracksLoaded(
+        subtitleTracks: defaultSubtitles,
+        audioTracks: defaultAudio,
+      ));
+    }
   }
 
   Future<void> _onDispose(_VideoPlayerEventDispose event, Emitter<VideoPlayerState> emit) async {
@@ -280,21 +452,29 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   }
 
   Future<void> _onPlay(_VideoPlayerEventPlay event, Emitter<VideoPlayerState> emit) async {
-    final currentState = state;
-    if (currentState is _VideoPlayerStateReady && currentState.hasEnded) {
-      // Si el video terminó, reiniciar desde el principio
-      await _controller?.seekTo(Duration.zero);
+    if (_controller?.value.isInitialized == true) {
+      final currentState = state;
+      if (currentState is _VideoPlayerStateReady && currentState.hasEnded) {
+        // Si el video terminó, reiniciar desde el principio
+        await _controller?.seekTo(Duration.zero);
+      }
+      await _controller?.play();
+    } else {
+      print('⚠️ Intento de reproducir controlador no inicializado');
     }
-    await _controller?.play();
   }
 
   Future<void> _onPause(_VideoPlayerEventPause event, Emitter<VideoPlayerState> emit) async {
-    await _controller?.pause();
+    if (_controller?.value.isInitialized == true) {
+      await _controller?.pause();
+    } else {
+      print('⚠️ Intento de pausar controlador no inicializado');
+    }
   }
 
   Future<void> _onTogglePlayPause(_VideoPlayerEventTogglePlayPause event, Emitter<VideoPlayerState> emit) async {
     final currentState = state;
-    if (currentState is _VideoPlayerStateReady) {
+    if (currentState is _VideoPlayerStateReady && _controller?.value.isInitialized == true) {
       if (currentState.isPlaying) {
         await _controller?.pause();
       } else {
@@ -304,11 +484,17 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         }
         await _controller?.play();
       }
+    } else {
+      print('⚠️ Intento de toggle play/pause en controlador no inicializado');
     }
   }
 
   Future<void> _onStop(_VideoPlayerEventStop event, Emitter<VideoPlayerState> emit) async {
-    await _controller?.stop();
+    if (_controller?.value.isInitialized == true) {
+      await _controller?.stop();
+    } else {
+      print('⚠️ Intento de detener controlador no inicializado');
+    }
   }
 
   Future<void> _onRestart(_VideoPlayerEventRestart event, Emitter<VideoPlayerState> emit) async {
@@ -371,7 +557,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         ));
       } catch (e) {
         print('❌ Error cambiando pista de subtítulos: $e');
-        add(VideoPlayerEvent.error(message: 'Error changing subtitle track: $e'));
+        if (!isClosed) {
+          add(VideoPlayerEvent.error(message: 'Error changing subtitle track: $e'));
+        }
       }
     }
   }
@@ -399,7 +587,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         ));
       } catch (e) {
         print('❌ Error cambiando pista de audio: $e');
-        add(VideoPlayerEvent.error(message: 'Error changing audio track: $e'));
+        if (!isClosed) {
+          add(VideoPlayerEvent.error(message: 'Error changing audio track: $e'));
+        }
       }
     }
   }
