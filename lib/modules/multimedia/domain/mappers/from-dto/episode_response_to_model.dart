@@ -11,3 +11,7 @@ EpisodeModel episodeResponseToModel(EpisodeResponse response) {
     videoUrl: response.videoFile,
   );
 }
+
+List<EpisodeModel> episodeResponseToModelList(List<EpisodeResponse> response) {
+  return response.map((response) => episodeResponseToModel(response)).toList();
+}

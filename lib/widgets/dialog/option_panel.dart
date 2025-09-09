@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/option_panel_skeleton.dart';
 
 class OptionPanel extends StatefulWidget {
   final String title;
@@ -134,6 +135,15 @@ class OptionPanelState extends State<OptionPanel> {
 
   @override
   Widget build(BuildContext context) {
+    // Mostrar skeleton si las opciones están vacías
+    if (widget.options.isEmpty) {
+      return OptionPanelSkeleton(
+        title: widget.title,
+        isVisible: widget.isVisible,
+        onClose: widget.onClose,
+      );
+    }
+
     final panelWidth = isTV ? 450.0 : 300.0;
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),

@@ -3,11 +3,11 @@ part of 'video_player_bloc.dart';
 @freezed
 class VideoPlayerState with _$VideoPlayerState {
   const factory VideoPlayerState.initial() = _VideoPlayerStateInitial;
-  
+
   const factory VideoPlayerState.loading({
     required String url,
   }) = _VideoPlayerStateLoading;
-  
+
   const factory VideoPlayerState.ready({
     required String url,
     required VlcPlayerController controller,
@@ -20,8 +20,10 @@ class VideoPlayerState with _$VideoPlayerState {
     @Default(0) int currentSubtitleIndex,
     @Default(0) int currentAudioIndex,
     @Default('') String currentSubtitle,
+    @Default([]) List<EpisodeModel> episodes,
+    @Default(false) bool tracksLoaded,
   }) = _VideoPlayerStateReady;
-  
+
   const factory VideoPlayerState.error({
     required String message,
   }) = _VideoPlayerStateError;
@@ -29,52 +31,73 @@ class VideoPlayerState with _$VideoPlayerState {
 
 extension VideoPlayerStateExtension on VideoPlayerState {
   VlcPlayerController? get controller => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => controller,
-    orElse: () => null,
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            controller,
+        orElse: () => null,
+      );
+
   Duration get currentPosition => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => currentPosition,
-    orElse: () => Duration.zero,
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            currentPosition,
+        orElse: () => Duration.zero,
+      );
+
   Duration get duration => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => duration,
-    orElse: () => Duration.zero,
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            duration,
+        orElse: () => Duration.zero,
+      );
+
   bool get isPlaying => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => isPlaying,
-    orElse: () => false,
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            isPlaying,
+        orElse: () => false,
+      );
+
   bool get hasEnded => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => hasEnded,
-    orElse: () => false,
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            hasEnded,
+        orElse: () => false,
+      );
+
   List<Map<String, String>> get subtitleTracks => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => subtitleTracks,
-    orElse: () => [],
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            subtitleTracks,
+        orElse: () => [],
+      );
+
   List<Map<String, String>> get audioTracks => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => audioTracks,
-    orElse: () => [],
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            audioTracks,
+        orElse: () => [],
+      );
+
   int get currentSubtitleIndex => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => currentSubtitleIndex,
-    orElse: () => 0,
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            currentSubtitleIndex,
+        orElse: () => 0,
+      );
+
   int get currentAudioIndex => maybeWhen(
-    ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle) => currentAudioIndex,
-    orElse: () => 0,
-  );
-  
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            currentAudioIndex,
+        orElse: () => 0,
+      );
+
+  List<EpisodeModel> get episodes => maybeWhen<List<EpisodeModel>>(
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            episodes,
+        orElse: () => [],
+      );
+
+  bool get tracksLoaded => maybeWhen(
+        ready: (url, controller, currentPosition, duration, isPlaying, hasEnded, subtitleTracks, audioTracks, currentSubtitleIndex, currentAudioIndex, currentSubtitle, episodes, tracksLoaded) =>
+            tracksLoaded,
+        orElse: () => false,
+      );
+
   String? get errorMessage => maybeWhen(
-    error: (message) => message,
-    orElse: () => null,
-  );
+        error: (message) => message,
+        orElse: () => null,
+      );
 }

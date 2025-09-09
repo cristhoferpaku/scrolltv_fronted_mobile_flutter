@@ -23,11 +23,14 @@ class VideoResponse with _$VideoResponse {
     @JsonKey(name: 'collection_name') String? collectionName,
     @JsonKey(name: 'categories') String? categories,
     @JsonKey(name: 'contentId') int? contentId,
+    @JsonKey(name: 'firstSeasonId') int? firstSeasonId,
+    @JsonKey(name: 'firstEpisodeNumber') int? firstEpisodeNumber,
+    @JsonKey(name: 'seasonId') int? seasonId,
+    @JsonKey(name: 'episodeNum') int? episodeNum,
+    @JsonKey(name: 'totalSeasons') int? totalSeasons,
   }) = _VideoResponse;
 
   factory VideoResponse.fromJson(Map<String, dynamic> json) => _$VideoResponseFromJson(json);
 
   static List<VideoResponse> fromJsonList(List<dynamic> json) => json.map((e) => VideoResponse.fromJson(e)).toList();
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

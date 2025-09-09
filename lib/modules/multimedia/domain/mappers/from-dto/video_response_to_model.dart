@@ -21,6 +21,9 @@ VideoModel videoResponseToModel(VideoResponse response) {
     duration: convertMinsToHoursAndMinutes(response.durationMins),
     collectionName: response.collectionName,
     categories: response.categories,
+    firstSeasonId: response.seasonId,
+    firstEpisodeNumber: response.episodeNum,
+    totalSeasons: response.totalSeasons,
   );
 }
 

@@ -15,4 +15,5 @@ class EpisodeResponse with _$EpisodeResponse {
   }) = _EpisodeResponse;
 
   factory EpisodeResponse.fromJson(Map<String, dynamic> json) => _$EpisodeResponseFromJson(json);
+  static List<EpisodeResponse> fromJsonList(List<dynamic> json) => json.map((e) => EpisodeResponse.fromJson(e)).toList();
 }

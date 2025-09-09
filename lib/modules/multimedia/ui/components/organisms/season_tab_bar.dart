@@ -23,7 +23,7 @@ class SeasonTabBar extends StatelessWidget {
             seasons.length,
             (index) => CustomTabBarItem(
               title: "Temporada ${index + 1}",
-              child: EpisodeCardList(episodes: seasons[index].episodes!),
+              child: EpisodeCardList(episodes: seasons[index].episodes!, seasonId: seasons[index].seasonId ?? 0),
             ),
           ),
         ],

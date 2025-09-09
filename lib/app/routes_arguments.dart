@@ -12,5 +12,8 @@ class CollectionPageArguments {
 class VideoPageArguments {
   final int videoId;
   final String videoUrl;
-  VideoPageArguments({required this.videoId, required this.videoUrl});
+  final int? seasonId;
+  final int? episodeNumber;
+  final String? type;
+  VideoPageArguments({required this.videoId, required this.videoUrl, this.episodeNumber, this.seasonId, this.type});
 }

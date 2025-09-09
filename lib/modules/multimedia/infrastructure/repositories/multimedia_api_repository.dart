@@ -5,12 +5,15 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/get_home_section_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/video_content_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/video_response.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_content_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/episode_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/get_home_section_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/video_content_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/video_response_to_model.dart';
@@ -130,6 +133,25 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
         final videoResponse = VideoResponse.fromJsonList(response.data["data"]);
         final video = videoResponseToModelList(videoResponse);
         return ApiResponseData<List<VideoModel>>(success: true, data: video, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
+      } else {
+        throw Exception("Something wen't wrong");
+      }
+    } catch (e) {
+      throw Exception("Something wen't wrong");
+    }
+  }
+
+  @override
+  Future<ApiResponse<List<EpisodeModel>>> getEpisodesBySeasonId(int seasonId) async {
+    final httpService = await dio;
+
+    try {
+      final response = await httpService.request(url: "$baseApiUrl/get-episodes-from-season/$seasonId", method: Method.get);
+
+      if (response.data["data"] != null) {
+        final episodeResponse = EpisodeResponse.fromJsonList(response.data["data"]);
+        final episode = episodeResponseToModelList(episodeResponse);
+        return ApiResponseData<List<EpisodeModel>>(success: true, data: episode, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
       } else {
         throw Exception("Something wen't wrong");
       }
