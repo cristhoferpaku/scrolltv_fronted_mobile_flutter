@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
     homeBloc.add(HomeEvent.started());
     profileBloc.add(ProfileEvent.started());
     searchBloc.add(SearchEvent.getInitialVideos());
-    // authBloc.add(AuthEvent.validateExpiration());
+    authBloc.add(AuthEvent.validateExpiration());
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       LoggerManager.log.i(await userRepository.getToken());
