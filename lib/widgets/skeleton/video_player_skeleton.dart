@@ -26,10 +26,30 @@ class _VideoPlayerSkeletonState extends State<VideoPlayerSkeleton> {
   }
 
   @override
+  void didUpdateWidget(VideoPlayerSkeleton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reiniciar timers cuando el widget se actualiza (nuevo episodio)
+    _resetTimers();
+  }
+
+  @override
   void dispose() {
     _messageTimer?.cancel();
     _timeTimer?.cancel();
     super.dispose();
+  }
+
+  void _resetTimers() {
+    // Cancelar timers existentes
+    _messageTimer?.cancel();
+    _timeTimer?.cancel();
+    
+    // Reiniciar valores
+    _loadingTime = 0;
+    _loadingMessage = 'Inicializando reproductor...';
+    
+    // Reiniciar timers
+    _startLoadingMessages();
   }
 
   void _startLoadingMessages() {

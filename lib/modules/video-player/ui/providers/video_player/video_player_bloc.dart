@@ -144,9 +144,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       // Dispose previous controller if exists
       _disposeController();
 
-      // Eliminar delay innecesario para inicialización inmediata
-      // await Future.delayed(const Duration(milliseconds: 100));
-
       // Usar la misma lógica simple del VideoControllerManager que funcionaba
       print('🔄 Inicializando reproductor con URL: ${event.videoUrl}');
 
@@ -221,7 +218,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
     // Variable para controlar si ya se emitió el estado ready
     bool hasEmittedReady = false;
-
     // Crear el listener y almacenar la referencia
     _controllerListener = () {
       // Verificar que el controlador aún existe y está inicializado antes de acceder a sus propiedades
@@ -232,7 +228,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       try {
         // Verificar que el BLoC no esté cerrado antes de emitir eventos
         if (isClosed) return;
-
         final isPlaying = _controller!.value.isPlaying;
         final currentPosition = _controller!.value.position;
         final duration = _controller!.value.duration;
@@ -244,7 +239,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         if (isBuffering) {
           print('⏳ Video en buffering... Duración: ${duration.inSeconds}s, Reproduciendo: $isPlaying');
         }
-
         // Emitir estado 'ready' cuando el video no esté en buffering, esté reproduciendo y tenga duración
         if (!hasEmittedReady && !isBuffering && isPlaying && duration.inMilliseconds > 0) {
           hasEmittedReady = true;
@@ -259,7 +253,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           if (currentState is _VideoPlayerStateLoading) {
             videoUrl = currentState.url;
           }
-
           // Emitir estado ready con el controlador y la URL
           if (!isClosed && _controller != null) {
             emit(VideoPlayerState.ready(
@@ -678,19 +671,5 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
   void _onError(_VideoPlayerEventError event, Emitter<VideoPlayerState> emit) {
     emit(VideoPlayerState.error(message: event.message));
-  }
-
-  // Helper methods
-  String formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-
-    if (hours > 0) {
-      return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
-    } else {
-      return '${twoDigits(minutes)}:${twoDigits(seconds)}';
-    }
   }
 }

@@ -9,6 +9,7 @@ import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/util_functions.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/video_controls_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/episode_panel.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/option_panel.dart';
@@ -97,14 +98,6 @@ class _VideoPageState extends State<VideoPage> {
       seasonId = args.seasonId;
       episodeNumber = args.episodeNumber;
       type = args.type;
-
-      // Los episodios se manejarán con lista estática temporal
-      // TODO: Implementar llamada al bloc para obtener episodios usando seasonId
-
-      // Si es una serie y no hay episodeNumber definido, los episodios se cargarán
-      // automáticamente cuando sea necesario a través de _getEpisodeOptions()
-      // Esto evita cargas prematuras y duplicadas
-
       // Inicializar el video player con VideoPlayerBloc
       _videoPlayerBloc.add(VideoPlayerEvent.initialize(videoUrl: videoUrl));
 
@@ -180,6 +173,7 @@ class _VideoPageState extends State<VideoPage> {
     _controlsManager?.dispose();
     _cancelEpisodePanelTimer();
     _focusNode.dispose();
+
     if (!isTV) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
@@ -465,12 +459,14 @@ class _VideoPageState extends State<VideoPage> {
           ? VlcPlayer(
               controller: controller,
               aspectRatio: 16 / 9,
-              placeholder: const VideoPlayerSkeleton(),
+              placeholder: VideoPlayerSkeleton(key: ValueKey(videoUrl)),
             )
           : const CircularProgressIndicator(),
     );
 
-    // return Center(
+   
+  }
+ // return Center(
     //   child: controller != null
     //       ? VlcPlayer(
     //           controller: controller,
@@ -479,24 +475,9 @@ class _VideoPageState extends State<VideoPage> {
     //         )
     //       : const VideoPlayerSkeleton(),
     // );
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-
-    if (duration.inHours > 0) {
-      return '${duration.inHours}:$twoDigitMinutes:$twoDigitSeconds';
-    } else {
-      return '$twoDigitMinutes:$twoDigitSeconds';
-    }
-  }
-
   // Cargar pistas de audio y subtítulos directamente del VLC (como en la demo oficial)
   Future<void> _loadVideoTracks(VlcPlayerController controller) async {
     if (_tracksLoaded) return;
-
     try {
       bool foundSubtitles = false;
       bool foundAudio = false;
@@ -1072,7 +1053,7 @@ class _VideoPageState extends State<VideoPage> {
                                         SizedBox(width: isTV ? 24 : 16),
                                         // Times
                                         Text(
-                                          '${_formatDuration(state.currentPosition)} / ${_formatDuration(state.duration)}',
+                                          '${formatDuration(state.currentPosition)} / ${formatDuration(state.duration)}',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: isTV ? 18 : 14,
