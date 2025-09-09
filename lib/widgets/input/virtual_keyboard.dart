@@ -760,9 +760,7 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       String actualKey = _isShiftPressed && key.length == 1 ? key.toUpperCase() : key;
       widget.onKeyPressed(actualKey);
       if (_isShiftPressed) {
-        setState(() {
-          _isShiftPressed = false;
-        });
+        setState(() {});
       }
 
       // Ignorar navegación automática temporalmente después de entrada de tecla
