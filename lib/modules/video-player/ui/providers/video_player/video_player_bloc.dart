@@ -246,6 +246,11 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   }
 
   Future<void> _onPlay(_VideoPlayerEventPlay event, Emitter<VideoPlayerState> emit) async {
+    final currentState = state;
+    if (currentState is _VideoPlayerStateReady && currentState.hasEnded) {
+      // Si el video terminó, reiniciar desde el principio
+      await _controller?.seekTo(Duration.zero);
+    }
     await _controller?.play();
   }
 
@@ -259,6 +264,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       if (currentState.isPlaying) {
         await _controller?.pause();
       } else {
+        // Si el video terminó, reiniciar desde el principio
+        if (currentState.hasEnded) {
+          await _controller?.seekTo(Duration.zero);
+        }
         await _controller?.play();
       }
     }
@@ -269,6 +278,12 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   }
 
   Future<void> _onRestart(_VideoPlayerEventRestart event, Emitter<VideoPlayerState> emit) async {
+    final currentState = state;
+    if (currentState is _VideoPlayerStateReady && currentState.hasEnded) {
+      // Si el video terminó, primero hacer stop para resetear el estado
+      await _controller?.stop();
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
     await _controller?.seekTo(Duration.zero);
     await _controller?.play();
   }
@@ -376,10 +391,20 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     }
   }
 
-  void _onVideoEnded(_VideoPlayerEventVideoEnded event, Emitter<VideoPlayerState> emit) {
+  void _onVideoEnded(_VideoPlayerEventVideoEnded event, Emitter<VideoPlayerState> emit) async {
     final currentState = state;
     if (currentState is _VideoPlayerStateReady) {
       emit(currentState.copyWith(isPlaying: false, hasEnded: true));
+      
+      // Fix para el bug de flutter_vlc_player: cuando el video termina,
+      // el controller queda en un estado donde no puede volver a reproducir.
+      // La solución es hacer stop() para resetear el estado interno de libVLC.
+      try {
+        await _controller?.stop();
+        print('🔄 Video terminado - Controller reseteado para permitir reproducción futura');
+      } catch (e) {
+        print('⚠️ Error al resetear controller después de video terminado: $e');
+      }
     }
   }
 
