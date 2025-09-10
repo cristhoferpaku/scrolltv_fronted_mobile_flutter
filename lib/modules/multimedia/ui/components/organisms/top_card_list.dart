@@ -39,20 +39,17 @@ class _TopCardListState extends State<TopCardList> {
           else
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: FocusTraversalGroup(
-                policy: CustomGridTraversalPolicy(),
-                child: Row(
-                  spacing: isTV ? AppPadding.p36 : AppPadding.p16,
-                  children: widget.videos
-                      .map((video) => TopCard(
-                            title: video.title ?? "",
-                            topNumber: video.topNumber ?? 0,
-                            coverImage: video.coverImage ?? "",
-                            videoId: video.id ?? 0,
-                          ))
-                      .toList(),
-                ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
-              ),
+              child: Row(
+                spacing: isTV ? AppPadding.p36 : AppPadding.p16,
+                children: widget.videos
+                    .map((video) => TopCard(
+                          title: video.title ?? "",
+                          topNumber: video.topNumber ?? 0,
+                          coverImage: video.coverImage ?? "",
+                          videoId: video.id ?? 0,
+                        ))
+                    .toList(),
+              ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
             )
         ],
       ),

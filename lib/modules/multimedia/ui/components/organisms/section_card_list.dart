@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
@@ -46,7 +47,7 @@ class _SectionCardListState extends State<SectionCardList> {
       clipBehavior: Clip.none,
       children: [
         FocusTraversalGroup(
-          policy: CustomGridTraversalPolicyStrictVertical(),
+          policy: CustomGridTraversalPolicy(),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,28 +99,24 @@ class _SectionCardListState extends State<SectionCardList> {
               if (widget.videos.isEmpty)
                 NoContentBox()
               else
-                FocusTraversalGroup(
-                  policy: CustomGridTraversalPolicy(),
-                  child: SingleChildScrollView(
+                SizedBox(
+                  height: 216.r,
+                  child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    child: Row(
-                      spacing: isTV ? AppPadding.p36 : AppPadding.p16,
-                      children: List.generate(
-                        widget.videos.length,
-                        (index) => SectionCard(
-                            title: widget.videos[index].title ?? "",
-                            coverImage: widget.videos[index].coverImage ?? "",
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                Routes.videoDetailsRoute,
-                                arguments: VideoDetailsPageArguments(videoId: widget.videos[index].id ?? 0),
-                              );
-                            }),
-                      ),
-                    ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
+                    itemCount: widget.videos.length,
+                    separatorBuilder: (context, index) => SizedBox(width: AppPadding.p16),
+                    itemBuilder: (context, index) => SectionCard(
+                        title: widget.videos[index].title ?? "",
+                        coverImage: widget.videos[index].coverImage ?? "",
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.videoDetailsRoute,
+                            arguments: VideoDetailsPageArguments(videoId: widget.videos[index].id ?? 0),
+                          );
+                        }),
                   ),
-                ),
+                ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
             ],
           ),
         ),

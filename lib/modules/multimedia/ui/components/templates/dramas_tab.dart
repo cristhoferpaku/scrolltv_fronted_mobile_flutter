@@ -41,6 +41,12 @@ class _DramasTabState extends State<DramasTab> {
       child: SingleChildScrollView(
         controller: widget.scrollController,
         child: BlocConsumer<HomeBloc, HomeState>(
+          buildWhen: (previous, current) {
+            if (current is HomeStateLoaded) {
+              return current.status == HomeStateStatus.loadedDramas || current.status == HomeStateStatus.loadingDramas;
+            }
+            return false;
+          },
           bloc: homeBloc,
           listener: (context, state) {},
           builder: (context, state) {

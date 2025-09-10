@@ -9,6 +9,7 @@ class ContainerFocus extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.canRequestFocus = true,
+    this.scale = 1.02,
   });
 
   final FocusNode? focusNode;
@@ -17,6 +18,7 @@ class ContainerFocus extends StatefulWidget {
   final double borderRadius;
   final bool autofocus;
   final bool canRequestFocus;
+  final double scale;
 
   @override
   State<ContainerFocus> createState() => _ContainerFocusState();
@@ -36,7 +38,7 @@ class _ContainerFocusState extends State<ContainerFocus> {
       focusNode: widget.focusNode,
       onTap: widget.onTap,
       child: AnimatedScale(
-        scale: _isFocused ? 1.02 : 1.0,
+        scale: _isFocused ? widget.scale : 1.0,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         child: Container(

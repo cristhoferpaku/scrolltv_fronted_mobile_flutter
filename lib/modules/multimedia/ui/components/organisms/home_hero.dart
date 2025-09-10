@@ -35,11 +35,17 @@ class HomeHero extends StatefulWidget {
 
 class _HomeHeroState extends State<HomeHero> {
   final bool isTV = PlatformUtils.isTV;
+
+  double get height => isTV ? 1.sh : .8.sh;
+  double get minHeight => 500.r;
   @override
   Widget build(BuildContext context) {
     if (widget.video.id == null) return NoContentBox(height: 1.sh);
-    return SizedBox(
-      height: isTV ? 1.sh : .8.sh,
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: minHeight,
+      ),
+      height: height,
       child: Stack(
         fit: StackFit.expand,
         children: [

@@ -41,6 +41,12 @@ class _MoviesTabState extends State<MoviesTab> {
       child: SingleChildScrollView(
         controller: widget.scrollController,
         child: BlocConsumer<HomeBloc, HomeState>(
+          buildWhen: (previous, current) {
+            if (current is HomeStateLoaded) {
+              return current.status == HomeStateStatus.loadedMovies || current.status == HomeStateStatus.loadingMovies;
+            }
+            return false;
+          },
           bloc: homeBloc,
           listener: (context, state) {},
           builder: (context, state) {

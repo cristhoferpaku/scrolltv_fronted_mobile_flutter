@@ -41,6 +41,12 @@ class _AnimesTabState extends State<AnimesTab> {
       child: SingleChildScrollView(
         controller: widget.scrollController,
         child: BlocConsumer<HomeBloc, HomeState>(
+          buildWhen: (previous, current) {
+            if (current is HomeStateLoaded) {
+              return current.status == HomeStateStatus.loadedAnimes || current.status == HomeStateStatus.loadingAnimes;
+            }
+            return false;
+          },
           bloc: homeBloc,
           listener: (context, state) {},
           builder: (context, state) {

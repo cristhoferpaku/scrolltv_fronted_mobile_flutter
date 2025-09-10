@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/molecules/date_time_display.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
@@ -68,6 +69,20 @@ class _HomeNavbarState extends State<HomeNavbar> {
                           onTap: () {
                             Navigator.pushNamed(context, Routes.profileRoute);
                           },
+                        ),
+                      if (isTV)
+                        Row(
+                          spacing: AppPadding.p16,
+                          children: [
+                            SizedBox(
+                              height: 32,
+                              width: 1,
+                              child: Container(
+                                color: Colors.white,
+                              ),
+                            ),
+                            DateTimeDisplay(),
+                          ],
                         ),
                     ],
                   ),

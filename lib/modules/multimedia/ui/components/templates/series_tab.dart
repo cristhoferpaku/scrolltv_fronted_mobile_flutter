@@ -41,6 +41,12 @@ class _SeriesTabState extends State<SeriesTab> {
       child: SingleChildScrollView(
         controller: widget.scrollController,
         child: BlocConsumer<HomeBloc, HomeState>(
+          buildWhen: (previous, current) {
+            if (current is HomeStateLoaded) {
+              return current.status == HomeStateStatus.loadedSeries || current.status == HomeStateStatus.loadingSeries;
+            }
+            return false;
+          },
           bloc: homeBloc,
           listener: (context, state) {},
           builder: (context, state) {

@@ -21,18 +21,20 @@ class VideoMetadata extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: AppPadding.p8,
       children: [
-        ElevatedButtonApp(
-          paddingHorizontal: 8,
-          paddingVertical: 4,
-          isExpanded: false,
-          textButton: section,
-          colorButton: ColorManager.transparent,
-          colorBorder: ColorManager.onSurface,
-          textStyleButton: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: ColorManager.onSurface,
-              ),
-          roundedButton: AppSize.s200,
-          press: () async {},
+        ExcludeFocus(
+          child: ElevatedButtonApp(
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            isExpanded: false,
+            textButton: section,
+            colorButton: ColorManager.transparent,
+            colorBorder: ColorManager.onSurface,
+            textStyleButton: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: ColorManager.onSurface,
+                ),
+            roundedButton: AppSize.s200,
+            press: () async {},
+          ),
         ),
         CircleAvatar(
           radius: 2,

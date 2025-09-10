@@ -9,6 +9,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/outbo
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/infrastructure/repositories/auth_api_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/login/login_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/providers/date_time/date_time_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/application/use_cases/multimedia_use_case_impl.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/inbound/multimedia_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/ports/outbound/multimedia_repository.dart';
@@ -61,6 +62,7 @@ initHomeDependencies() {
   initHomeBloc();
   initTabBarModule();
   initMultimediaDependencies();
+  initDateTimeModule();
 }
 
 initMultimediaDependencies() {
@@ -249,6 +251,12 @@ initUserRepositoryPort() {
 initTabBarModule() {
   if (!GetIt.I.isRegistered<CustomTabBarBloc>()) {
     instance.registerLazySingleton<CustomTabBarBloc>(() => CustomTabBarBloc());
+  }
+}
+
+initDateTimeModule() {
+  if (!GetIt.I.isRegistered<DateTimeBloc>()) {
+    instance.registerLazySingleton<DateTimeBloc>(() => DateTimeBloc());
   }
 }
 

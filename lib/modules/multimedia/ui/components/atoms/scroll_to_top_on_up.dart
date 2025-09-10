@@ -13,26 +13,42 @@ class ScrollToTopOnUp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height * .9;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Focus(
       canRequestFocus: false,
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.arrowUp) {
-          if (scrollController.hasClients &&
-              scrollController.offset > 0 &&
-              scrollController.offset <= screenHeight) {
-            scrollController.animateTo(
-              0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-            print("Scroll to top");
-            return KeyEventResult.ignored; // no consumir el evento
+        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.arrowUp) {
+          final currentFocus = FocusManager.instance.primaryFocus;
+
+          if (currentFocus != null) {
+            // Intenta mover el foco hacia arriba
+            bool moved = currentFocus.focusInDirection(TraversalDirection.up);
+
+            if (moved) {
+              // Espera al próximo frame para obtener el nuevo foco
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                final newFocus = FocusManager.instance.primaryFocus;
+                if (newFocus != null && newFocus.context != null) {
+                  final renderBox = newFocus.context!.findRenderObject() as RenderBox;
+                  final positionInViewport = renderBox.localToGlobal(Offset.zero).dy;
+                  final positionInScroll = scrollController.offset + positionInViewport;
+
+                  print("Nuevo foco posición: $positionInScroll");
+
+                  if (positionInScroll < screenHeight * 1) {
+                    scrollController.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  }
+                }
+              });
+            }
           }
 
-          return KeyEventResult.ignored;
+          return KeyEventResult.handled;
         }
 
         return KeyEventResult.ignored;
