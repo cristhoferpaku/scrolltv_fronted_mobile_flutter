@@ -7,7 +7,7 @@ part 'channel_response.g.dart';
 class ChannelResponse with _$ChannelResponse {
   factory ChannelResponse({
     required String name,
-    required Uri url,
+    required String url,
     required List<String> category,
     required String logo,
   }) = _ChannelResponse;

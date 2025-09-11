@@ -9,7 +9,7 @@ class ChannelModel with _$ChannelModel {
     required int id,
     required String logo,
     required String name,
-    required Uri url,
+    required String url,
     required List<String> category,
   }) = _ChannelModel;
 

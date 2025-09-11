@@ -8,7 +8,8 @@ part 'channel_category_model.g.dart';
 class ChannelCategoryModel with _$ChannelCategoryModel {
   factory ChannelCategoryModel({
     required String name,
-    required List<ChannelModel> channels,
+    String? url,
+    List<ChannelModel>? channels,
   }) = _ChannelCategoryModel;
 
   factory ChannelCategoryModel.fromJson(Map<String, dynamic> json) => _$ChannelCategoryModelFromJson(json);

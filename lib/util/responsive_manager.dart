@@ -26,7 +26,7 @@ class _ResponsiveManagerState extends State<ResponsiveManager> {
         if (constraints.maxWidth >= DimenReponsive.desktopDimen) {
           return widget.desktopView ?? widget.tabletView ?? widget.mobileView;
         } else if (constraints.maxWidth > DimenReponsive.tabletDimen) {
-          return widget.tabletView ?? widget.desktopView ?? widget.mobileView;
+          return widget.tabletView ?? widget.mobileView;
         } else {
           return widget.mobileView;
         }

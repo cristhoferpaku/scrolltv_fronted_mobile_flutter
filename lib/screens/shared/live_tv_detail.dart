@@ -5,6 +5,7 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_panel.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_view.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/constants/focus_enum.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/bloc/tv_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 
@@ -23,12 +24,13 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
 
   final bool isTv = PlatformUtils.isTV;
 
+  bool isLandscape = false;
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      livePlayerBloc.add(TvPlayerEvent.started());
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    // livePlayerBloc.add(TvPlayerEvent.started());
+    // });
   }
 
   @override
@@ -40,6 +42,7 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
 
   @override
   Widget build(BuildContext context) {
+    isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     return WillPopScope(
       onWillPop: () async {
         // Se llama cuando el usuario intenta salir (back button o swipe)
@@ -50,14 +53,18 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
           return true; // dejamos que la pantalla haga pop
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Focus(
+      child: Material(
+        child: Focus(
           skipTraversal: true,
           autofocus: true,
           focusNode: _focusNode,
           onKeyEvent: (FocusNode node, event) {
             if (event is KeyDownEvent) {
+              BuildContext? ctx = FocusManager.instance.primaryFocus?.context;
+              while (ctx != null) {
+                debugPrint('-> ${ctx.widget.runtimeType}');
+                ctx = ctx.findAncestorStateOfType<State>()?.context;
+              }
               if (livePlayerBloc.state.showChannelList) {
               } else {
                 if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
@@ -76,7 +83,11 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
           },
           child: BlocConsumer<TvPlayerBloc, TvPlayerState>(
             bloc: livePlayerBloc,
-            listener: (context, state) {},
+            listener: (context, state) {
+              if (state.focusEnum == FocusEnum.channelView) {
+                _focusNode.requestFocus();
+              }
+            },
             builder: (context, state) {
               return Stack(
                 children: [
@@ -84,7 +95,7 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
                   Column(
                     children: [
                       Expanded(child: ChannelView(selectedChannelIndex: state.selectedChannelIndex)),
-                      if (!isTv)
+                      if (!isLandscape && !isTv)
                         Expanded(
                             child: ChannelList(
                           channels: state.channels,

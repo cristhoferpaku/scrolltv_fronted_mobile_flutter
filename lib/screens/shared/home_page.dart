@@ -10,6 +10,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/search/search_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/bloc/tv_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
@@ -28,10 +29,12 @@ class _HomePageState extends State<HomePage> {
   final ProfileBloc profileBloc = instance<ProfileBloc>();
   final SearchBloc searchBloc = instance<SearchBloc>();
   final AuthBloc authBloc = instance<AuthBloc>();
+  final livePlayerBloc = instance<TvPlayerBloc>();
   final bool isScrollTV = PlatformUtils.isScrollTV;
 
   int _currentIndex = 0;
   UserRepository userRepository = instance<UserRepository>();
+  bool isLandscape = false;
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _HomePageState extends State<HomePage> {
     profileBloc.add(ProfileEvent.started());
     searchBloc.add(SearchEvent.getInitialVideos());
     authBloc.add(AuthEvent.validateExpiration());
+    livePlayerBloc.add(TvPlayerEvent.started());
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       LoggerManager.log.i(await userRepository.getToken());
@@ -47,6 +51,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
     return MultiBlocListener(
       listeners: [
         BlocListener<AuthBloc, AuthState>(
@@ -69,6 +75,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _getBody() {
+    if (_currentIndex == 0) return HomeTabBar();
+    if (_currentIndex == 1 && isScrollTV) return LiveTvDetail();
+    return ProfilePage();
+  }
+
   Widget _mobileView() {
     return SafeArea(
       child: Scaffold(
@@ -79,52 +91,47 @@ class _HomePageState extends State<HomePage> {
             highlightColor: Colors.transparent, // elimina highlight
             splashColor: Colors.transparent,
           ),
-          child: BottomNavigationBar(
-            useLegacyColorScheme: false,
+          child: isLandscape
+              ? SizedBox()
+              : BottomNavigationBar(
+                  useLegacyColorScheme: false,
 
-            backgroundColor: ColorManager.surfaceContainerLowest,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
+                  backgroundColor: ColorManager.surfaceContainerLowest,
+                  onTap: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                  },
 
-            currentIndex: _currentIndex,
-            selectedItemColor: ColorManager.primary, // color del texto activo
-            unselectedItemColor: Colors.white, // color de los inactivos
-            showUnselectedLabels: false,
-            showSelectedLabels: false,
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              if (isScrollTV)
-                BottomNavigationBarItem(
-                  activeIcon: SvgPicture.asset(ImageAssets.iconLive, color: ColorManager.primary),
-                  icon: SvgPicture.asset(ImageAssets.iconLive),
-                  label: 'Search',
+                  currentIndex: _currentIndex,
+                  selectedItemColor: ColorManager.primary, // color del texto activo
+                  unselectedItemColor: Colors.white, // color de los inactivos
+                  showUnselectedLabels: false,
+                  showSelectedLabels: false,
+                  items: [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home),
+                      label: 'Home',
+                    ),
+                    if (isScrollTV)
+                      BottomNavigationBarItem(
+                        activeIcon: SvgPicture.asset(ImageAssets.iconLive, color: ColorManager.primary),
+                        icon: SvgPicture.asset(ImageAssets.iconLive),
+                        label: 'Search',
+                      ),
+                    BottomNavigationBarItem(
+                      icon: Icon(
+                        Icons.person,
+                      ),
+                      label: 'Profile',
+                    ),
+                  ],
                 ),
-              BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.person,
-                ),
-                label: 'Profile',
-              ),
-            ],
-          ),
         ),
         body: BlocBuilder<HomeBloc, HomeState>(
           bloc: homeBloc,
           builder: (context, state) {
-            return IndexedStack(
-              index: _currentIndex,
-              children: [
-                HomeTabBar(),
-                if (isScrollTV) LiveTvDetail(),
-                ProfilePage(),
-              ],
-            );
+            return _getBody();
           },
         ),
       ),

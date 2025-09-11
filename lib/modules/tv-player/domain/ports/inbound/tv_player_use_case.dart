@@ -4,6 +4,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/entiti
 
 abstract class TvPlayerUseCase {
   Future<ApiResponse<List<ChannelModel>>> getChannels();
-  List<ChannelCategoryModel> getCategories(List<ChannelModel> channels);
-  List<ChannelModel> getChannelsByCategory(List<ChannelModel> channels, String name);
+  // List<ChannelCategoryModel> getCategories(List<ChannelModel> channels);
+  Future<ApiResponse<List<ChannelModel>>> getChannelsByCategory(ChannelCategoryModel category);
+  Future<ApiResponse<List<ChannelCategoryModel>>> getCategories();
 }

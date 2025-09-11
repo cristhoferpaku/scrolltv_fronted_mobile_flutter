@@ -33,6 +33,8 @@ class ImageAssets {
   static const String iconSearch = '$iconsPath/icon_search.svg';
 
   static const String iconPrivacyAndPolicy = '$iconsPath/icon_privacy_and_policy.svg';
+
+  static const String iconMenu = 'https://scroll-tv-movie-home-cdn.b-cdn.net/images/img_menu.png';
   // static const String iconLogout = '$iconsPath/icon_logout.svg';
 
   // Login Elements

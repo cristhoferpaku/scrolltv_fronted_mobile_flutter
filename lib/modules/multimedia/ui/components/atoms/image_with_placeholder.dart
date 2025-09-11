@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ImageWithPlaceholder extends StatelessWidget {
@@ -6,7 +7,7 @@ class ImageWithPlaceholder extends StatelessWidget {
   final double? height;
   final BoxFit fit;
 
-  ImageWithPlaceholder({
+  const ImageWithPlaceholder({
     super.key,
     required this.imageUrl,
     this.width,
@@ -16,18 +17,15 @@ class ImageWithPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.network(
-      imageUrl,
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
       width: width,
       height: height,
       fit: fit,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
+      placeholder: (context, url) => Center(
+        child: CircularProgressIndicator(),
+      ),
+      errorWidget: (context, error, stackTrace) {
         return Container(
           color: Colors.grey[300],
           alignment: Alignment.center,

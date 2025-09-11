@@ -75,43 +75,46 @@ class _ChannelCategoryBarState extends State<ChannelCategoryBar> {
               context: context,
               backgroundColor: Colors.black87,
               builder: (context) {
-                return Container(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
+                return SafeArea(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      color: ColorManager.onInverseSurface,
                     ),
-                    color: ColorManager.onInverseSurface,
-                  ),
-                  child: SingleChildScrollView(
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ...widget.categories.map((category) {
-                          final index = widget.categories.indexOf(category);
-                          final isSelected = widget.selectedCategoryIndex == index;
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ...widget.categories.map((category) {
+                            final index = widget.categories.indexOf(category);
+                            final isSelected = widget.selectedCategoryIndex == index;
 
-                          return ElevatedButtonApp(
-                            evelationButton: 0,
-                            hasShadow: false,
-                            textButton: category.name,
-                            paddingHorizontal: 24,
-                            paddingVertical: 6,
-                            press: () {
-                              tvPlayerBloc.add(TvPlayerEvent.changeCategory(index));
-                              Navigator.pop(context); // 👈 cerrar modal
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                _scrollTo(index); // 👈 desplazar
-                              });
-                            },
-                            colorButton: isSelected ? ColorManager.primaryContainer : ColorManager.onInverseSurface,
-                            textStyleButton: Theme.of(context).textTheme.labelMedium,
-                            isExpanded: false,
-                          );
-                        }),
-                      ],
-                    ).withPadding(all: 16),
+                            return ElevatedButtonApp(
+                              evelationButton: 0,
+                              hasShadow: false,
+                              textButton: category.name,
+                              paddingHorizontal: 24,
+                              paddingVertical: 6,
+                              press: () {
+                                tvPlayerBloc.add(TvPlayerEvent.changeCategory(index));
+                                Navigator.pop(context); // 👈 cerrar modal
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  _scrollTo(index); // 👈 desplazar
+                                });
+                              },
+                              colorButton: isSelected ? ColorManager.primaryContainer : ColorManager.onInverseSurface,
+                              textStyleButton: Theme.of(context).textTheme.labelMedium,
+                              isExpanded: false,
+                            );
+                          }),
+                        ],
+                      ).withPadding(all: 16),
+                    ),
                   ),
                 );
               },

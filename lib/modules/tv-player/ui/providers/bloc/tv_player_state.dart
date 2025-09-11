@@ -20,6 +20,10 @@ enum TVPlayerStatus {
   loaded,
   loadedCategories,
   loadedChannels,
+  loadedChannelsByCategory,
+
+  changeCategorySuccess,
+  changeChannelSuccess,
   success,
   error,
 }

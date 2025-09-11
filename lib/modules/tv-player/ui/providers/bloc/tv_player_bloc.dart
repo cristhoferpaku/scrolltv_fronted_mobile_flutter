@@ -30,38 +30,117 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
     List<ChannelModel> allChannels = [];
     List<ChannelModel> channels = [];
     List<ChannelCategoryModel> categories = [];
+
     on<TvPlayerEvent>((event, emit) {});
     on<_TVPlayerEventStarted>((event, emit) async {
       add(_TVPlayerEventLoadChannels());
     });
 
     on<_TVPlayerEventLoadChannels>((event, emit) async {
-      final channelsResponse = await tvPlayerUseCase.getChannels();
-      allChannels = channelsResponse.data;
-      channels = channelsResponse.data;
-      emit(state.copyWith(status: TVPlayerStatus.loadedChannels, channels: channels, allChannels: allChannels));
+      // final channelsResponse = [];
+      // allChannels = ;
+      // channels = channelsResponse;
+
+      emit(TvPlayerState(
+          status: TVPlayerStatus.loadedChannels,
+          channels: channels,
+          allChannels: allChannels,
+          selectedChannelIndex: selectedChannelIndex,
+          showChannelList: showChannelList,
+          selectedCategoryIndex: selectedCategoryIndex,
+          focusEnum: focusEnum,
+          categories: categories));
       add(_TVPlayerEventLoadCategories());
     });
     on<_TVPlayerEventLoadCategories>((event, emit) async {
-      categories = tvPlayerUseCase.getCategories(channels);
-      emit(state.copyWith(status: TVPlayerStatus.loadedCategories, categories: categories));
+      final categoriesResponse = await tvPlayerUseCase.getCategories();
+      categories = categoriesResponse.data;
+      emit(TvPlayerState(
+          status: TVPlayerStatus.loadedCategories,
+          categories: categories,
+          channels: channels,
+          selectedChannelIndex: selectedChannelIndex,
+          showChannelList: showChannelList,
+          selectedCategoryIndex: selectedCategoryIndex,
+          focusEnum: focusEnum,
+          allChannels: allChannels));
+
+      if (categories.isNotEmpty) {
+        add(_TVPlayerEventLoadChannelsByCategory(categories[selectedCategoryIndex]));
+      }
     });
     on<_TVPlayerEventChangeChannel>((event, emit) {
       selectedChannelIndex = event.channelIndex;
-      emit(state.copyWith(selectedChannelIndex: selectedChannelIndex, showChannelList: showChannelList, selectedCategoryIndex: selectedCategoryIndex, focusEnum: focusEnum));
+      emit(TvPlayerState(
+          status: TVPlayerStatus.changeChannelSuccess,
+          selectedChannelIndex: selectedChannelIndex,
+          showChannelList: showChannelList,
+          selectedCategoryIndex: selectedCategoryIndex,
+          focusEnum: focusEnum,
+          channels: channels,
+          allChannels: allChannels,
+          categories: categories));
     });
     on<_TVPlayerEventShowPanelChannel>((event, emit) {
       showChannelList = event.value;
-      emit(state.copyWith(showChannelList: showChannelList, selectedCategoryIndex: selectedCategoryIndex, focusEnum: focusEnum));
+      if (!showChannelList) {
+        focusEnum = FocusEnum.channelView;
+      } else {
+        focusEnum = FocusEnum.channelList;
+      }
+      emit(TvPlayerState(
+          status: TVPlayerStatus.loaded,
+          selectedChannelIndex: selectedChannelIndex,
+          showChannelList: showChannelList,
+          selectedCategoryIndex: selectedCategoryIndex,
+          focusEnum: focusEnum,
+          channels: channels,
+          allChannels: allChannels,
+          categories: categories));
     });
-    on<_TVPlayerEventChangeCategory>((event, emit) {
+    on<_TVPlayerEventChangeCategory>((event, emit) async {
       selectedCategoryIndex = event.categoryIndex;
-      channels = tvPlayerUseCase.getChannelsByCategory(allChannels, categories[selectedCategoryIndex].name);
-      emit(state.copyWith(selectedCategoryIndex: selectedCategoryIndex, showChannelList: showChannelList, focusEnum: focusEnum, channels: channels));
+      emit(TvPlayerState(
+          status: TVPlayerStatus.changeCategorySuccess,
+          selectedCategoryIndex: selectedCategoryIndex,
+          showChannelList: showChannelList,
+          focusEnum: focusEnum,
+          channels: channels,
+          allChannels: allChannels,
+          categories: categories,
+          selectedChannelIndex: selectedChannelIndex));
+      add(_TVPlayerEventLoadChannelsByCategory(categories[selectedCategoryIndex]));
     });
+    on<_TVPlayerEventLoadChannelsByCategory>((event, emit) async {
+      final channelsResponse = await tvPlayerUseCase.getChannelsByCategory(event.category);
+
+      channels = channelsResponse.data;
+
+      if (selectedChannelIndex == null) {
+        add(_TVPlayerEventChangeChannel(channels.first));
+      }
+      emit(TvPlayerState(
+          status: TVPlayerStatus.loadedChannelsByCategory,
+          selectedCategoryIndex: selectedCategoryIndex,
+          showChannelList: showChannelList,
+          focusEnum: focusEnum,
+          channels: channels,
+          allChannels: allChannels,
+          categories: categories,
+          selectedChannelIndex: selectedChannelIndex));
+    });
+
     on<_TVPlayerEventChangeFocus>((event, emit) {
       focusEnum = event.focusEnum;
-      emit(state.copyWith(focusEnum: focusEnum));
+      emit(TvPlayerState(
+          status: TVPlayerStatus.loaded,
+          selectedChannelIndex: selectedChannelIndex,
+          showChannelList: showChannelList,
+          selectedCategoryIndex: selectedCategoryIndex,
+          focusEnum: focusEnum,
+          channels: channels,
+          allChannels: allChannels,
+          categories: categories));
     });
   }
 }

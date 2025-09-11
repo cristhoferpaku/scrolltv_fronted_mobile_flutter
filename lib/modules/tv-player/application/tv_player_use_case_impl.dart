@@ -10,29 +10,18 @@ class TvPlayerUseCaseImpl implements TvPlayerUseCase {
   TvPlayerUseCaseImpl(this.tvPlayerRepositoryPort);
 
   @override
-  Future<ApiResponse<List<ChannelModel>>> getChannels() {
-    return tvPlayerRepositoryPort.getChannels();
+  Future<ApiResponse<List<ChannelModel>>> getChannels() async {
+    final channels = await tvPlayerRepositoryPort.getChannels();
+    return channels;
   }
 
   @override
-  List<ChannelCategoryModel> getCategories(List<ChannelModel> channels) {
-    // Extraer todas las categorías únicas en un Set
-    final Set<String> categorySet = channels.map((c) => c.category.first).toSet();
-
-    final List<ChannelCategoryModel> categories = categorySet.map((cat) {
-      final filteredChannels = channels.where((ch) => ch.category.first == cat).toList();
-      return ChannelCategoryModel(name: cat, channels: filteredChannels);
-    }).toList();
-
-    categories.insert(0, ChannelCategoryModel(name: 'todos', channels: channels));
-
-    return categories;
+  Future<ApiResponse<List<ChannelCategoryModel>>> getCategories() {
+    return tvPlayerRepositoryPort.getCategories();
   }
 
   @override
-  List<ChannelModel> getChannelsByCategory(List<ChannelModel> channels, String name) {
-    if (name == "todos") return channels;
-    print(channels);
-    return channels.where((e) => e.category.contains(name)).toList();
+  Future<ApiResponse<List<ChannelModel>>> getChannelsByCategory(ChannelCategoryModel category) {
+    return tvPlayerRepositoryPort.getChannelsByCategory(category);
   }
 }

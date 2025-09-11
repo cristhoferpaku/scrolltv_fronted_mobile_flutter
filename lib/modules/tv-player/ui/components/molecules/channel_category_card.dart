@@ -40,6 +40,8 @@ class _ChannelCategoryCardState extends State<ChannelCategoryCard> {
           isExpanded: false,
           textStyleButton: Theme.of(context).textTheme.labelLarge,
           colorButton: widget.isSelected ? ColorManager.primaryContainer : Colors.transparent,
+          hasShadow: false,
+          evelationButton: 0,
         ),
       ),
     );
