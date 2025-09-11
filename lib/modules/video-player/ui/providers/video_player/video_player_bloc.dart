@@ -155,9 +155,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           advanced: VlcAdvancedOptions([
             VlcAdvancedOptions.networkCaching(1000),
           ]),
-          http: VlcHttpOptions([
-            VlcHttpOptions.httpReconnect(true),
-          ]),
+          // http: VlcHttpOptions([
+          //   VlcHttpOptions.httpReconnect(true),
+          // ]),
         ),
       );
 

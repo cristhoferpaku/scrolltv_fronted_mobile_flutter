@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class VideoControlsManager {
-  bool _showControls = true;
+  bool _showControls = false;
   Timer? _hideTimer;
   VoidCallback? _onControlsChanged;
   VoidCallback? _onControlsHidden;

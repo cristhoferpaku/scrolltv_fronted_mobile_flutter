@@ -7,6 +7,7 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/episode_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/components/video_keyboard_handler.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/util_functions.dart';
@@ -68,11 +69,8 @@ class _VideoPageState extends State<VideoPage> {
   final GlobalKey<OptionPanelState> _qualityPanelKey = GlobalKey<OptionPanelState>();
   final GlobalKey<EpisodePanelState> _episodePanelKey = GlobalKey<EpisodePanelState>();
 
-  // Sistema de repetición de teclas
-  Timer? _keyRepeatTimer;
-  LogicalKeyboardKey? _currentRepeatingKey;
-  static const Duration _keyRepeatDelay = Duration(milliseconds: 500); // Delay inicial
-  static const Duration _keyRepeatInterval = Duration(milliseconds: 100); // Intervalo de repetición
+  // Manejador de teclado
+  VideoKeyboardHandler? _keyboardHandler;
 
   // Focus states
   bool get _isPlayPauseFocused => isTV && _currentFocusIndex == 0;
@@ -98,8 +96,18 @@ class _VideoPageState extends State<VideoPage> {
       seasonId = args.seasonId;
       episodeNumber = args.episodeNumber;
       type = args.type;
+
+      // Debug: Verificar el valor de type recibido
+      print('VideoPage - Received type: "$type"');
+
       // Inicializar el video player con VideoPlayerBloc
       _videoPlayerBloc.add(VideoPlayerEvent.initialize(videoUrl: videoUrl));
+
+      // Inicializar el listener para cargar pistas
+      _initializeTracksListener();
+
+      // Inicializar el manejador de teclado después de obtener type
+      _initializeKeyboardHandler();
 
       _focusNode.requestFocus();
     });
@@ -157,6 +165,64 @@ class _VideoPageState extends State<VideoPage> {
     );
   }
 
+  void _initializeTracksListener() {
+    // Escuchar cambios en el estado del video player para cargar pistas
+    _videoPlayerBloc.stream.listen((state) {
+      final controller = state.controller ?? _videoPlayerBloc.controller;
+      if (controller != null && !_tracksLoaded) {
+        // Agregar listener al controller para detectar cuando empiece a reproducir
+        controller.addListener(() {
+          if (controller.value.isPlaying && !_tracksLoaded) {
+            // Esperar un poco para que el video se estabilice antes de cargar pistas
+            Future.delayed(const Duration(milliseconds: 1500), () {
+              if (mounted) {
+                _loadVideoTracks(controller);
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  void _initializeKeyboardHandler() {
+    // Debug: Verificar el valor de type al inicializar VideoKeyboardHandler
+    print('VideoPage - Initializing VideoKeyboardHandler with type: "$type"');
+
+    _keyboardHandler = VideoKeyboardHandler(
+      videoPlayerBloc: _videoPlayerBloc,
+      controlsManager: _controlsManager,
+      isTV: isTV,
+      type: type,
+      currentFocusIndex: _currentFocusIndex,
+      showSubtitlePanel: showSubtitlePanel,
+      showAudioPanel: showAudioPanel,
+      showQualityPanel: showQualityPanel,
+      showEpisodePanel: showEpisodePanel,
+      subtitlePanelKey: _subtitlePanelKey,
+      audioPanelKey: _audioPanelKey,
+      qualityPanelKey: _qualityPanelKey,
+      episodePanelKey: _episodePanelKey,
+      onFocusIndexChanged: (newIndex) {
+        setState(() {
+          _currentFocusIndex = newIndex;
+        });
+      },
+      onShowSubtitlePanel: _showSubtitlePanel,
+      onHideSubtitlePanel: _hideSubtitlePanel,
+      onShowAudioPanel: _showAudioPanel,
+      onHideAudioPanel: _hideAudioPanel,
+      onShowQualityPanel: _showQualityPanel,
+      onHideQualityPanel: _hideQualityPanel,
+      onShowEpisodePanel: _showEpisodePanel,
+      onHideEpisodePanel: _hideEpisodePanel,
+      onResetEpisodePanelTimer: _resetEpisodePanelTimer,
+      onNavigateBack: () {
+        //Navigator.pop(context);  no hacer esto porque hace eso
+      },
+    );
+  }
+
   @override
   void deactivate() {
     // Detener el video antes de que se desactive la vista para evitar crashes
@@ -166,7 +232,7 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   void dispose() {
-    _stopKeyRepeat();
+    _keyboardHandler?.dispose();
     // Detener completamente el reproductor antes de liberar recursos
     _videoPlayerBloc.add(const VideoPlayerEvent.stop());
     _videoPlayerBloc.add(const VideoPlayerEvent.dispose());
@@ -376,6 +442,10 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   void _selectEpisode(String episodeNum) {
+    // Cancelar timers al cambiar de episodio
+    _cancelEpisodePanelTimer();
+    _keyboardHandler?.stopKeyRepeat();
+
     // Obtener episodios usando el método _getEpisodeOptions
     final episodes = _getEpisodeOptions();
 
@@ -394,14 +464,22 @@ class _VideoPageState extends State<VideoPage> {
       // Forzar actualización del EpisodePanel
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _episodePanelKey.currentState?.forceUpdateSelectedIndex();
+        if (selectedEpisodeData.videoUrl != null && selectedEpisodeData.videoUrl!.isNotEmpty) {
+          _resetTracksState();
+          _videoPlayerBloc.add(VideoPlayerEvent.initialize(
+            videoUrl: selectedEpisodeData.videoUrl!,
+          ));
+          // Inicializar el listener para cargar pistas
+          _initializeTracksListener();
+
+          // Inicializar el manejador de teclado después de obtener type
+          _initializeKeyboardHandler();
+
+          _focusNode.requestFocus();
+        }
       });
 
       // Solo inicializar el reproductor si hay una URL válida
-      if (selectedEpisodeData.videoUrl != null && selectedEpisodeData.videoUrl!.isNotEmpty) {
-        _videoPlayerBloc.add(VideoPlayerEvent.initialize(
-          videoUrl: selectedEpisodeData.videoUrl!,
-        ));
-      }
 
       // Esperar un frame para que el estado se actualice antes de cerrar el panel
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -439,43 +517,43 @@ class _VideoPageState extends State<VideoPage> {
       );
     }
 
-    // Agregar listener para cargar pistas cuando el video esté reproduciéndose
-    if (controller != null && !_tracksLoaded) {
-      controller.addListener(() {
-        if (controller.value.isPlaying && !_tracksLoaded) {
-          // Esperar un poco para que el video se estabilice antes de cargar pistas
-          Future.delayed(const Duration(milliseconds: 1500), () {
-            if (mounted) {
-              _loadVideoTracks(controller);
-            }
-          });
-        }
-      });
-    }
-
-    // Mostrar VlcPlayer si tenemos controlador, sino skeleton
-    return Center(
-      child: controller != null
-          ? VlcPlayer(
-              controller: controller,
-              aspectRatio: 16 / 9,
-              placeholder: VideoPlayerSkeleton(key: ValueKey(videoUrl)),
-            )
-          : const CircularProgressIndicator(),
+    // Verificar si está en buffering
+    final isBuffering = state.maybeWhen(
+      loading: (_) => true,
+      orElse: () => false,
     );
 
-   
+    // Mostrar VlcPlayer siempre que tengamos controller, nunca quitarlo del árbol
+    return Center(
+      child: controller != null
+          ? Stack(
+              children: [
+                VlcPlayer(
+                  key: ValueKey(videoUrl), // Forzar reconstrucción cuando cambie la URL
+                  controller: controller,
+                  aspectRatio: 16 / 9,
+                  placeholder: const VideoPlayerSkeleton(), // solo al inicio
+                ),
+                // Overlay durante buffering
+                if (isBuffering)
+                  const Positioned.fill(
+                    child: VideoPlayerSkeleton(), // overlay durante buffering
+                  ),
+              ],
+            )
+          : const VideoPlayerSkeleton(), // si aún no existe controller
+    );
   }
- // return Center(
-    //   child: controller != null
-    //       ? VlcPlayer(
-    //           controller: controller,
-    //           aspectRatio: 16 / 9,
-    //           placeholder: const VideoPlayerSkeleton(),
-    //         )
-    //       : const VideoPlayerSkeleton(),
-    // );
-  // Cargar pistas de audio y subtítulos directamente del VLC (como en la demo oficial)
+
+  // return Center(
+  //   child: controller != null
+  //       ? VlcPlayer(
+  //           controller: controller,
+  //           aspectRatio: 16 / 9,
+  //           placeholder: const VideoPlayerSkeleton(),
+  //         )
+  //       : const VideoPlayerSkeleton(),
+  // );
   Future<void> _loadVideoTracks(VlcPlayerController controller) async {
     if (_tracksLoaded) return;
     try {
@@ -650,292 +728,19 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   // Método para delegar eventos de teclado a los paneles activos
-  bool _delegateKeyEventToPanels(KeyEvent event) {
-    if (showSubtitlePanel) {
-      return _subtitlePanelKey.currentState?.handleKeyEvent(event) ?? false;
-    } else if (showAudioPanel) {
-      return _audioPanelKey.currentState?.handleKeyEvent(event) ?? false;
-    } else if (showQualityPanel) {
-      return _qualityPanelKey.currentState?.handleKeyEvent(event) ?? false;
-    } else if (showEpisodePanel) {
-      return _episodePanelKey.currentState?.handleKeyEvent(event) ?? false;
-    }
-    return false;
-  }
-
-  // Métodos para manejar repetición de teclas
-  void _startKeyRepeat(LogicalKeyboardKey key, VoidCallback action) {
-    _stopKeyRepeat();
-    _currentRepeatingKey = key;
-
-    // Ejecutar la acción inmediatamente
-    action();
-
-    // Iniciar el timer de repetición después del delay inicial
-    _keyRepeatTimer = Timer(_keyRepeatDelay, () {
-      _keyRepeatTimer = Timer.periodic(_keyRepeatInterval, (timer) {
-        action();
-      });
-    });
-  }
-
-  void _stopKeyRepeat() {
-    _keyRepeatTimer?.cancel();
-    _keyRepeatTimer = null;
-    _currentRepeatingKey = null;
-  }
-
-  // Método para ejecutar acciones de seek
-  void _performSeekAction(LogicalKeyboardKey key) {
-    if (key == LogicalKeyboardKey.arrowRight) {
-      _videoPlayerBloc.add(const VideoPlayerEvent.skipForward(seconds: 10));
-    } else if (key == LogicalKeyboardKey.arrowLeft) {
-      _videoPlayerBloc.add(const VideoPlayerEvent.skipBackward(seconds: 10));
-    }
-    _controlsManager?.resetTimer();
-  }
-
-  void _handleKeyEvent(KeyEvent event) {
-    // No responder a eventos de teclado si el video está cargando
-    final currentState = _videoPlayerBloc.state;
-    if (currentState.maybeWhen(
-      loading: (_) => true,
-      orElse: () => false,
-    )) {
-      return;
-    }
-
-    // Manejar KeyUpEvent para cancelar repetición
-    if (event is KeyUpEvent) {
-      if (_currentRepeatingKey == event.logicalKey) {
-        _stopKeyRepeat();
-      }
-      return;
-    }
-
-    if (event is KeyDownEvent) {
-      switch (event.logicalKey) {
-        case LogicalKeyboardKey.arrowRight:
-          if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
-              // En paneles, no hacer nada con derecha
-              return;
-            }
-            if (!_controlsManager!.showControls) {
-              _controlsManager?.show();
-            } else if (_isSliderFocused) {
-              // Control del slider con repetición: +10 segundos
-              _startKeyRepeat(event.logicalKey, () => _performSeekAction(event.logicalKey));
-            } else {
-              // Navegar a la derecha entre controles
-              setState(() {
-                _currentFocusIndex = (_currentFocusIndex + 1) % (_maxFocusIndex + 1);
-              });
-              _controlsManager?.resetTimer();
-            }
-          } else {
-            if (!showSubtitlePanel) {
-              _showSubtitlePanel();
-            }
-          }
-          break;
-        case LogicalKeyboardKey.arrowLeft:
-          if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
-              // Primero delegar al panel activo para navegación interna
-              bool eventHandled = _delegateKeyEventToPanels(event);
-              if (eventHandled) {
-                // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
-                _controlsManager?.resetTimer();
-                // Si es el episode panel, resetear su timer específico
-                if (showEpisodePanel) {
-                  _resetEpisodePanelTimer();
-                }
-              } else {
-                // Solo cerrar paneles si no hay navegación interna disponible
-                _hideSubtitlePanel();
-                _hideAudioPanel();
-                _hideQualityPanel();
-                _hideEpisodePanel();
-                _controlsManager?.resetTimer();
-              }
-            } else if (_controlsManager!.showControls && _isSliderFocused) {
-              // Control del slider con repetición: -10 segundos
-              _startKeyRepeat(event.logicalKey, () => _performSeekAction(event.logicalKey));
-            } else if (_controlsManager!.showControls) {
-              // Navegar a la izquierda entre controles
-              setState(() {
-                _currentFocusIndex = _currentFocusIndex == 0 ? _maxFocusIndex : _currentFocusIndex - 1;
-              });
-              _controlsManager?.resetTimer();
-            } else {
-              return;
-              // Navigator.pop(context);
-            }
-          } else {
-            if (showSubtitlePanel) {
-              _hideSubtitlePanel();
-            }
-            _hideAudioPanel();
-            _hideQualityPanel();
-          }
-          break;
-        case LogicalKeyboardKey.arrowUp:
-          if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
-              // Delegar navegación a los paneles activos
-              bool eventHandled = _delegateKeyEventToPanels(event);
-              if (eventHandled) {
-                // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
-                _controlsManager?.resetTimer();
-                // Si es el episode panel, resetear su timer específico
-                if (showEpisodePanel) {
-                  _resetEpisodePanelTimer();
-                }
-              }
-              return;
-            }
-            if (!_controlsManager!.showControls) {
-              _controlsManager?.show();
-            } else {
-              // Navegar hacia arriba: de botones inferiores a slider o play/pause
-              setState(() {
-                if (_currentFocusIndex >= 2) {
-                  _currentFocusIndex = 1; // Ir al slider
-                } else if (_currentFocusIndex == 1) {
-                  _currentFocusIndex = 0; // Ir al play/pause
-                }
-              });
-              _controlsManager?.resetTimer();
-            }
-          }
-          break;
-        case LogicalKeyboardKey.arrowDown:
-          if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
-              // Delegar navegación a los paneles activos
-              bool eventHandled = _delegateKeyEventToPanels(event);
-              if (eventHandled) {
-                // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
-                _controlsManager?.resetTimer();
-                // Si es el episode panel, resetear su timer específico
-                if (showEpisodePanel) {
-                  _resetEpisodePanelTimer();
-                }
-              }
-              return;
-            }
-            if (!_controlsManager!.showControls) {
-              _controlsManager?.show();
-            } else {
-              // Navegar hacia abajo: de play/pause a slider, de slider a botones
-              setState(() {
-                if (_currentFocusIndex == 0) {
-                  _currentFocusIndex = 1; // Ir al slider
-                } else if (_currentFocusIndex == 1) {
-                  _currentFocusIndex = 2; // Ir a los botones (restart)
-                }
-              });
-              _controlsManager?.resetTimer();
-            }
-          }
-          break;
-        case LogicalKeyboardKey.select:
-        case LogicalKeyboardKey.enter:
-          if (isTV) {
-            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
-              // Delegar navegación a los paneles activos
-              bool eventHandled = _delegateKeyEventToPanels(event);
-              if (eventHandled) {
-                // Si el evento fue manejado por un panel, resetear el timer para mantener controles visibles
-                _controlsManager?.resetTimer();
-                // Si es el episode panel, resetear su timer específico
-                if (showEpisodePanel) {
-                  _resetEpisodePanelTimer();
-                }
-              }
-              return;
-            }
-            if (!_controlsManager!.showControls) {
-              _controlsManager?.show();
-            } else {
-              // Activar el elemento con focus
-              switch (_currentFocusIndex) {
-                case 0: // Play/Pause
-                  _videoPlayerBloc.add(const VideoPlayerEvent.togglePlayPause());
-                  break;
-                case 1: // Slider - no hacer nada en select
-                  break;
-                case 2: // Episodes (series only) or Restart (movies)
-                  if (type == 'series') {
-                    _showEpisodePanel();
-                  } else {
-                    _videoPlayerBloc.add(const VideoPlayerEvent.restart());
-                  }
-                  break;
-                case 3: // Restart (series) or Audio (movies)
-                  if (type == 'series') {
-                    _videoPlayerBloc.add(const VideoPlayerEvent.restart());
-                  } else {
-                    _showAudioPanel();
-                  }
-                  break;
-                case 4: // Audio (series) or Subtitles (movies)
-                  if (type == 'series') {
-                    _showAudioPanel();
-                  } else {
-                    _showSubtitlePanel();
-                  }
-                  break;
-                case 5: // Subtitles (series) or Settings (movies)
-                  if (type == 'series') {
-                    _showSubtitlePanel();
-                  } else {
-                    _showQualityPanel();
-                  }
-                  break;
-                case 6: // Settings (series only)
-                  if (type == 'series') {
-                    _showQualityPanel();
-                  }
-                  break;
-              }
-              _controlsManager?.resetTimer();
-            }
-          }
-          break;
-        case LogicalKeyboardKey.space:
-          // Play/Pause para ambas plataformas
-          _videoPlayerBloc.add(const VideoPlayerEvent.togglePlayPause());
-          _controlsManager?.resetTimer();
-          break;
-        case LogicalKeyboardKey.escape:
-        case LogicalKeyboardKey.goBack:
-          if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
-            _hideSubtitlePanel();
-            _hideAudioPanel();
-            _hideQualityPanel();
-            _hideEpisodePanel();
-            _controlsManager?.resetTimer();
-          } else {
-            // Limpiar recursos del video player antes de navegar
-            _videoPlayerBloc.add(const VideoPlayerEvent.dispose());
-            _controlsManager?.dispose();
-
-            if (Navigator.canPop(context)) {
-              // Navigator.pop(context);
-            } else {
-              print('No previous page available');
-              // Navigator.pushReplacementNamed(context, Routes.homeRoute);
-            }
-          }
-          break;
-      }
-    }
-  }
+  // Métodos de manejo de teclado movidos a VideoKeyboardHandler
 
   @override
   Widget build(BuildContext context) {
+    // Actualizar el estado del manejador de teclado
+    _keyboardHandler?.updateState(
+      currentFocusIndex: _currentFocusIndex,
+      showSubtitlePanel: showSubtitlePanel,
+      showAudioPanel: showAudioPanel,
+      showQualityPanel: showQualityPanel,
+      showEpisodePanel: showEpisodePanel,
+    );
+
     return BlocConsumer<VideoPlayerBloc, VideoPlayerState>(
       bloc: _videoPlayerBloc,
       listener: (context, state) {
@@ -963,7 +768,7 @@ class _VideoPageState extends State<VideoPage> {
             backgroundColor: Colors.black,
             body: KeyboardListener(
               focusNode: _focusNode,
-              onKeyEvent: _handleKeyEvent,
+              onKeyEvent: _keyboardHandler?.handleKeyEvent,
               child: Stack(
                 children: [
                   // Video Player
