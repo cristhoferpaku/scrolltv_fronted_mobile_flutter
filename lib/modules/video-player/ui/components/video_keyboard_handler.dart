@@ -68,6 +68,9 @@ class VideoKeyboardHandler {
   final TimerResetCallback? onResetEpisodePanelTimer;
   final VoidCallback? onNavigateBack;
 
+  //otros
+  final int? seasonNum;
+
   VideoKeyboardHandler({
     required this.videoPlayerBloc,
     required this.controlsManager,
@@ -78,6 +81,7 @@ class VideoKeyboardHandler {
     required bool showAudioPanel,
     required bool showQualityPanel,
     required bool showEpisodePanel,
+    this.seasonNum,
     this.subtitlePanelKey,
     this.audioPanelKey,
     this.qualityPanelKey,
@@ -129,13 +133,10 @@ class VideoKeyboardHandler {
   /// Método principal para manejar eventos de teclado
   void handleKeyEvent(KeyEvent event) {
     // No responder a eventos de teclado si el video está cargando
-    final currentState = videoPlayerBloc.state;
-    if (currentState.maybeWhen(
-      loading: (_) => true,
-      orElse: () => false,
-    )) {
-      return;
-    }
+    // final currentState = videoPlayerBloc.state;
+    // if (currentState.controller?.value.isBuffering == true) {
+    //   return;
+    // }
 
     // Manejar KeyUpEvent para cancelar repetición
     if (event is KeyUpEvent) {
@@ -332,6 +333,8 @@ class VideoKeyboardHandler {
           case 2: // Episodes (series only) or Restart (movies)
             if (type == 'series') {
               print('VideoKeyboardHandler - Executing: showEpisodePanel (series)');
+
+              //videoPlayerBloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId));
               onShowEpisodePanel?.call();
             } else {
               print('VideoKeyboardHandler - Executing: restart (movie)');
@@ -389,7 +392,7 @@ class VideoKeyboardHandler {
       controlsManager?.resetTimer();
     } else {
       // Limpiar recursos del video player antes de navegar
-      videoPlayerBloc.add(const VideoPlayerEvent.dispose());
+      videoPlayerBloc.close();
       controlsManager?.dispose();
       onNavigateBack?.call();
     }

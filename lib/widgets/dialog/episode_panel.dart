@@ -10,7 +10,7 @@ class EpisodePanel extends StatefulWidget {
   final bool isVisible;
   final String currentValue;
   final List<EpisodeModel> episodes;
-  final Function(String) onValueChanged;
+  final Function(EpisodeModel) onValueChanged;
   final VoidCallback onClose;
 
   const EpisodePanel({
@@ -114,7 +114,7 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
   void _confirmSelection() {
     if (selectedIndex >= 0 && selectedIndex < widget.episodes.length) {
       final episode = widget.episodes[selectedIndex];
-      widget.onValueChanged(episode.episodeNumber.toString());
+      widget.onValueChanged(episode);
       // No cerrar inmediatamente, dejar que video_page.dart maneje el cierre
       // con el delay apropiado para mostrar la selección
     }

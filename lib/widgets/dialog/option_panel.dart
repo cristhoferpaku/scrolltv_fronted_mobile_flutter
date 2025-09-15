@@ -1,25 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/domain/track_option_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/option_panel_skeleton.dart';
 
 class OptionPanel extends StatefulWidget {
   final String title;
-  final String? currentValue;
-  final List<Map<String, String>> options;
+  // final String? currentValue;
+  // final List<TrackOptionModel> options;
   final Function(String) onValueChanged;
   final bool isVisible;
   final VoidCallback onClose;
+  final VideoPlayerBloc videoPlayerBloc;
 
   const OptionPanel({
-    Key? key,
+    super.key,
     required this.title,
-    this.currentValue,
-    required this.options,
+    //this.currentValue,
+    //  required this.options,
     required this.onValueChanged,
     required this.isVisible,
     required this.onClose,
-  }) : super(key: key);
+    required this.videoPlayerBloc,
+  });
 
   @override
   State<OptionPanel> createState() => OptionPanelState();
@@ -29,6 +34,8 @@ class OptionPanelState extends State<OptionPanel> {
   int selectedIndex = 0;
   final ScrollController _scrollController = ScrollController();
   final bool isTV = PlatformUtils.isTV;
+  String? currentValue;
+  List<TrackOptionModel> options = [];
 
   @override
   void initState() {
@@ -39,14 +46,14 @@ class OptionPanelState extends State<OptionPanel> {
   @override
   void didUpdateWidget(OptionPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.currentValue != widget.currentValue) {
+    if (currentValue != currentValue) {
       _findCurrentIndex();
     }
   }
 
   void _findCurrentIndex() {
-    final index = widget.options.indexWhere(
-      (option) => option['value'] == widget.currentValue,
+    final index = options.indexWhere(
+      (option) => option.value == currentValue,
     );
     if (index != -1) {
       selectedIndex = index;
@@ -58,10 +65,10 @@ class OptionPanelState extends State<OptionPanel> {
       final itemHeight = isTV ? 100.0 : 80.0;
       final viewportHeight = _scrollController.position.viewportDimension;
       final maxScrollExtent = _scrollController.position.maxScrollExtent;
-      
+
       final targetOffset = (selectedIndex * itemHeight) - (viewportHeight / 2) + (itemHeight / 2);
       final clampedOffset = targetOffset.clamp(0.0, maxScrollExtent);
-      
+
       _scrollController.animateTo(
         clampedOffset,
         duration: const Duration(milliseconds: 300),
@@ -74,14 +81,14 @@ class OptionPanelState extends State<OptionPanel> {
     setState(() {
       selectedIndex = index;
     });
-    
-    final selectedOption = widget.options[index];
-    widget.onValueChanged(selectedOption['value'] ?? '');
-    
+
+    final selectedOption = options[index];
+    widget.onValueChanged(selectedOption.value ?? '');
+
     // Mostrar confirmación del cambio
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${widget.title} cambiado a: ${selectedOption['label']}'),
+        content: Text('${widget.title} cambiado a: ${selectedOption.value}'),
         duration: const Duration(seconds: 2),
         backgroundColor: const Color(0xFF2DD4BF),
       ),
@@ -90,7 +97,7 @@ class OptionPanelState extends State<OptionPanel> {
 
   bool handleKeyEvent(KeyEvent event) {
     if (!widget.isVisible) return false;
-    
+
     if (event is KeyDownEvent) {
       switch (event.logicalKey) {
         case LogicalKeyboardKey.arrowUp:
@@ -107,7 +114,7 @@ class OptionPanelState extends State<OptionPanel> {
           }
           return true;
         case LogicalKeyboardKey.arrowDown:
-          if (selectedIndex < widget.options.length - 1) {
+          if (selectedIndex < options.length - 1) {
             setState(() {
               selectedIndex++;
             });
@@ -133,17 +140,7 @@ class OptionPanelState extends State<OptionPanel> {
     return false;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Mostrar skeleton si las opciones están vacías
-    if (widget.options.isEmpty) {
-      return OptionPanelSkeleton(
-        title: widget.title,
-        isVisible: widget.isVisible,
-        onClose: widget.onClose,
-      );
-    }
-
+  Widget _buildPanel({required List<TrackOptionModel> options, required int selectedIndex, required Function(int) onValueChanged}) {
     final panelWidth = isTV ? 450.0 : 300.0;
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
@@ -170,14 +167,16 @@ class OptionPanelState extends State<OptionPanel> {
             // Header
             Container(
               padding: EdgeInsets.all(isTV ? 32 : 20),
-              decoration: isTV ? BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: const Color(0xFF2DD4BF).withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-              ) : null,
+              decoration: isTV
+                  ? BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                    )
+                  : null,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -211,49 +210,37 @@ class OptionPanelState extends State<OptionPanel> {
                     ],
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, 
-                      color: Colors.white,
-                      size: isTV ? 32 : 24),
+                    icon: Icon(Icons.close, color: Colors.white, size: isTV ? 32 : 24),
                     onPressed: widget.onClose,
                   ),
                 ],
               ),
             ),
-            
+
             // Options List
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
                 padding: EdgeInsets.symmetric(horizontal: isTV ? 24 : 16),
-                itemCount: widget.options.length,
+                itemCount: options.length,
                 itemBuilder: (context, index) {
                   final isSelected = index == selectedIndex;
-                  final option = widget.options[index];
-                  
+                  final option = options[index];
+
                   // Debug print para verificar el focus
                   if (isSelected) {
                     print('Item $index is selected (selectedIndex: $selectedIndex)');
                   }
-                  
+
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeInOut,
                     margin: EdgeInsets.only(bottom: isTV ? 12 : 8),
                     decoration: BoxDecoration(
-                      color: isSelected 
-                          ? const Color(0xFF2DD4BF).withOpacity(0.9)
-                          : Colors.black.withOpacity(0.3),
+                      color: isSelected ? const Color(0xFF2DD4BF).withOpacity(0.9) : Colors.black.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(isTV ? 16 : 12),
-                      border: isSelected 
-                          ? Border.all(
-                              color: Colors.white, 
-                              width: isTV ? 4 : 3
-                            )
-                          : Border.all(
-                              color: Colors.white.withOpacity(0.2), 
-                              width: 1
-                            ),
-                      boxShadow: isSelected 
+                      border: isSelected ? Border.all(color: Colors.white, width: isTV ? 4 : 3) : Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                      boxShadow: isSelected
                           ? [
                               BoxShadow(
                                 color: Colors.white.withOpacity(0.6),
@@ -274,18 +261,20 @@ class OptionPanelState extends State<OptionPanel> {
                         vertical: isTV ? 18 : 12,
                       ),
                       title: Text(
-                        option['label']!,
+                        option.value,
                         style: TextStyle(
                           color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                           fontSize: isTV ? 22 : 18,
-                          shadows: isSelected ? [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 2,
-                              offset: const Offset(1, 1),
-                            ),
-                          ] : null,
+                          shadows: isSelected
+                              ? [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    blurRadius: 2,
+                                    offset: const Offset(1, 1),
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
                       trailing: AnimatedContainer(
@@ -295,13 +284,11 @@ class OptionPanelState extends State<OptionPanel> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isSelected 
-                                ? Colors.white 
-                                : Colors.white.withOpacity(0.6),
+                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
                             width: isTV ? 4 : 3,
                           ),
                           color: isSelected ? Colors.white : Colors.transparent,
-                          boxShadow: isSelected && isTV 
+                          boxShadow: isSelected && isTV
                               ? [
                                   BoxShadow(
                                     color: const Color(0xFF2DD4BF).withOpacity(0.5),
@@ -312,13 +299,13 @@ class OptionPanelState extends State<OptionPanel> {
                               : null,
                         ),
                         child: isSelected
-                             ? Icon(
-                                 Icons.check,
-                                 color: const Color(0xFF2DD4BF),
-                                 size: isTV ? 20 : 16,
-                                 weight: 800,
-                               )
-                             : null,
+                            ? Icon(
+                                Icons.check,
+                                color: const Color(0xFF2DD4BF),
+                                size: isTV ? 20 : 16,
+                                weight: 800,
+                              )
+                            : null,
                       ),
                       onTap: () {
                         _changeValue(index);
@@ -329,11 +316,56 @@ class OptionPanelState extends State<OptionPanel> {
                 },
               ),
             ),
-            
-
           ],
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+      bloc: widget.videoPlayerBloc,
+      builder: (context, state) {
+        return state.maybeWhen(
+          loaded: (videoUrl, controller, status, isPlaying, hasEnded, episodes, episodeIndex, showEpisodesList, isLoading, currentPosition, duration, subtitles, audioTracks, showSubtitlePanel,
+              showAudioPanel, selectedSubtitleIndex, selectedAudioIndex, currentSubtitleIndex, currentAudioIndex) {
+            // Verificar si está cargando pistas según el título del panel
+            final isLoadingTracks = (widget.title == 'Audio' && status == VideoPlayerStatus.loadingAudio) || (widget.title == 'Subtítulos' && status == VideoPlayerStatus.loadingSubtitles);
+            final options = widget.title == 'Audio' ? audioTracks : subtitles;
+            final bool isAudio = widget.title == 'Audio';
+            final bool isSubtitle = widget.title == 'Subtítulos';
+            final bool isQuality = widget.title == 'Calidad';
+            // Mostrar skeleton durante la carga o si las opciones están vacías
+            if (isLoadingTracks || options.isEmpty) {
+              return OptionPanelSkeleton(
+                title: widget.title,
+                isVisible: widget.isVisible,
+                onClose: widget.onClose,
+              );
+            }
+
+            return _buildPanel(
+              options: isQuality
+                  ? []
+                  : isAudio
+                      ? audioTracks
+                      : subtitles,
+              selectedIndex: isQuality
+                  ? 0
+                  : isAudio
+                      ? selectedAudioIndex
+                      : selectedSubtitleIndex,
+              onValueChanged: _changeValue,
+            );
+          },
+          orElse: () => OptionPanelSkeleton(
+            title: widget.title,
+            isVisible: widget.isVisible,
+            onClose: widget.onClose,
+          ),
+        );
+      },
     );
   }
 
