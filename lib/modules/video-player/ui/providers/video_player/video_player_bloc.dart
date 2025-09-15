@@ -51,42 +51,38 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     on<_VideoPlayerEventLoadEpisodes>((event, emit) async {
       //  emit(const VideoPlayerState.loading());
       final currentState = state;
-
+      print('📋 Cargando episodios para seasonId: ${event.seasonId}');
       try {
-        List<EpisodeModel> episodes;
-        if (episodesCache.containsKey(event.seasonId)) {
-          episodes = episodesCache[event.seasonId]!;
-        } else {
-          final response = await _multimediaUseCase.getEpisodesBySeasonId(event.seasonId);
-          episodes = response.data;
-          episodesCache[event.seasonId] = episodes; // Guardar en caché
-        }
         if (currentState is VideoPlayerStateLoaded) {
+          emit(currentState.copyWith(
+            status: VideoPlayerStatus.loadingEpisodes,
+          ));
+          List<EpisodeModel> episodes;
+          if (episodesCache.containsKey(event.seasonId)) {
+            episodes = episodesCache[event.seasonId]!;
+          } else {
+            final response = await _multimediaUseCase.getEpisodesBySeasonId(event.seasonId);
+            episodes = response.data;
+            episodesCache[event.seasonId] = episodes; // Guardar en caché
+          }
+
+          print('📋 Episodios obtenidos desde caché para seasonId: ${event.seasonId}');
+
           emit(currentState.copyWith(
             episodes: episodes,
             showEpisodesList: episodes.isNotEmpty, // Mostrar lista si hay episodios
+            status: VideoPlayerStatus.loadedEpisodes,
           ));
-        } else {
-          // Solo si no hay estado cargado, crear uno nuevo
-          if (controller != null) {
-            emit(VideoPlayerState.loaded(
-              status: VideoPlayerStatus.inicialiced,
-              videoUrl: '',
-              controller: controller!,
-              episodes: episodes,
-              showEpisodesList: episodes.isNotEmpty,
-              showAudioPanel: false,
-              showSubtitlePanel: false,
-            ));
-          }
         }
       } catch (e) {
+        print('❌ Error cargando episodios para seasonId: ${event.seasonId} - Error: $e');
         if (currentState is VideoPlayerStateLoaded) {
           emit(currentState.copyWith(
             episodes: [],
             showEpisodesList: false,
             showAudioPanel: false,
             showSubtitlePanel: false,
+            status: VideoPlayerStatus.loaded,
           ));
         } else {
           emit(VideoPlayerState.error('Error cargando episodios: $e'));
@@ -98,10 +94,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     on<_VideoPlayerEventChangeEpisode>((event, emit) async {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded) {
-        // Emitir estado de loading inmediatamente
         emit(currentState.copyWith(
           isLoading: true,
           showEpisodesList: false, // Cerrar la lista al cambiar episodio
+          episodeIndex: event.episode.episodeNumber ?? 1,
         ));
         try {
           if (controller != null) {
@@ -154,7 +150,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
             emit(latest.copyWith(
               videoUrl: event.episode.videoUrl ?? '',
               controller: controller!,
-              episodeIndex: event.episode.episodeNumber ?? 1,
+              //   episodeIndex: event.episode.episodeNumber ?? 1,
               showEpisodesList: false,
               showAudioPanel: false,
               showSubtitlePanel: false,
@@ -166,7 +162,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
               status: VideoPlayerStatus.loaded,
               videoUrl: event.episode.videoUrl ?? '',
               controller: controller!,
-              episodeIndex: event.episode.episodeNumber ?? 1,
+              //episodeIndex: event.episode.episodeNumber ?? 1,
               episodes: latest is VideoPlayerStateLoaded ? latest.episodes : [],
               showEpisodesList: false,
               showAudioPanel: false,
@@ -245,9 +241,13 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
     // Evento: cambiar pista de audio
     on<_VideoPlayerEventChangeAudioTrack>((event, emit) async {
+      final currentState = state;
       if (controller != null) {
         try {
           await controller!.setAudioTrack(event.trackId);
+          if (currentState is VideoPlayerStateLoaded) {
+            emit(currentState.copyWith(currentAudioIndex: event.trackId));
+          }
         } catch (e) {
           // Error al cambiar pista de audio
         }
@@ -256,9 +256,13 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
     // Evento: cambiar pista de subtítulos
     on<_VideoPlayerEventChangeSubtitleTrack>((event, emit) async {
+      final currentState = state;
       if (controller != null) {
         try {
           await controller!.setSpuTrack(event.trackId);
+          if (currentState is VideoPlayerStateLoaded) {
+            emit(currentState.copyWith(currentSubtitleIndex: event.trackId));
+          }
         } catch (e) {
           // Error al cambiar subtítulos
         }

@@ -52,11 +52,18 @@ class OptionPanelState extends State<OptionPanel> {
   }
 
   void _findCurrentIndex() {
+    if (options.isEmpty) {
+      selectedIndex = 0;
+      return;
+    }
+
     final index = options.indexWhere(
       (option) => option.value == currentValue,
     );
     if (index != -1) {
       selectedIndex = index;
+    } else {
+      selectedIndex = 0; // Valor por defecto si no se encuentra
     }
   }
 
@@ -78,12 +85,18 @@ class OptionPanelState extends State<OptionPanel> {
   }
 
   void _changeValue(int index) {
+    // Validar que el índice esté dentro del rango
+    if (index < 0 || index >= options.length || options.isEmpty) {
+      print('⚠️ Índice fuera de rango: $index, opciones disponibles: ${options.length}');
+      return;
+    }
+
     setState(() {
       selectedIndex = index;
     });
 
     final selectedOption = options[index];
-    widget.onValueChanged(selectedOption.value ?? '');
+    widget.onValueChanged(selectedOption.key.toString());
 
     // Mostrar confirmación del cambio
     ScaffoldMessenger.of(context).showSnackBar(
@@ -101,7 +114,7 @@ class OptionPanelState extends State<OptionPanel> {
     if (event is KeyDownEvent) {
       switch (event.logicalKey) {
         case LogicalKeyboardKey.arrowUp:
-          if (selectedIndex > 0) {
+          if (options.isNotEmpty && selectedIndex > 0) {
             setState(() {
               selectedIndex--;
             });
@@ -114,7 +127,7 @@ class OptionPanelState extends State<OptionPanel> {
           }
           return true;
         case LogicalKeyboardKey.arrowDown:
-          if (selectedIndex < options.length - 1) {
+          if (options.isNotEmpty && selectedIndex < options.length - 1) {
             setState(() {
               selectedIndex++;
             });
@@ -140,8 +153,10 @@ class OptionPanelState extends State<OptionPanel> {
     return false;
   }
 
-  Widget _buildPanel({required List<TrackOptionModel> options, required int selectedIndex, required Function(int) onValueChanged}) {
+  Widget _buildPanel({required List<TrackOptionModel> options, required int selectedKey, required Function(int) onValueChanged}) {
     final panelWidth = isTV ? 450.0 : 300.0;
+    final resolvedIndex = options.indexWhere((o) => o.key == selectedKey);
+    final selectedIndex = resolvedIndex != -1 ? resolvedIndex : 0;
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -331,33 +346,59 @@ class OptionPanelState extends State<OptionPanel> {
           loaded: (videoUrl, controller, status, isPlaying, hasEnded, episodes, episodeIndex, showEpisodesList, isLoading, currentPosition, duration, subtitles, audioTracks, showSubtitlePanel,
               showAudioPanel, selectedSubtitleIndex, selectedAudioIndex, currentSubtitleIndex, currentAudioIndex) {
             // Verificar si está cargando pistas según el título del panel
-            final isLoadingTracks = (widget.title == 'Audio' && status == VideoPlayerStatus.loadingAudio) || (widget.title == 'Subtítulos' && status == VideoPlayerStatus.loadingSubtitles);
-            final options = widget.title == 'Audio' ? audioTracks : subtitles;
-            final bool isAudio = widget.title == 'Audio';
-            final bool isSubtitle = widget.title == 'Subtítulos';
-            final bool isQuality = widget.title == 'Calidad';
+            final isLoadingAudio = status == VideoPlayerStatus.loadingAudio;
+            final isLoadingSubtitles = status == VideoPlayerStatus.loadingSubtitles;
+            final isLoadingQuality = widget.title == 'Calidad';
+            // final isLoadingTracks =
+            //     (widget.title == 'Audio' && status == VideoPlayerStatus.loadingAudio) || (widget.title == 'Subtítulos' && status == VideoPlayerStatus.loadingSubtitles) || (widget.title == 'Calidad');
+            // final options = widget.title == 'Audio' ? audioTracks : subtitles;
+            // final bool isAudio = widget.title == 'Audio';
+            // final bool isSubtitle = widget.title == 'Subtítulos';
+            // final bool isQuality = widget.title == 'Calidad';
             // Mostrar skeleton durante la carga o si las opciones están vacías
-            if (isLoadingTracks || options.isEmpty) {
+
+            if (isLoadingAudio || isLoadingSubtitles || isLoadingQuality) {
               return OptionPanelSkeleton(
                 title: widget.title,
                 isVisible: widget.isVisible,
                 onClose: widget.onClose,
               );
             }
-
-            return _buildPanel(
-              options: isQuality
-                  ? []
-                  : isAudio
-                      ? audioTracks
-                      : subtitles,
-              selectedIndex: isQuality
-                  ? 0
-                  : isAudio
-                      ? selectedAudioIndex
-                      : selectedSubtitleIndex,
-              onValueChanged: _changeValue,
-            );
+            if (widget.title == 'Audio') {
+              options = audioTracks;
+              return _buildPanel(
+                options: audioTracks,
+                selectedKey: currentAudioIndex,
+                onValueChanged: _changeValue,
+              );
+            }
+            if (widget.title == 'Subtítulos') {
+              options = subtitles;
+              return _buildPanel(
+                options: subtitles,
+                selectedKey: currentSubtitleIndex,
+                onValueChanged: _changeValue,
+              );
+            }
+            if (widget.title == 'Calidad') {
+              options = [
+                TrackOptionModel(
+                  key: 1,
+                  value: 'automatico',
+                ),
+              ];
+              return _buildPanel(
+                options: options,
+                selectedKey: 0,
+                onValueChanged: _changeValue,
+              );
+            } else {
+              return OptionPanelSkeleton(
+                title: widget.title,
+                isVisible: widget.isVisible,
+                onClose: widget.onClose,
+              );
+            }
           },
           orElse: () => OptionPanelSkeleton(
             title: widget.title,
