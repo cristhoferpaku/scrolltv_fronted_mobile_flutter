@@ -43,7 +43,7 @@ class _VideoPageState extends State<VideoPage> {
 
   // TV Focus System
   int _currentFocusIndex = 0;
-  int get _maxFocusIndex => type == 'series' ? 6 : 5;
+  int get _maxFocusIndex => type == 'series' ? 7 : 6;
 
   // Referencias a los paneles para navegación
   final GlobalKey<OptionPanelState> _subtitlePanelKey = GlobalKey<OptionPanelState>();
@@ -58,13 +58,14 @@ class _VideoPageState extends State<VideoPage> {
   static const Duration _keyRepeatInterval = Duration(milliseconds: 100); // Intervalo de repetición
 
   // Focus states - Corregidos para evitar inconsistencias
-  bool get _isPlayPauseFocused => isTV && _currentFocusIndex == 0;
-  bool get _isSliderFocused => isTV && _currentFocusIndex == 1;
-  bool get _isEpisodesFocused => isTV && type == 'series' && _currentFocusIndex == 2;
-  bool get _isRestartFocused => isTV && _currentFocusIndex == (type == 'series' ? 3 : 2);
-  bool get _isAudioFocused => isTV && _currentFocusIndex == (type == 'series' ? 4 : 3);
-  bool get _isSubtitlesFocused => isTV && _currentFocusIndex == (type == 'series' ? 5 : 4);
-  bool get _isSettingsFocused => isTV && _currentFocusIndex == (type == 'series' ? 6 : 5);
+  bool get _isBackFocused => isTV && _currentFocusIndex == 0;
+  bool get _isPlayPauseFocused => isTV && _currentFocusIndex == 1;
+  bool get _isSliderFocused => isTV && _currentFocusIndex == 2;
+  bool get _isEpisodesFocused => isTV && type == 'series' && _currentFocusIndex == 3;
+  bool get _isRestartFocused => isTV && _currentFocusIndex == (type == 'series' ? 4 : 3);
+  bool get _isAudioFocused => isTV && _currentFocusIndex == (type == 'series' ? 5 : 4);
+  bool get _isSubtitlesFocused => isTV && _currentFocusIndex == (type == 'series' ? 6 : 5);
+  bool get _isSettingsFocused => isTV && _currentFocusIndex == (type == 'series' ? 7 : 6);
 
   // Validación de índice de focus para prevenir estados inválidos
   bool get _isValidFocusIndex => _currentFocusIndex >= 0 && _currentFocusIndex <= _maxFocusIndex;
@@ -392,13 +393,15 @@ class _VideoPageState extends State<VideoPage> {
             if (!_controlsManager!.showControls) {
               _controlsManager?.show();
             } else {
-              // Navegar hacia arriba: de botones inferiores a slider o play/pause
+              // Navegar hacia arriba: de botones inferiores a slider, play/pause o back
               setState(() {
                 int newIndex = _currentFocusIndex;
-                if (_currentFocusIndex >= 2) {
-                  newIndex = 1; // Ir al slider
+                if (_currentFocusIndex >= 3) {
+                  newIndex = 2; // Ir al slider
+                } else if (_currentFocusIndex == 2) {
+                  newIndex = 1; // Ir al play/pause
                 } else if (_currentFocusIndex == 1) {
-                  newIndex = 0; // Ir al play/pause
+                  newIndex = 0; // Ir al back button
                 }
                 // Validar el nuevo índice antes de asignarlo
                 if (newIndex >= 0 && newIndex <= _maxFocusIndex) {
@@ -427,14 +430,16 @@ class _VideoPageState extends State<VideoPage> {
             if (!_controlsManager!.showControls) {
               _controlsManager?.show();
             } else {
-              // Navegar hacia abajo: de play/pause a slider, de slider a botones
+              // Navegar hacia abajo: de back a play/pause, de play/pause a slider, de slider a botones
               setState(() {
                 int newIndex = _currentFocusIndex;
                 if (_currentFocusIndex == 0) {
-                  newIndex = 1; // Ir al slider
+                  newIndex = 1; // Ir al play/pause
                 } else if (_currentFocusIndex == 1) {
-                  // Para series: ir a episodes (2), para movies: ir a restart (2)
-                  newIndex = 2;
+                  newIndex = 2; // Ir al slider
+                } else if (_currentFocusIndex == 2) {
+                  // Para series: ir a episodes (3), para movies: ir a restart (3)
+                  newIndex = 3;
                 }
                 // Validar el nuevo índice antes de asignarlo
                 if (newIndex >= 0 && newIndex <= _maxFocusIndex) {
@@ -465,12 +470,15 @@ class _VideoPageState extends State<VideoPage> {
               _controlsManager?.show();
             } else {
               switch (_currentFocusIndex) {
-                case 0: // Play/Pause
+                case 0: // Back button
+                  Navigator.pop(context);
+                  break;
+                case 1: // Play/Pause
                   bloc.add(const VideoPlayerEvent.togglePlayPause());
                   break;
-                case 1: // Slider - no hacer nada en select
+                case 2: // Slider - no hacer nada en select
                   break;
-                case 2: // Episodes (series) or Restart (movies)
+                case 3: // Episodes (series) or Restart (movies)
                   if (type == 'series') {
                     bloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId ?? 0));
                     _showEpisodePanel();
@@ -479,7 +487,7 @@ class _VideoPageState extends State<VideoPage> {
                     bloc.add(const VideoPlayerEvent.restart());
                   }
                   break;
-                case 3: // Restart (series) or Audio (movies)
+                case 4: // Restart (series) or Audio (movies)
                   if (type == 'series') {
                     print('🔄 Activando Restart (series)');
                     bloc.add(const VideoPlayerEvent.restart());
@@ -489,7 +497,7 @@ class _VideoPageState extends State<VideoPage> {
                     _showAudioPanel();
                   }
                   break;
-                case 4: // Audio (series) or Subtitles (movies)
+                case 5: // Audio (series) or Subtitles (movies)
                   if (type == 'series') {
                     print('🔊 Activando Audio panel (series)');
                     bloc.add(VideoPlayerEvent.loadAudioTracks());
@@ -500,7 +508,7 @@ class _VideoPageState extends State<VideoPage> {
                     _showSubtitlePanel();
                   }
                   break;
-                case 5: // Subtitles (series) or Quality/Settings (movies)
+                case 6: // Subtitles (series) or Quality/Settings (movies)
                   if (type == 'series') {
                     print('📝 Activando Subtitles panel (series)');
                     bloc.add(VideoPlayerEvent.loadSubtitleTracks());
@@ -510,7 +518,7 @@ class _VideoPageState extends State<VideoPage> {
                     _showQualityPanel();
                   }
                   break;
-                case 6: // Quality/Settings (series only)
+                case 7: // Quality/Settings (series only)
                   if (type == 'series') {
                     print('⚙️ Activando Quality panel (series)');
                     _showQualityPanel();
@@ -626,9 +634,17 @@ class _VideoPageState extends State<VideoPage> {
                                 padding: EdgeInsets.all(isTV ? 24 : 16),
                                 child: Row(
                                   children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 28),
-                                      onPressed: () => Navigator.pop(context),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        border: _isBackFocused
+                                            ? Border.all(color: Colors.white, width: 2)
+                                            : null,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 28),
+                                        onPressed: () => Navigator.pop(context),
+                                      ),
                                     ),
                                     Spacer(),
                                   ],
