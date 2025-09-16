@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
@@ -5,8 +6,84 @@ import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/shimmer/shimmer_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/shimmer/shimmer_util.dart';
 
-class VideoPlayerSkeleton extends StatelessWidget {
+class VideoPlayerSkeleton extends StatefulWidget {
   const VideoPlayerSkeleton({super.key});
+
+  @override
+  State<VideoPlayerSkeleton> createState() => _VideoPlayerSkeletonState();
+}
+
+class _VideoPlayerSkeletonState extends State<VideoPlayerSkeleton> {
+  String _loadingMessage = 'Inicializando reproductor...';
+  int _loadingTime = 0;
+  Timer? _messageTimer;
+  Timer? _timeTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startLoadingMessages();
+  }
+
+  @override
+  void didUpdateWidget(VideoPlayerSkeleton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reiniciar timers cuando el widget se actualiza (nuevo episodio)
+    _resetTimers();
+  }
+
+  @override
+  void dispose() {
+    _messageTimer?.cancel();
+    _timeTimer?.cancel();
+    super.dispose();
+  }
+
+  void _resetTimers() {
+    // Cancelar timers existentes
+    _messageTimer?.cancel();
+    _timeTimer?.cancel();
+    
+    // Reiniciar valores
+    _loadingTime = 0;
+    _loadingMessage = 'Inicializando reproductor...';
+    
+    // Reiniciar timers
+    _startLoadingMessages();
+  }
+
+  void _startLoadingMessages() {
+    // Timer para actualizar el tiempo transcurrido
+    _timeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          _loadingTime++;
+        });
+      }
+    });
+
+    // Timer para cambiar los mensajes de carga
+    _messageTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted) {
+        setState(() {
+          switch (timer.tick % 4) {
+            case 0:
+              _loadingMessage = 'Conectando con el servidor...';
+              break;
+            case 1:
+              _loadingMessage = 'Cargando contenido de video...';
+              break;
+            case 2:
+              _loadingMessage = 'Preparando reproductor...';
+              break;
+            case 3:
+              _loadingMessage = 'Casi listo...';
+              break;
+          }
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,23 +113,45 @@ class VideoPlayerSkeleton extends StatelessWidget {
           ),
           
           // Indicador de carga central
-          const Center(
+          Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircularProgressIndicator(
-                  color: Color(0xFF2DD4BF),
+                  color: const Color(0xFF2DD4BF),
                   strokeWidth: 3,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
-                  'Cargando video...',
-                  style: TextStyle(
+                  _loadingMessage,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
+                  textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 8),
+                if (_loadingTime > 5)
+                  Text(
+                    'Tiempo transcurrido: ${_loadingTime}s',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 12,
+                    ),
+                  ),
+                if (_loadingTime > 15)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Si la carga toma mucho tiempo,\nverifique su conexión a internet',
+                      style: TextStyle(
+                        color: Colors.orange.withOpacity(0.8),
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
               ],
             ),
           ),

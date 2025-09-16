@@ -166,7 +166,7 @@ initSearchModule() {
 
 initVideoPlayerModule() {
   if (!GetIt.I.isRegistered<VideoPlayerBloc>()) {
-    instance.registerLazySingleton<VideoPlayerBloc>(() => VideoPlayerBloc());
+    instance.registerFactory<VideoPlayerBloc>(() => VideoPlayerBloc());
   }
 }
 
