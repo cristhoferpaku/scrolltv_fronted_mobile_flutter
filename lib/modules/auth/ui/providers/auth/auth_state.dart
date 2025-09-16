@@ -11,6 +11,8 @@ enum AuthStatus {
   loadingLogout,
   loaded,
   error,
+  validateExpirationError,
+  logoutError,
   errorServiceExpired,
   logoutSuccess,
 }

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/my_app.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/components/molecules/blur_background.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
@@ -15,6 +16,8 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/shimmer/shimmer_detail.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/shimmer/shimmer_util.dart';
 
 class LiveTab extends StatefulWidget {
   const LiveTab({super.key, required this.scrollController});
@@ -118,7 +121,7 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
                   flex: 3,
                   child: ContainerFocus(
                     onTap: () {
-                      Navigator.pushNamed(context, Routes.liveTvRoute);
+                      Navigator.pushNamed(context, Routes.liveTvRoute, arguments: LiveTvDetailArguments(showChannelList: false));
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -149,7 +152,7 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Channel List
+
                 Expanded(
                   flex: 1,
                   child: BlocBuilder<TvPlayerBloc, TvPlayerState>(
@@ -159,93 +162,29 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
                         height: 20,
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            final channels = List<ChannelModel>.from(state.channels.length > 3 ? state.channels.sublist(0, 3) : state.channels);
-
-                            channels.add(ChannelModel(id: 0, name: 'Ver lista', category: ['Ver lista'], url: '', logo: ImageAssets.iconMenu));
-                            final availableWidth = constraints.maxWidth;
-                            final spacing = 12.0;
-                            final totalSpacing = spacing * (channels.length - 1);
-                            final channelWidth = (availableWidth - totalSpacing) / channels.length;
-
-                            return ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: channels.length,
-                              separatorBuilder: (context, index) => SizedBox(width: spacing),
-                              itemBuilder: (context, index) {
-                                // final isSelected = index == selectedChannelIndex;
-                                return ContainerFocus(
-                                  onTap: () async {
-                                    if (channels[index].id != 0) {
-                                      tvPlayerBloc.add(TvPlayerEvent.changeChannel(channels[index]));
-                                    } else {
-                                      await Navigator.pushNamed(context, Routes.liveTvRoute);
-                                    }
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 24.r),
-                                    constraints: BoxConstraints(
-                                      minWidth: 150.r,
+                            return Column(
+                              children: [
+                                if (state.status == TVPlayerStatus.loadingChannels)
+                                  Expanded(
+                                    child: Row(
+                                      spacing: AppPadding.p16,
+                                      children: List.generate(
+                                        4,
+                                        (index) => Expanded(child: ShimmerAnimation(shimmerGradient, 0, double.infinity, 8)),
+                                      ),
                                     ),
-                                    width: channelWidth.r,
-                                    height: 20.r,
-                                    decoration: BoxDecoration(
-                                      color: ColorManager.primaryContainer,
-                                      borderRadius: BorderRadius.circular(12),
+                                  )
+                                else
+                                  Expanded(
+                                    child: Row(
+                                      spacing: AppPadding.p16,
+                                      children: List.generate(
+                                        state.homeCategories.length,
+                                        (index) => Expanded(child: channel_home_card(channels: state.homeCategories, tvPlayerBloc: tvPlayerBloc, channelWidth: 120, index: index)),
+                                      ),
                                     ),
-                                    child: (channels[index].id != 0)
-                                        ? Row(
-                                            spacing: 12.r,
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              // Channel logo/icon placeholder
-                                              // Channel name
-
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                ),
-                                                clipBehavior: Clip.antiAlias,
-                                                child: ImageWithPlaceholder(
-                                                  width: 60.r,
-                                                  height: 60.r,
-                                                  imageUrl: channels[index].logo,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Text(
-                                                  channels[index].name,
-                                                  style: Theme.of(context).textTheme.labelSmall,
-                                                  textAlign: TextAlign.center,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 2,
-                                                ),
-                                              ),
-                                              // Channel subtitle
-                                            ],
-                                          )
-                                        : Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              ImageWithPlaceholder(
-                                                width: 40.r,
-                                                height: 40.r,
-                                                imageUrl: channels[index].logo,
-                                                fit: BoxFit.cover,
-                                              ),
-                                              Text(
-                                                channels[index].name,
-                                                style: Theme.of(context).textTheme.labelSmall,
-                                                textAlign: TextAlign.center,
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 2,
-                                              ),
-                                            ],
-                                          ),
                                   ),
-                                );
-                              },
+                              ],
                             );
                           },
                         ),
@@ -258,6 +197,97 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
           ),
         ),
       ],
+    );
+  }
+}
+
+class channel_home_card extends StatelessWidget {
+  const channel_home_card({
+    super.key,
+    required this.channels,
+    required this.tvPlayerBloc,
+    required this.channelWidth,
+    required this.index,
+  });
+
+  final List<ChannelModel> channels;
+  final TvPlayerBloc tvPlayerBloc;
+  final double channelWidth;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return ContainerFocus(
+      onTap: () async {
+        if (channels[index].id != 0) {
+          tvPlayerBloc.add(TvPlayerEvent.changeChannel(channels[index]));
+        } else {
+          await Navigator.pushNamed(context, Routes.liveTvRoute, arguments: LiveTvDetailArguments(showChannelList: true));
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20.r),
+        constraints: BoxConstraints(
+          minWidth: 150.r,
+        ),
+        width: channelWidth.r,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          color: ColorManager.primaryContainer,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: (channels[index].id != 0)
+            ? Row(
+                spacing: 12.r,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Channel logo/icon placeholder
+                  // Channel name
+
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: ImageWithPlaceholder(
+                      width: 60.r,
+                      height: 60.r,
+                      imageUrl: channels[index].logo,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      channels[index].name,
+                      style: Theme.of(context).textTheme.labelSmall,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                  // Channel subtitle
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ImageWithPlaceholder(
+                    width: 40.r,
+                    height: 40.r,
+                    imageUrl: channels[index].logo,
+                    fit: BoxFit.cover,
+                  ),
+                  Text(
+                    channels[index].name,
+                    style: Theme.of(context).textTheme.labelSmall,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

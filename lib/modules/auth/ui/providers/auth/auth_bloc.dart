@@ -16,7 +16,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<_AuthEventValidateExpiration>((event, emit) async {
       emit(AuthState.loaded(status: AuthStatus.loading));
       try {
-        final response = await authUseCase.validateServiceExpiration();
+        print("token: ${await userRepository.getToken()}");
+        final deviceId = await userRepository.getDeviceId() ?? "";
+        final response = await authUseCase.validateServiceExpiration(deviceId);
 
         if (response.success == true) {
           emit(AuthState.loaded(status: AuthStatus.loaded));
@@ -24,7 +26,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthState.loaded(status: AuthStatus.errorServiceExpired, message: response.message));
         }
       } catch (e) {
-        emit(AuthState.loaded(status: AuthStatus.error, message: e.toString()));
+        emit(AuthState.loaded(status: AuthStatus.errorServiceExpired, message: e.toString()));
       }
     });
 
@@ -35,7 +37,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await userRepository.logoutUser();
         emit(AuthState.loaded(status: AuthStatus.logoutSuccess));
       } catch (e) {
-        emit(AuthState.loaded(status: AuthStatus.error, message: e.toString()));
+        await userRepository.logoutUser();
+        emit(AuthState.loaded(status: AuthStatus.logoutError));
       }
     });
   }

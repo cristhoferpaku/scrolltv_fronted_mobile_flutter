@@ -4,12 +4,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_tab_bar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/home/home_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/search/search_bloc.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/providers/profile/profile_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/bloc/tv_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/live_tv_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
@@ -26,7 +24,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final HomeBloc homeBloc = instance<HomeBloc>();
-  final ProfileBloc profileBloc = instance<ProfileBloc>();
   final SearchBloc searchBloc = instance<SearchBloc>();
   final AuthBloc authBloc = instance<AuthBloc>();
   final livePlayerBloc = instance<TvPlayerBloc>();
@@ -39,7 +36,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     homeBloc.add(HomeEvent.started());
-    profileBloc.add(ProfileEvent.started());
     searchBloc.add(SearchEvent.getInitialVideos());
     authBloc.add(AuthEvent.validateExpiration());
     livePlayerBloc.add(TvPlayerEvent.started());
@@ -55,12 +51,6 @@ class _HomePageState extends State<HomePage> {
 
     return MultiBlocListener(
       listeners: [
-        BlocListener<AuthBloc, AuthState>(
-          bloc: authBloc,
-          listener: (context, state) {
-            authListener(context, state, authBloc);
-          },
-        ),
         BlocListener<HomeBloc, HomeState>(
           bloc: homeBloc,
           listener: (context, state) {

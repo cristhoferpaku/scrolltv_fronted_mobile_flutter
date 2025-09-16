@@ -58,7 +58,7 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ColorsPage());
 
       case Routes.liveTvRoute:
-        return MaterialPageRoute(builder: (_) => const LiveTvDetail());
+        return MaterialPageRoute(builder: (_) => const LiveTvDetail(), settings: RouteSettings(name: Routes.liveTvRoute, arguments: routeSettings.arguments));
 
       case Routes.inicioRoute:
         return MaterialPageRoute(builder: (_) => isTv ? const tv.InicioPage() : const mobile.InicioPage());

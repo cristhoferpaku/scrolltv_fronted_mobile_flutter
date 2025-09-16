@@ -11,6 +11,7 @@ class HomeState with _$HomeState {
     GetHomeSectionModel? animes,
     GetHomeSectionModel? dramas,
     GetHomeSectionModel? kids,
+    required String firstLetterUsername,
   }) = HomeStateLoaded;
 }
 

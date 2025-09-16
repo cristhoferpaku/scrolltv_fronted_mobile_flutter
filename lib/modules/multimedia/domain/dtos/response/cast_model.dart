@@ -8,7 +8,7 @@ class CastResponse with _$CastResponse {
   factory CastResponse({
     int? id,
     String? name,
-    String? image,
+    @JsonKey(name: "photo") String? image,
     String? role,
   }) = _CastResponse;
 

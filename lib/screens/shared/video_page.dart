@@ -7,7 +7,6 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/video-player/ui/providers/video_player/video_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
@@ -742,9 +741,7 @@ class _VideoPageState extends State<VideoPage> {
       listeners: [
         BlocListener<AuthBloc, AuthState>(
           bloc: authBloc,
-          listener: (context, state) {
-            authListener(context, state, authBloc);
-          },
+          listener: (context, state) {},
         ),
       ],
       child: BlocConsumer<VideoPlayerBloc, VideoPlayerState>(

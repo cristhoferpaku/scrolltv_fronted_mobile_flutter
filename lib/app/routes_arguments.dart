@@ -17,3 +17,8 @@ class VideoPageArguments {
   final String? type;
   VideoPageArguments({required this.videoId, required this.videoUrl, this.episodeNumber, this.seasonId, this.type});
 }
+
+class LiveTvDetailArguments {
+  final bool showChannelList;
+  LiveTvDetailArguments({this.showChannelList = false});
+}

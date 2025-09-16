@@ -46,8 +46,17 @@ class _ChannelListState extends State<ChannelList> {
     return BlocConsumer<TvPlayerBloc, TvPlayerState>(
       bloc: tvPlayerBloc,
       listener: (context, state) {
-        if (state.status == TVPlayerStatus.changeCategorySuccess) {
-          scrollController.jumpTo(0);
+        if (state.status == TVPlayerStatus.showPanelChannelByHomeSuccess) {
+          tvPlayerBloc.add(TvPlayerEvent.showPanelChannel(true));
+          Actions.invoke(
+            context,
+            DirectionalFocusIntent(TraversalDirection.left),
+          );
+          return;
+        } else if (state.status == TVPlayerStatus.changeCategorySuccess) {
+          if (scrollController.hasClients) {
+            scrollController.jumpTo(0);
+          }
         }
       },
       builder: (context, state) {
@@ -79,27 +88,45 @@ class _ChannelListState extends State<ChannelList> {
               children: [
                 if (!isTv) ChannelCategoryBar(categories: state.categories, selectedCategoryIndex: state.selectedCategoryIndex),
                 Expanded(
-                  child: Container(
-                    child: ListView.separated(
-                      controller: scrollController,
-                      addAutomaticKeepAlives: true,
-                      addRepaintBoundaries: false,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: widget.channels.length,
-                      separatorBuilder: (context, index) {
-                        return const SizedBox(height: 8);
-                      },
-                      itemBuilder: (context, index) {
-                        final channel = widget.channels[index];
+                  child: Column(
+                    children: [
+                      if (state.status == TVPlayerStatus.loadingChannels)
+                        Expanded(
+                          child: ListView.separated(
+                            separatorBuilder: (context, index) {
+                              return const SizedBox(height: 8);
+                            },
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: 10,
+                            itemBuilder: (context, index) {
+                              return const ChannelCardSkeleton();
+                            },
+                          ),
+                        )
+                      else
+                        Expanded(
+                          child: ListView.separated(
+                            controller: scrollController,
+                            addAutomaticKeepAlives: true,
+                            addRepaintBoundaries: false,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: widget.channels.length,
+                            separatorBuilder: (context, index) {
+                              return const SizedBox(height: 8);
+                            },
+                            itemBuilder: (context, index) {
+                              final channel = widget.channels[index];
 
-                        return ChannelCard(
-                          tvPlayerBloc: tvPlayerBloc,
-                          channel: channel,
-                          focusNode: widget.focusNodes.isNotEmpty ? widget.focusNodes[index] : null,
-                          index: index + 1,
-                        );
-                      },
-                    ),
+                              return ChannelCard(
+                                tvPlayerBloc: tvPlayerBloc,
+                                channel: channel,
+                                focusNode: widget.focusNodes.isNotEmpty ? widget.focusNodes[index] : null,
+                                index: index + 1,
+                              );
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],

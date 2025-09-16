@@ -101,15 +101,18 @@ class AuthApiRepository implements AuthRepositoryPort {
   }
 
   @override
-  Future<ApiResponse<void>> validateServiceExpiration() async {
+  Future<ApiResponse<void>> validateServiceExpiration(String deviceId) async {
     final httpService = await dio;
 
     try {
-      final response = await httpService.request(url: "$baseApiUrl/validate-service-expiration", method: Method.post);
+      final response = await httpService.request(url: "$baseApiUrl/validate-service-expiration", method: Method.post, data: {"device_id": deviceId});
 
       LoggerManager.log.e(response.data.toString());
 
       if (response.data != null) {
+        if (response.data["message"] == "Dispositivo no encontrado o no autorizado para este usuario") {
+          throw Exception("Dispositivo no encontrado o no autorizado para este usuario");
+        }
         return ApiResponse<void>.fromJson(response.data, (json) {});
       } else {
         throw Exception("Something wen't wrong");

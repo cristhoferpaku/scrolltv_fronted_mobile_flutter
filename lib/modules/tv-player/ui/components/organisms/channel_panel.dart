@@ -24,6 +24,7 @@ class _ChannelPanelState extends State<ChannelPanel> {
   @override
   void initState() {
     super.initState();
+
     focusNodes = List.generate(livePlayerBloc.state.categories.length, (_) => FocusNode());
     focusNodeChannelList = List.generate(livePlayerBloc.state.categories.length, (_) => FocusNode());
   }
@@ -56,6 +57,7 @@ class _ChannelPanelState extends State<ChannelPanel> {
           }
           focusNodeChannelList = List.generate(state.channels.length, (_) => FocusNode());
         }
+
         return Stack(
           children: [
             // Fondo con gradiente (ocupa toda la pantalla)

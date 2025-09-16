@@ -35,7 +35,7 @@ class ProfileCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 75.r / 2,
-                    child: Text("${state.firstLetterUsername}", style: Theme.of(context).textTheme.titleSmall?.copyWith(fontSize: 38.r)),
+                    child: Text(state.firstLetterUsername ?? "", style: Theme.of(context).textTheme.titleSmall?.copyWith(fontSize: 38.r)),
                   ),
                   if (state.status == ProfileStatus.loading)
                     Expanded(

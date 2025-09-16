@@ -9,6 +9,9 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
+
+import '../util/logger_manager.dart';
 
 enum Method { post, get, put, delete, patch }
 
@@ -45,6 +48,9 @@ class HttpDioService {
       headers: header(),
       validateStatus: (status) {
         // Acepta cualquier status < 500 para que llegue al try/catch
+        if (status == 401 || status == 403 || status == 491) {
+          return false; // hará que dispare onError
+        }
         return status != null && status < 500;
       },
     ))
@@ -62,25 +68,35 @@ class HttpDioService {
 
             return handler.next(requestOptions);
           },
-          onResponse: (response, handler) {
-            return handler.next(response);
-          },
+          onResponse: (response, handler) => handler.next(response),
           onError: (error, handler) async {
+            if (error.requestOptions.path.contains("auth/client-refresh")) {
+              return handler.next(error); // no volver a refrescar
+            }
             final refreshTokenUser = await userRepository.getTokenRefresh();
 
             if (refreshTokenUser.isNotEmpty && (error.response?.statusCode == 401 || error.response?.statusCode == 403)) {
-              await refreshToken();
+              try {
+                await refreshToken();
 
-              final cloneReq = await _dio?.request(error.requestOptions.path, data: error.requestOptions.data, queryParameters: error.requestOptions.queryParameters);
+                final newToken = await getCurrentTokenUser();
 
-              var newToken = await getCurrentTokenUser();
-
-              if (newToken.isNotEmpty) {
-                cloneReq?.headers.add('Content-Type', 'application/json');
-                cloneReq?.headers.add('Authorization', 'Bearer $newToken');
+                final cloneReq = await _dio?.request(
+                  error.requestOptions.path,
+                  data: error.requestOptions.data,
+                  queryParameters: error.requestOptions.queryParameters,
+                  options: Options(
+                    method: error.requestOptions.method,
+                    headers: {
+                      ...error.requestOptions.headers,
+                      'Authorization': 'Bearer $newToken',
+                    },
+                  ),
+                );
+                return handler.resolve(cloneReq!); // 🚀 cortamos aquí
+              } catch (e) {
+                return handler.next(error); // si algo falla, recién pasamos el error
               }
-
-              handler.resolve(cloneReq!);
             }
 
             return handler.next(error);
@@ -98,6 +114,7 @@ class HttpDioService {
     Object? data,
     Map<String, dynamic>? queryParameters,
     Options? requestOptions,
+    CancelToken? cancelToken,
     //bool? isAutorizated ,
   }) async {
     Response response;
@@ -105,6 +122,7 @@ class HttpDioService {
     try {
       if (method == Method.post) {
         response = await _dio!.post(
+          cancelToken: cancelToken,
           url,
           data: data,
           queryParameters: queryParameters,
@@ -160,5 +178,43 @@ class HttpDioService {
     return await userRepository.getTokenRefresh();
   }
 
-  Future<void> refreshToken() async {}
+  Future<void> refreshToken() async {
+    final authBloc = instance<AuthBloc>();
+    final refreshToken = await getCurrentRefreshToken();
+
+    if (refreshToken.isEmpty) {
+      authBloc.add(AuthEvent.logout());
+      return;
+    }
+
+    try {
+      final response = await _dio?.post(
+        "$baseApiUrl/auth/client-refresh", // o la ruta que use tu API
+        data: {"refreshToken": refreshToken},
+      );
+
+      if (response?.statusCode == 200) {
+        LoggerManager.log.i(response?.data.toString());
+        final responseData = response?.data;
+        final newAccessToken = responseData?["data"]?["tokens"]?["accessToken"] ?? "";
+        final newRefreshToken = responseData?["data"]?["tokens"]?["refreshToken"] ?? "";
+
+        if (newAccessToken.isNotEmpty) {
+          await userRepository.saveToken(newAccessToken);
+        }
+        if (newRefreshToken.isNotEmpty) {
+          await userRepository.saveTokenRefresh(newRefreshToken);
+        }
+      } else {
+        // si falla, limpias sesión
+        LoggerManager.log.e("Error al refrescar el token");
+
+        authBloc.add(AuthEvent.logout());
+      }
+    } catch (e) {
+      LoggerManager.log.e(e.toString());
+      authBloc.add(AuthEvent.logout());
+      rethrow;
+    }
+  }
 }

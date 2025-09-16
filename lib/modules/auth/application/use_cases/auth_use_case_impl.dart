@@ -20,6 +20,7 @@ class AuthUseCaseImpl implements AuthUseCase {
       final accessToken = response.data.tokens?.accessToken;
       if (accessToken != null) {
         _userRepository.saveToken(accessToken);
+        _userRepository.saveTokenRefresh(response.data.tokens?.refreshToken ?? "");
         _userRepository.saveUser("", response.data.user?.username ?? "", "");
         _userRepository.saveUserId(response.data.user?.id?.toString() ?? "");
         final deviceId = await PlatformUtils().getDeviceId();
@@ -36,7 +37,7 @@ class AuthUseCaseImpl implements AuthUseCase {
   }
 
   @override
-  Future<ApiResponse<void>> validateServiceExpiration() async {
-    return await _authRepositoryPort.validateServiceExpiration();
+  Future<ApiResponse<void>> validateServiceExpiration(String deviceId) async {
+    return await _authRepositoryPort.validateServiceExpiration(deviceId);
   }
 }

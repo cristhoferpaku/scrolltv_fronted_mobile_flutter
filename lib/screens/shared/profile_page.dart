@@ -7,7 +7,6 @@ import 'package:scrolltv_frontend_mobile_flutter/app/routes_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/components/molecules/blur_background.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/gradient_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
-import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_navbar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/components/molecules/logout_card.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/profile/ui/components/molecules/policy_and_privace_card.dart';
@@ -39,9 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
       listeners: [
         BlocListener<AuthBloc, AuthState>(
           bloc: authBloc,
-          listener: (context, state) {
-            authListener(context, state, authBloc);
-          },
+          listener: (context, state) {},
         ),
       ],
       child: ResponsiveManager(

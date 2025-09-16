@@ -17,6 +17,7 @@ import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 class TvPlayerApiRepository implements TvPlayerRepositoryPort {
   final dio = instance.getAsync<HttpDioService>();
   final baseApiUrl = Env.baseApiUrl;
+  CancelToken? _cancelToken;
   @override
   Future<ApiResponse<List<ChannelModel>>> getChannels() async {
     try {
@@ -111,6 +112,10 @@ class TvPlayerApiRepository implements TvPlayerRepositoryPort {
   @override
   Future<ApiResponse<List<ChannelModel>>> getChannelsByCategory(ChannelCategoryModel category) async {
     try {
+      // Cancelar si ya hay una petición previa en curso
+      _cancelToken?.cancel("Nueva petición solicitada, se cancela la anterior");
+      _cancelToken = CancelToken();
+
       final httpService = await dio;
 
       if (category.url == null) {
@@ -119,9 +124,14 @@ class TvPlayerApiRepository implements TvPlayerRepositoryPort {
 
       final playlistUrl = category.url;
 
+      if (playlistUrl == null) {
+        throw Exception("Something wen't wrong");
+      }
+
       final response = await httpService.request(
-        url: playlistUrl ?? '',
+        url: playlistUrl,
         method: Method.get,
+        cancelToken: _cancelToken, // 🔥 clave para poder cancelar
         requestOptions: Options(
           headers: {
             'User-Agent': 'VLC/3.0 libVLC/3.0',

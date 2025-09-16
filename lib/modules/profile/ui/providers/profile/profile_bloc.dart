@@ -19,15 +19,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ProfileEvent>((event, emit) {});
 
     on<_ProfileEventStarted>((event, emit) async {
-      emit(ProfileState.loaded(status: ProfileStatus.loading, user: user));
+      if (user != null) {
+        emit(ProfileState.loaded(status: ProfileStatus.loaded, user: user));
+      } else {
+        emit(ProfileState.loaded(status: ProfileStatus.loading, user: user));
+      }
       try {
         int id = int.tryParse(await _userRepository.getUserId()) ?? 0;
 
-        if (user == null) {
-          final userResponse = await _userUseCase.getById(id);
-          user = userResponse.data;
-          firstLetterUsername = user?.username?.substring(0, 1).toUpperCase();
-        }
+        final userResponse = await _userUseCase.getById(id);
+        user = userResponse.data;
+        firstLetterUsername = user?.username?.substring(0, 1).toUpperCase();
         emit(ProfileState.loaded(status: ProfileStatus.loaded, user: user, firstLetterUsername: firstLetterUsername));
       } catch (e) {
         emit(ProfileState.loaded(status: ProfileStatus.error, user: user, firstLetterUsername: firstLetterUsername));

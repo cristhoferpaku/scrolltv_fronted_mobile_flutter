@@ -10,4 +10,5 @@ class TvPlayerEvent with _$TvPlayerEvent {
   const factory TvPlayerEvent.loadChannelsByCategory(ChannelCategoryModel category) = _TVPlayerEventLoadChannelsByCategory;
   const factory TvPlayerEvent.showPanelChannel(bool value) = _TVPlayerEventShowPanelChannel;
   const factory TvPlayerEvent.changeFocus(FocusEnum focusEnum) = _TVPlayerEventChangeFocus;
+  const factory TvPlayerEvent.showPanelChannelByHome() = _TVPlayerEventShowPanelChannelByHome;
 }

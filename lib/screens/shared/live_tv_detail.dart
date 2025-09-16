@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_panel.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_view.dart';
@@ -28,9 +29,14 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    // livePlayerBloc.add(TvPlayerEvent.started());
-    // });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final arguments = ModalRoute.of(context)!.settings.arguments as LiveTvDetailArguments;
+
+      if (arguments.showChannelList && isTv) {
+        livePlayerBloc.add(TvPlayerEvent.showPanelChannelByHome());
+      }
+    });
   }
 
   @override
@@ -86,6 +92,7 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
             listener: (context, state) {
               if (state.focusEnum == FocusEnum.channelView) {
                 _focusNode.requestFocus();
+                return;
               }
             },
             builder: (context, state) {

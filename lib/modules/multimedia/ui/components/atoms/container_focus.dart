@@ -10,6 +10,7 @@ class ContainerFocus extends StatefulWidget {
     this.autofocus = false,
     this.canRequestFocus = true,
     this.scale = 1.02,
+    this.showBorder = true,
   });
 
   final FocusNode? focusNode;
@@ -19,6 +20,7 @@ class ContainerFocus extends StatefulWidget {
   final bool autofocus;
   final bool canRequestFocus;
   final double scale;
+  final bool showBorder;
 
   @override
   State<ContainerFocus> createState() => _ContainerFocusState();
@@ -44,7 +46,11 @@ class _ContainerFocusState extends State<ContainerFocus> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.borderRadius),
-            border: _isFocused ? Border.all(color: Colors.blueAccent, width: 2) : null,
+            border: widget.showBorder
+                ? _isFocused
+                    ? Border.all(color: Colors.blueAccent, width: 2)
+                    : null
+                : null,
           ),
           child: widget.child,
         ),

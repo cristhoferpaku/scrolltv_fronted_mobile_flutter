@@ -5,5 +5,5 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/entities/lo
 abstract class AuthUseCase {
   Future<ApiResponse<AuthUserModel>> login(LoginModel user);
   Future<void> logout();
-  Future<ApiResponse<void>> validateServiceExpiration();
+  Future<ApiResponse<void>> validateServiceExpiration(String deviceId);
 }

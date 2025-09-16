@@ -6,6 +6,8 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/image_with_placeholder.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/domain/entities/channel_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/bloc/tv_player_bloc.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/shimmer/shimmer_detail.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/shimmer/shimmer_util.dart';
 
 class ChannelCard extends StatefulWidget {
   const ChannelCard({
@@ -92,6 +94,75 @@ class _ChannelCardState extends State<ChannelCard> {
               ),
             ),
           ]),
+        ),
+      ),
+    );
+  }
+}
+
+class ChannelCardSkeleton extends StatelessWidget {
+  const ChannelCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.1),
+            Colors.white.withOpacity(0.05),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        height: 80.r,
+        child: Row(
+          spacing: 16.r,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Index placeholder
+            ShimmerAnimation(
+              shimmerGradient,
+              20.r,
+              20.r,
+              8,
+            ),
+
+            // Logo placeholder
+            ShimmerAnimation(
+              shimmerGradient,
+              60.r,
+              40.r,
+              8,
+            ),
+
+            // Text placeholder
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ShimmerAnimation(
+                    shimmerGradient,
+                    120.r,
+                    16.r,
+                    8,
+                  ),
+                  SizedBox(height: 8.r),
+                  ShimmerAnimation(
+                    shimmerGradient,
+                    80.r,
+                    14.r,
+                    8,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
