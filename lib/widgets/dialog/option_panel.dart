@@ -158,9 +158,115 @@ class OptionPanelState extends State<OptionPanel> {
     return false;
   }
 
+  Widget _buildEmptyPanel(String message) {
+    final panelWidth = isTV ? 450.0 : 300.0;
+
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      right: widget.isVisible ? 0 : -panelWidth,
+      top: 0,
+      bottom: 0,
+      width: panelWidth,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Colors.transparent,
+              Colors.black.withOpacity(0.8),
+              Colors.black.withOpacity(0.95),
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Container(
+              padding: EdgeInsets.all(isTV ? 32 : 20),
+              decoration: isTV
+                  ? BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                    )
+                  : null,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      if (isTV)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2DD4BF),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF2DD4BF).withOpacity(0.5),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      Text(
+                        widget.title,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isTV ? 32 : 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.white, size: isTV ? 32 : 24),
+                    onPressed: widget.onClose,
+                  ),
+                ],
+              ),
+            ),
+
+            // Empty message
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(isTV ? 32 : 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: isTV ? 20 : 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPanel({required List<TrackOptionModel> options, required int selectedKey, required Function(int) onValueChanged}) {
     final panelWidth = isTV ? 450.0 : 300.0;
-    
+
     // Solo actualizar automáticamente si no se está navegando manualmente
     if (!_isManuallyNavigating) {
       final resolvedIndex = options.indexWhere((o) => o.key == selectedKey);
@@ -386,6 +492,9 @@ class OptionPanelState extends State<OptionPanel> {
             }
             if (widget.title == 'Audio') {
               options = audioTracks;
+              if (audioTracks.isEmpty) {
+                return _buildEmptyPanel('No hay más audios por el momento.');
+              }
               return _buildPanel(
                 options: audioTracks,
                 selectedKey: currentAudioIndex,
@@ -394,6 +503,9 @@ class OptionPanelState extends State<OptionPanel> {
             }
             if (widget.title == 'Subtítulos') {
               options = subtitles;
+              if (subtitles.isEmpty) {
+                return _buildEmptyPanel('No hay subtítulos por el momento.');
+              }
               return _buildPanel(
                 options: subtitles,
                 selectedKey: currentSubtitleIndex,

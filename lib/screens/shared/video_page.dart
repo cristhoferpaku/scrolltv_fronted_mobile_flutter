@@ -565,15 +565,32 @@ class _VideoPageState extends State<VideoPage> {
               onKeyEvent: _handleKeyEvent,
               child: Stack(
                 children: [
-                  Center(
-                    child: VlcPlayer(
-                      controller: state.controller,
-                      aspectRatio: 16 / 9,
-                      placeholder: Container(
-                        color: Colors.black,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
+                  GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      if (_controlsManager?.showControls == true) {
+                        print('👀 Ocultando controles');
+                        _controlsManager?.hideControls();
+                      } else {
+                        print('👀 Mostrando controles y reiniciando timer');
+                        _controlsManager?.show(); // fuerza a visible
+                        showAudioPanel = false;
+                        showSubtitlePanel = false;
+                        showQualityPanel = false;
+                        showEpisodePanel = false;
+                        _controlsManager?.resetTimer(); // inicia autohide
+                      }
+                    },
+                    child: Center(
+                      child: VlcPlayer(
+                        controller: state.controller,
+                        aspectRatio: 16 / 9,
+                        placeholder: Container(
+                          color: Colors.black,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -584,6 +601,7 @@ class _VideoPageState extends State<VideoPage> {
                       children: [
                         GestureDetector(
                           onTap: () {
+                            print(' 👀 Ocultando controles');
                             _controlsManager?.hideControls();
                           },
                           child: Container(
@@ -594,7 +612,8 @@ class _VideoPageState extends State<VideoPage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            _controlsManager?.hideControls();
+                            print(' 👀 Reiniciando timer de controles');
+                            _controlsManager?.resetTimer();
                           },
                           child: Column(
                             children: [
@@ -704,34 +723,42 @@ class _VideoPageState extends State<VideoPage> {
                                       children: [
                                         // Botón de episodios (solo para series) - ahora va primero
                                         if (type == 'series')
-                                          Container(
-                                            margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
-                                            decoration: isTV
-                                                ? BoxDecoration(
-                                                    color: Colors.black.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                    border: _isEpisodesFocused
-                                                        ? Border.all(
-                                                            color: Colors.white,
-                                                            width: 2,
-                                                          )
-                                                        : null,
-                                                  )
-                                                : null,
-                                            child: Row(
-                                              children: [
-                                                IconButton(
-                                                  icon: Icon(Icons.video_collection_outlined, color: Colors.white, size: isTV ? 40 : 32),
-                                                  onPressed: () {
-                                                    print('🎬 Cargando episodios con seasonId: $seasonId');
-                                                    bloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId ?? 0));
-                                                    _showEpisodePanel();
-                                                    _controlsManager?.resetTimer();
-                                                  },
-                                                ),
-                                                Text('Episodios', style: TextStyle(color: Colors.white, fontSize: isTV ? 18 : 14)),
-                                                SizedBox(width: isTV ? 12 : 8),
-                                              ],
+                                          GestureDetector(
+                                            onTap: () {
+                                              print('🎬 Cargando episodios con seasonId: $seasonId');
+                                              bloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId ?? 0));
+                                              _showEpisodePanel();
+                                              _controlsManager?.resetTimer();
+                                            },
+                                            child: Container(
+                                              margin: EdgeInsets.symmetric(horizontal: isTV ? 12 : 0),
+                                              decoration: isTV
+                                                  ? BoxDecoration(
+                                                      color: Colors.black.withOpacity(0.2),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                      border: _isEpisodesFocused
+                                                          ? Border.all(
+                                                              color: Colors.white,
+                                                              width: 2,
+                                                            )
+                                                          : null,
+                                                    )
+                                                  : null,
+                                              child: Row(
+                                                children: [
+                                                  IconButton(
+                                                    icon: Icon(Icons.video_collection_outlined, color: Colors.white, size: isTV ? 40 : 32),
+                                                    onPressed: () {
+                                                      print('🎬 Cargando episodios con seasonId: $seasonId');
+                                                      bloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId ?? 0));
+                                                      _showEpisodePanel();
+                                                      _controlsManager?.resetTimer();
+                                                    },
+                                                  ),
+                                                  Text('Episodios', style: TextStyle(color: Colors.white, fontSize: isTV ? 18 : 14)),
+                                                  SizedBox(width: isTV ? 12 : 8),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         Container(
@@ -833,9 +860,10 @@ class _VideoPageState extends State<VideoPage> {
                             ],
                           ),
                         ),
-                        if (_controlsManager?.showControls != true && state.controller.value.isBuffering)
+                        if (_controlsManager?.showControls != true)
                           GestureDetector(
                             onTap: () {
+                              print(' 👀 Mostrando controles');
                               _controlsManager?.show();
                             },
                             child: Container(
