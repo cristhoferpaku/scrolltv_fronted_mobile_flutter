@@ -36,7 +36,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
       emit(
         VideoPlayerState.loaded(
-          status: VideoPlayerStatus.inicialiced,
+          status: VideoPlayerStatus.loaded,
           videoUrl: event.videoUrl,
           controller: controller!,
           episodeIndex: event.episodeNum,
@@ -91,6 +91,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded) {
         emit(currentState.copyWith(
+          status: VideoPlayerStatus.loading,
           isLoading: true,
           showEpisodesList: false, // Cerrar la lista al cambiar episodio
           episodeIndex: event.episode.episodeNumber ?? 1,
@@ -147,6 +148,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
               videoUrl: event.episode.videoUrl ?? '',
               controller: controller!,
               //   episodeIndex: event.episode.episodeNumber ?? 1,
+              status: VideoPlayerStatus.loaded,
               showEpisodesList: false,
               showAudioPanel: false,
               showSubtitlePanel: false,
@@ -172,6 +174,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           if (latestState is VideoPlayerStateLoaded) {
             emit(latestState.copyWith(
               isLoading: false,
+              status: VideoPlayerStatus.loaded,
             ));
           }
           emit(VideoPlayerState.error('Error cambiando episodio: $e'));
