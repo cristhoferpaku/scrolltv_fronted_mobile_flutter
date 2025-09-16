@@ -42,7 +42,7 @@ class _VideoPageState extends State<VideoPage> {
   final FocusNode _focusNode = FocusNode();
 
   // TV Focus System
-  int _currentFocusIndex = 0; // 0: play/pause, 1: slider, 2: restart, 3: audio, 4: subtitles, 5: episodes (series only), 6: settings
+  int _currentFocusIndex = 0;
   int get _maxFocusIndex => type == 'series' ? 6 : 5;
 
   // Referencias a los paneles para navegación
@@ -65,10 +65,10 @@ class _VideoPageState extends State<VideoPage> {
   bool get _isAudioFocused => isTV && _currentFocusIndex == (type == 'series' ? 4 : 3);
   bool get _isSubtitlesFocused => isTV && _currentFocusIndex == (type == 'series' ? 5 : 4);
   bool get _isSettingsFocused => isTV && _currentFocusIndex == (type == 'series' ? 6 : 5);
-  
+
   // Validación de índice de focus para prevenir estados inválidos
   bool get _isValidFocusIndex => _currentFocusIndex >= 0 && _currentFocusIndex <= _maxFocusIndex;
-  
+
   // Función para validar y corregir el focus si es necesario
   void _validateAndCorrectFocus() {
     if (!_isValidFocusIndex) {
@@ -77,7 +77,6 @@ class _VideoPageState extends State<VideoPage> {
       });
     }
   }
-  // VideoKeyboardHandler? _keyboardHandler;
 
   @override
   void initState() {
@@ -92,9 +91,6 @@ class _VideoPageState extends State<VideoPage> {
         videoUrl: args.videoUrl,
         episodeNum: args.episodeNumber ?? 0,
       ));
-
-      //  _initializeKeyboardHandler();
-
       _focusNode.requestFocus();
       _initializeControlsManager();
     });
@@ -111,53 +107,15 @@ class _VideoPageState extends State<VideoPage> {
       },
       onControlsHidden: () {
         if (mounted) {
-          // Solo cerrar paneles si no hay interacción activa
-          // El episode panel no se cierra automáticamente para permitir navegación
           setState(() {
             showSubtitlePanel = false;
             showAudioPanel = false;
             showQualityPanel = false;
-            // showEpisodePanel se mantiene abierto durante la interacción
           });
         }
       },
     );
   }
-  // void _initializeKeyboardHandler() {
-  //   _keyboardHandler = VideoKeyboardHandler(
-  //     videoPlayerBloc: bloc,
-  //     controlsManager: _controlsManager,
-  //     seasonNum: seasonId ?? 0,
-  //     isTV: isTV,
-  //     type: type,
-  //     currentFocusIndex: _currentFocusIndex,
-  //     showSubtitlePanel: showSubtitlePanel,
-  //     showAudioPanel: showAudioPanel,
-  //     showQualityPanel: showQualityPanel,
-  //     showEpisodePanel: showEpisodePanel,
-  //     subtitlePanelKey: _subtitlePanelKey,
-  //     audioPanelKey: _audioPanelKey,
-  //     qualityPanelKey: _qualityPanelKey,
-  //     episodePanelKey: _episodePanelKey,
-  //     onFocusIndexChanged: (newIndex) {
-  //       setState(() {
-  //         _currentFocusIndex = newIndex;
-  //       });
-  //     },
-  //     onShowSubtitlePanel: _showSubtitlePanel,
-  //     onHideSubtitlePanel: _hideSubtitlePanel,
-  //     onShowAudioPanel: _showAudioPanel,
-  //     onHideAudioPanel: _hideAudioPanel,
-  //     onShowQualityPanel: _showQualityPanel,
-  //     onHideQualityPanel: _hideQualityPanel,
-  //     onShowEpisodePanel: _showEpisodePanel,
-  //     onHideEpisodePanel: _hideEpisodePanel,
-  //     onResetEpisodePanelTimer: _resetEpisodePanelTimer,
-  //     onNavigateBack: () {
-  //       //Navigator.pop(context);  no hacer esto porque hace eso
-  //     },
-  //   );
-  // }
 
   @override
   void didChangeDependencies() {
@@ -183,7 +141,6 @@ class _VideoPageState extends State<VideoPage> {
       showQualityPanel = false;
       showEpisodePanel = false;
     });
-    // Reiniciar timer cuando se abre un panel
     _controlsManager?.resetTimer();
   }
 
@@ -200,7 +157,6 @@ class _VideoPageState extends State<VideoPage> {
       showQualityPanel = false;
       showEpisodePanel = false;
     });
-    // Reiniciar timer cuando se abre un panel
     _controlsManager?.resetTimer();
   }
 
@@ -217,7 +173,6 @@ class _VideoPageState extends State<VideoPage> {
       showAudioPanel = false;
       showEpisodePanel = false;
     });
-    // Reiniciar timer cuando se abre un panel
     _controlsManager?.resetTimer();
   }
 
@@ -228,18 +183,13 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   void _showEpisodePanel() {
-    // La carga de episodios ahora se maneja automáticamente en _getEpisodeOptions()
-    // cuando el EpisodePanel se renderiza, evitando llamadas duplicadas
-
     setState(() {
       showEpisodePanel = true;
       showSubtitlePanel = false;
       showAudioPanel = false;
       showQualityPanel = false;
     });
-    // Reiniciar timer cuando se abre un panel
     _controlsManager?.resetTimer();
-    // Iniciar timer específico para el episode panel
     _startEpisodePanelTimer();
   }
 
@@ -360,14 +310,11 @@ class _VideoPageState extends State<VideoPage> {
               // Control del slider con repetición: +10 segundos
               _startKeyRepeat(event.logicalKey, () => _performSeekAction(event.logicalKey));
             } else {
-              // Navegar a la derecha entre controles con validación
               setState(() {
                 int newIndex = (_currentFocusIndex + 1) % (_maxFocusIndex + 1);
-                // Validar que el nuevo índice sea válido
                 if (newIndex >= 0 && newIndex <= _maxFocusIndex) {
                   _currentFocusIndex = newIndex;
                 } else {
-                  // Si hay error, resetear a 0
                   _currentFocusIndex = 0;
                 }
               });
@@ -517,19 +464,14 @@ class _VideoPageState extends State<VideoPage> {
             if (!_controlsManager!.showControls) {
               _controlsManager?.show();
             } else {
-              // Activar el elemento con focus - Corregido para coincidir con el orden visual de los botones
-              print('🎯 Focus Index: $_currentFocusIndex, Type: $type, MaxIndex: $_maxFocusIndex');
               switch (_currentFocusIndex) {
                 case 0: // Play/Pause
-                  print('▶️ Activando Play/Pause');
                   bloc.add(const VideoPlayerEvent.togglePlayPause());
                   break;
                 case 1: // Slider - no hacer nada en select
-                  print('🎚️ Slider seleccionado - no action');
                   break;
                 case 2: // Episodes (series) or Restart (movies)
                   if (type == 'series') {
-                    print('📺 Activando Episodes panel');
                     bloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId ?? 0));
                     _showEpisodePanel();
                   } else {
@@ -592,19 +534,7 @@ class _VideoPageState extends State<VideoPage> {
             _hideQualityPanel();
             _hideEpisodePanel();
             _controlsManager?.resetTimer();
-          } else {
-            // Limpiar recursos del video player antes de navegar
-            //bloc.add(const VideoPlayerEvent.close);
-            // _controlsManager?.dispose();
-
-            if (Navigator.canPop(context)) {
-              print('There is a previous page to return to');
-              // Navigator.pop(context);
-            } else {
-              print('No previous page available');
-              // Navigator.pushReplacementNamed(context, Routes.homeRoute);
-            }
-          }
+          } else {}
           break;
       }
     }
@@ -984,155 +914,4 @@ class _VideoPageState extends State<VideoPage> {
       ),
     );
   }
-
-  void _showAudioTracksDialog(VideoPlayerBloc bloc, BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-          bloc: bloc,
-          builder: (context, state) {
-            return state.maybeWhen(
-              loaded: (videoUrl, controller, status, isPlaying, hasEnded, episodes, episodeIndex, showEpisodesList, isLoading, currentPosition, duration, subtitles, audioTracks, showSubtitlePanel,
-                  showAudioPanel, selectedSubtitleIndex, selectedAudioIndex, currentSubtitleIndex, currentAudioIndex) {
-                final isLoadingTracks = status == VideoPlayerStatus.loadingAudio;
-
-                return AlertDialog(
-                  backgroundColor: Colors.black87,
-                  title: const Text('Seleccionar Audio', style: TextStyle(color: Colors.white)),
-                  content: SizedBox(
-                    width: double.maxFinite,
-                    child: isLoadingTracks
-                        ? const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(20.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircularProgressIndicator(color: Colors.white),
-                                  SizedBox(height: 16),
-                                  Text('Cargando pistas de audio...', style: TextStyle(color: Colors.white)),
-                                ],
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: audioTracks.length,
-                            itemBuilder: (context, index) {
-                              final track = audioTracks[index];
-                              return ListTile(
-                                title: Text(track.value, style: const TextStyle(color: Colors.white)),
-                                onTap: () {
-                                  bloc.add(VideoPlayerEvent.changeAudioTrack(trackId: track.key));
-                                  Navigator.of(context).pop();
-                                },
-                              );
-                            },
-                          ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancelar', style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                );
-              },
-              orElse: () => const SizedBox.shrink(),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // // Método para mostrar diálogo de selección de subtítulos
-  // void _showSubtitleTracksDialog(VideoPlayerBloc bloc, BuildContext context) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-  //         bloc: bloc,
-  //         builder: (context, state) {
-  //           return state.maybeWhen(
-  //             loaded: (
-  //               videoUrl,
-  //               controller,
-  //               status,
-  //               isPlaying,
-  //               hasEnded,
-  //               episodes,
-  //               episodeIndex,
-  //               showEpisodesList,
-  //               isLoading,
-  //               currentPosition,
-  //               duration,
-  //               subtitles,
-  //               audioTracks,
-  //               showSubtitlePanel,
-  //               showAudioPanel,
-  //               selectedSubtitleIndex,
-  //               selectedAudioIndex,
-  //             ) {
-  //               final isLoadingTracks = status == VideoPlayerStatus.loadingSubtitles;
-
-  //               return AlertDialog(
-  //                 backgroundColor: Colors.black87,
-  //                 title: const Text('Seleccionar Subtítulos', style: TextStyle(color: Colors.white)),
-  //                 content: SizedBox(
-  //                   width: double.maxFinite,
-  //                   child: isLoadingTracks
-  //                       ? const Center(
-  //                           child: Padding(
-  //                             padding: EdgeInsets.all(20.0),
-  //                             child: Column(
-  //                               mainAxisSize: MainAxisSize.min,
-  //                               children: [
-  //                                 CircularProgressIndicator(color: Colors.white),
-  //                                 SizedBox(height: 16),
-  //                                 Text('Cargando subtítulos...', style: TextStyle(color: Colors.white)),
-  //                               ],
-  //                             ),
-  //                           ),
-  //                         )
-  //                       : ListView.builder(
-  //                           shrinkWrap: true,
-  //                           itemCount: subtitles.length + 1,
-  //                           itemBuilder: (context, index) {
-  //                             if (index == 0) {
-  //                               return ListTile(
-  //                                 title: const Text('Sin subtítulos', style: TextStyle(color: Colors.white)),
-  //                                 onTap: () {
-  //                                   bloc.add(const VideoPlayerEvent.changeSubtitleTrack(trackId: -1));
-  //                                   Navigator.of(context).pop();
-  //                                 },
-  //                               );
-  //                             }
-  //                             final track = subtitles[index - 1];
-  //                             return ListTile(
-  //                               title: Text(track.value, style: const TextStyle(color: Colors.white)),
-  //                               onTap: () {
-  //                                 bloc.add(VideoPlayerEvent.changeSubtitleTrack(trackId: track.key));
-  //                                 Navigator.of(context).pop();
-  //                               },
-  //                             );
-  //                           },
-  //                         ),
-  //                 ),
-  //                 actions: [
-  //                   TextButton(
-  //                     onPressed: () => Navigator.of(context).pop(),
-  //                     child: const Text('Cancelar', style: TextStyle(color: Colors.white)),
-  //                   ),
-  //                 ],
-  //               );
-  //             },
-  //             orElse: () => const SizedBox.shrink(),
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
 }

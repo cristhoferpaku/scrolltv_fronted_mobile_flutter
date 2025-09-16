@@ -32,6 +32,7 @@ class OptionPanel extends StatefulWidget {
 
 class OptionPanelState extends State<OptionPanel> {
   int selectedIndex = 0;
+  bool _isManuallyNavigating = false; // Flag para controlar navegación manual
   final ScrollController _scrollController = ScrollController();
   final bool isTV = PlatformUtils.isTV;
   String? currentValue;
@@ -117,6 +118,7 @@ class OptionPanelState extends State<OptionPanel> {
           if (options.isNotEmpty && selectedIndex > 0) {
             setState(() {
               selectedIndex--;
+              _isManuallyNavigating = true; // Marcar como navegación manual
             });
             print('OptionPanel: selectedIndex changed to $selectedIndex');
             _scrollToSelected();
@@ -130,6 +132,7 @@ class OptionPanelState extends State<OptionPanel> {
           if (options.isNotEmpty && selectedIndex < options.length - 1) {
             setState(() {
               selectedIndex++;
+              _isManuallyNavigating = true; // Marcar como navegación manual
             });
             print('OptionPanel: selectedIndex changed to $selectedIndex');
             _scrollToSelected();
@@ -141,11 +144,13 @@ class OptionPanelState extends State<OptionPanel> {
           return true;
         case LogicalKeyboardKey.enter:
         case LogicalKeyboardKey.select:
+          _isManuallyNavigating = false; // Resetear flag al confirmar selección
           _changeValue(selectedIndex);
           widget.onClose();
           return true;
         case LogicalKeyboardKey.arrowLeft:
         case LogicalKeyboardKey.escape:
+          _isManuallyNavigating = false; // Resetear flag al cerrar
           widget.onClose();
           return true;
       }
@@ -155,8 +160,23 @@ class OptionPanelState extends State<OptionPanel> {
 
   Widget _buildPanel({required List<TrackOptionModel> options, required int selectedKey, required Function(int) onValueChanged}) {
     final panelWidth = isTV ? 450.0 : 300.0;
-    final resolvedIndex = options.indexWhere((o) => o.key == selectedKey);
-    final selectedIndex = resolvedIndex != -1 ? resolvedIndex : 0;
+    
+    // Solo actualizar automáticamente si no se está navegando manualmente
+    if (!_isManuallyNavigating) {
+      final resolvedIndex = options.indexWhere((o) => o.key == selectedKey);
+      final correctIndex = resolvedIndex != -1 ? resolvedIndex : 0;
+
+      // Actualizar selectedIndex si es diferente al correcto
+      if (selectedIndex != correctIndex) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              selectedIndex = correctIndex;
+            });
+          }
+        });
+      }
+    }
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -348,7 +368,7 @@ class OptionPanelState extends State<OptionPanel> {
             // Verificar si está cargando pistas según el título del panel
             final isLoadingAudio = status == VideoPlayerStatus.loadingAudio;
             final isLoadingSubtitles = status == VideoPlayerStatus.loadingSubtitles;
-            final isLoadingQuality = widget.title == 'Calidad';
+            //   final isLoadingQuality = widget.title == 'Calidad';
             // final isLoadingTracks =
             //     (widget.title == 'Audio' && status == VideoPlayerStatus.loadingAudio) || (widget.title == 'Subtítulos' && status == VideoPlayerStatus.loadingSubtitles) || (widget.title == 'Calidad');
             // final options = widget.title == 'Audio' ? audioTracks : subtitles;
@@ -357,7 +377,7 @@ class OptionPanelState extends State<OptionPanel> {
             // final bool isQuality = widget.title == 'Calidad';
             // Mostrar skeleton durante la carga o si las opciones están vacías
 
-            if (isLoadingAudio || isLoadingSubtitles || isLoadingQuality) {
+            if (isLoadingAudio || isLoadingSubtitles) {
               return OptionPanelSkeleton(
                 title: widget.title,
                 isVisible: widget.isVisible,

@@ -51,7 +51,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     on<_VideoPlayerEventLoadEpisodes>((event, emit) async {
       //  emit(const VideoPlayerState.loading());
       final currentState = state;
-      print('📋 Cargando episodios para seasonId: ${event.seasonId}');
       try {
         if (currentState is VideoPlayerStateLoaded) {
           emit(currentState.copyWith(
@@ -66,8 +65,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
             episodesCache[event.seasonId] = episodes; // Guardar en caché
           }
 
-          print('📋 Episodios obtenidos desde caché para seasonId: ${event.seasonId}');
-
           emit(currentState.copyWith(
             episodes: episodes,
             showEpisodesList: episodes.isNotEmpty, // Mostrar lista si hay episodios
@@ -75,7 +72,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           ));
         }
       } catch (e) {
-        print('❌ Error cargando episodios para seasonId: ${event.seasonId} - Error: $e');
         if (currentState is VideoPlayerStateLoaded) {
           emit(currentState.copyWith(
             episodes: [],
@@ -200,16 +196,16 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         emit(currentState.copyWith(status: VideoPlayerStatus.loadingAudio));
         try {
           final audioTracks = await controller!.getAudioTracks();
-          int? audioSelected = await controller!.getAudioTrack();
+          int? audioSelected = currentState.currentAudioIndex;
+          int audioSelectedId = audioSelected;
 
-          int audioSelectedIndex = audioSelected ?? 0;
           final trackOptions = audioTracks.entries.map((entry) {
             return TrackOptionModel(
               key: entry.key,
               value: entry.value,
             );
           }).toList();
-          emit(currentState.copyWith(audioTracks: trackOptions, currentAudioIndex: audioSelectedIndex, showAudioPanel: true, showSubtitlePanel: false, status: VideoPlayerStatus.loadedAudio));
+          emit(currentState.copyWith(audioTracks: trackOptions, currentAudioIndex: audioSelectedId, showAudioPanel: true, showSubtitlePanel: false, status: VideoPlayerStatus.loadedAudio));
         } catch (e) {
           // Error al cargar pistas de audio
         }
@@ -223,8 +219,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         emit(currentState.copyWith(status: VideoPlayerStatus.loadingSubtitles));
         try {
           final subtitleTracks = await controller!.getSpuTracks();
-          int? subtitleSelected = await controller!.getSpuTrack();
-          int subtitleSelectedIndex = subtitleSelected ?? 0;
+          int? subtitleSelected = currentState.currentSubtitleIndex;
+          int subtitleSelectedId = subtitleSelected;
+
           final trackOptions = subtitleTracks.entries.map((entry) {
             return TrackOptionModel(
               key: entry.key,
@@ -232,7 +229,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
             );
           }).toList();
 
-          emit(currentState.copyWith(subtitles: trackOptions, currentSubtitleIndex: subtitleSelectedIndex, showSubtitlePanel: true, showAudioPanel: false, status: VideoPlayerStatus.loadedSubtitles));
+          emit(currentState.copyWith(subtitles: trackOptions, currentSubtitleIndex: subtitleSelectedId, showSubtitlePanel: true, showAudioPanel: false, status: VideoPlayerStatus.loadedSubtitles));
         } catch (e) {
           // Error al cargar subtítulos
         }
@@ -352,7 +349,16 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     on<_VideoPlayerEventTogglePlayPause>((event, emit) async {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {
-        if (currentState.isPlaying) {
+        if (currentState.hasEnded) {
+          await controller!.stop(); // detener limpio
+          await Future.delayed(const Duration(milliseconds: 300)); // darle tiempo
+          await controller!.play();
+          emit(currentState.copyWith(
+            hasEnded: false,
+            isPlaying: true,
+            currentPosition: Duration.zero,
+          ));
+        } else if (currentState.isPlaying) {
           await controller!.pause();
           emit(currentState.copyWith(isPlaying: false));
         } else {
@@ -391,7 +397,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
           // ✅ Detectar cuando el video terminó con el estado oficial
           if (playingState == PlayingState.ended && !currentState.hasEnded) {
-            print('🎬 El video terminó');
             emit(currentState.copyWith(
               hasEnded: true,
               isPlaying: false,
