@@ -757,7 +757,7 @@ class _VideoPageState extends State<VideoPage> {
                                                 ? BoxDecoration(
                                                     color: Colors.black.withOpacity(0.2),
                                                     borderRadius: BorderRadius.circular(8),
-                                                    border: _isRestartFocused
+                                                    border: _isEpisodesFocused
                                                         ? Border.all(
                                                             color: Colors.white,
                                                             width: 2,

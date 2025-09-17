@@ -107,7 +107,7 @@ class AuthApiRepository implements AuthRepositoryPort {
     try {
       final response = await httpService.request(url: "$baseApiUrl/validate-service-expiration", method: Method.post, data: {"device_id": deviceId});
 
-      LoggerManager.log.e(response.data.toString());
+      LoggerManager.log.i(response.data.toString());
 
       if (response.data != null) {
         if (response.data["message"] == "Dispositivo no encontrado o no autorizado para este usuario") {

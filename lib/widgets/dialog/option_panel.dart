@@ -267,6 +267,9 @@ class OptionPanelState extends State<OptionPanel> {
   Widget _buildPanel({required List<TrackOptionModel> options, required int selectedKey, required Function(int) onValueChanged}) {
     final panelWidth = isTV ? 450.0 : 300.0;
 
+    print('OptionPanel: selectedKey $selectedKey');
+    print('Opciones del panel ${options.map((o) => o.key).toList()}');
+
     // Solo actualizar automáticamente si no se está navegando manualmente
     if (!_isManuallyNavigating) {
       final resolvedIndex = options.indexWhere((o) => o.key == selectedKey);

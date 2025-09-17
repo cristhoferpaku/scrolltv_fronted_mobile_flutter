@@ -22,6 +22,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     // int? currentSeasonId;
 
     on<VideoPlayerEvent>((event, emit) {});
+
     on<_VideoPlayerEventLoadedVideo>((event, emit) async {
       await controller?.stop();
       await controller?.dispose();
@@ -308,6 +309,17 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {
         try {
+          if (!currentState.hasEnded) {
+            await controller!.seekTo(Duration.zero);
+            await controller!.play();
+            emit(currentState.copyWith(
+              hasEnded: false,
+              isPlaying: true,
+              currentPosition: Duration.zero,
+            ));
+            return;
+          }
+
           await controller!.stop(); // detener limpio
           await Future.delayed(const Duration(milliseconds: 300)); // darle tiempo
           await controller!.play();
@@ -331,6 +343,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         ));
       }
     });
+
     on<_VideoPlayerEventSkipForward>((event, emit) async {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {
@@ -349,6 +362,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         await controller?.seekTo(targetPosition);
       }
     });
+
     on<_VideoPlayerEventTogglePlayPause>((event, emit) async {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {

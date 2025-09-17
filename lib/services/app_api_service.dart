@@ -61,6 +61,7 @@ class HttpDioService {
             requestOptions.followRedirects = false;
 
             var currentToken = await getCurrentTokenUser();
+
             if (currentToken.isNotEmpty) {
               print('currentToken: $currentToken');
               requestOptions.headers['Authorization'] = 'Bearer $currentToken';
@@ -175,6 +176,7 @@ class HttpDioService {
   }
 
   Future<String> getCurrentRefreshToken() async {
+    print('REFRESH TOKEN: ${await userRepository.getTokenRefresh()}');
     return await userRepository.getTokenRefresh();
   }
 
