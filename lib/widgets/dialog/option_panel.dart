@@ -33,6 +33,7 @@ class OptionPanel extends StatefulWidget {
 class OptionPanelState extends State<OptionPanel> {
   int selectedIndex = 0;
   bool _isManuallyNavigating = false; // Flag para controlar navegación manual
+  bool _isProcessingSelection = false; // Flag para prevenir doble selección
   final ScrollController _scrollController = ScrollController();
   final bool isTV = PlatformUtils.isTV;
   String? currentValue;
@@ -86,11 +87,19 @@ class OptionPanelState extends State<OptionPanel> {
   }
 
   void _changeValue(int index) {
+    // Prevenir doble selección
+    if (_isProcessingSelection) {
+      print('⚠️ Selección ya en proceso, ignorando evento duplicado');
+      return;
+    }
+
     // Validar que el índice esté dentro del rango
     if (index < 0 || index >= options.length || options.isEmpty) {
       print('⚠️ Índice fuera de rango: $index, opciones disponibles: ${options.length}');
       return;
     }
+
+    _isProcessingSelection = true;
 
     setState(() {
       selectedIndex = index;
@@ -107,6 +116,13 @@ class OptionPanelState extends State<OptionPanel> {
         backgroundColor: const Color(0xFF2DD4BF),
       ),
     );
+
+    // Resetear el flag después de un breve delay para permitir la siguiente selección
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _isProcessingSelection = false;
+      }
+    });
   }
 
   bool handleKeyEvent(KeyEvent event) {
@@ -451,7 +467,8 @@ class OptionPanelState extends State<OptionPanel> {
                               )
                             : null,
                       ),
-                      onTap: () {
+                      onTap: isTV ? null : () {
+                        // Solo permitir onTap en dispositivos no-TV para evitar conflicto con teclas
                         _changeValue(index);
                         widget.onClose();
                       },

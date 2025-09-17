@@ -901,6 +901,7 @@ class _VideoPageState extends State<VideoPage> {
                             //options: state.audioTracks,
                             onValueChanged: (String index) {
                               final selectedIndex = int.tryParse(index) ?? 0;
+                              print('🎵 Cambiando pista de audio a $selectedIndex');
                               bloc.add(VideoPlayerEvent.changeAudioTrack(trackId: selectedIndex)); //(controller, selectedIndex);
                             },
 
