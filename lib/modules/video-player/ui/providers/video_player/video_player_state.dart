@@ -24,7 +24,24 @@ class VideoPlayerState with _$VideoPlayerState {
     @Default(0) int selectedAudioIndex,
     @Default(0) int currentSubtitleIndex,
     @Default(0) int currentAudioIndex,
+    // Propiedades para conectividad
+    @Default(true) bool hasConnectivity,
+    @Default(false) bool isReconnecting,
   }) = VideoPlayerStateLoaded;
+
+  // Nuevos estados para conectividad
+  const factory VideoPlayerState.connectionLost({
+    required String lastVideoUrl,
+    required int lastEpisodeNum,
+    required Duration lastPosition,
+  }) = VideoPlayerStateConnectionLost;
+
+  const factory VideoPlayerState.reconnecting({
+    required String videoUrl,
+    required int episodeNum,
+    required Duration lastPosition,
+  }) = VideoPlayerStateReconnecting;
+
   const factory VideoPlayerState.error(String message) = VideoPlayerStateError;
 }
 
