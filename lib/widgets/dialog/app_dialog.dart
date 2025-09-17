@@ -110,6 +110,7 @@ class AppDialog extends StatelessWidget {
                     },
                     isExpanded: true,
                     hasShadow: false,
+                    autofocus: true,
                   ),
                   const SizedBox(height: 8),
                   functionCancel != null && labelCancel.isNotEmpty

@@ -12,6 +12,7 @@ class TvPlayerState with _$TvPlayerState {
     required List<ChannelCategoryModel> categories,
     required List<ChannelModel> homeCategories,
     required List<ChannelModel> allChannels,
+    required bool showChannelChangeSuccess,
   }) = _TvPlayerState;
 }
 

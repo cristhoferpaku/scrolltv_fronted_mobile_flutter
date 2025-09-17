@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
@@ -23,6 +25,7 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
           categories: [],
           allChannels: [],
           homeCategories: [],
+          showChannelChangeSuccess: false,
         )) {
     TvPlayerUseCase tvPlayerUseCase = instance<TvPlayerUseCase>();
     ChannelModel? selectedChannelIndex;
@@ -33,6 +36,9 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
     List<ChannelModel> channels = [];
     List<ChannelCategoryModel> categories = [];
     List<ChannelModel> homeCategories = [];
+
+    bool showChannelChangeSuccess = false;
+    Timer? hideChannelChangeTimer;
 
     on<TvPlayerEvent>((event, emit) {});
     on<_TVPlayerEventStarted>((event, emit) async {
@@ -48,7 +54,8 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
           showChannelList: showChannelList,
           selectedCategoryIndex: selectedCategoryIndex,
           focusEnum: focusEnum,
-          categories: categories));
+          categories: categories,
+          showChannelChangeSuccess: showChannelChangeSuccess));
     });
 
     on<_TVPlayerEventLoadChannels>((event, emit) async {
@@ -65,7 +72,8 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
           showChannelList: showChannelList,
           selectedCategoryIndex: selectedCategoryIndex,
           focusEnum: focusEnum,
-          categories: categories));
+          categories: categories,
+          showChannelChangeSuccess: showChannelChangeSuccess));
       add(_TVPlayerEventLoadCategories());
     });
     on<_TVPlayerEventLoadCategories>((event, emit) async {
@@ -78,7 +86,8 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
           showChannelList: showChannelList,
           selectedCategoryIndex: selectedCategoryIndex,
           focusEnum: focusEnum,
-          allChannels: allChannels));
+          allChannels: allChannels,
+          showChannelChangeSuccess: showChannelChangeSuccess));
       try {
         final categoriesResponse = await tvPlayerUseCase.getCategories();
         categories = categoriesResponse.data;
@@ -91,14 +100,15 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
             showChannelList: showChannelList,
             selectedCategoryIndex: selectedCategoryIndex,
             focusEnum: focusEnum,
-            allChannels: allChannels));
+            allChannels: allChannels,
+            showChannelChangeSuccess: showChannelChangeSuccess));
 
         if (categories.isNotEmpty) {
           add(_TVPlayerEventLoadChannelsByCategory(categories[selectedCategoryIndex]));
         }
       } catch (e) {}
     });
-    on<_TVPlayerEventChangeChannel>((event, emit) {
+    on<_TVPlayerEventChangeChannel>((event, emit) async {
       selectedChannelIndex = event.channelIndex;
       emit(TvPlayerState(
           status: TVPlayerStatus.changeChannelSuccess,
@@ -109,8 +119,30 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
           channels: channels,
           homeCategories: homeCategories,
           allChannels: allChannels,
-          categories: categories));
+          categories: categories,
+          showChannelChangeSuccess: showChannelChangeSuccess));
     });
+    on<_TVPlayerEventChangeNextChannel>((event, emit) {
+      final currentIndex = channels.indexWhere((c) => c.id == selectedChannelIndex?.id);
+
+      if (currentIndex != -1) {
+        // Si ya estamos en el último, vuelve al primero
+        final nextIndex = (currentIndex + 1) % channels.length;
+        final newChannel = channels[nextIndex];
+        add(_TVPlayerEventChangeChannel(newChannel));
+      }
+    });
+    on<_TVPlayerEventChangePreviousChannel>((event, emit) {
+      final currentIndex = channels.indexWhere((c) => c.id == selectedChannelIndex?.id);
+
+      if (currentIndex != -1) {
+        // Si ya estamos en el primero, vuelve al último
+        final previousIndex = (currentIndex - 1 + channels.length) % channels.length;
+        final newChannel = channels[previousIndex];
+        add(_TVPlayerEventChangeChannel(newChannel));
+      }
+    });
+
     on<_TVPlayerEventShowPanelChannel>((event, emit) {
       showChannelList = event.value;
       if (!showChannelList) {
@@ -127,7 +159,8 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
           channels: channels,
           homeCategories: homeCategories,
           allChannels: allChannels,
-          categories: categories));
+          categories: categories,
+          showChannelChangeSuccess: showChannelChangeSuccess));
     });
     on<_TVPlayerEventChangeCategory>((event, emit) async {
       try {
@@ -142,6 +175,7 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
             homeCategories: homeCategories,
             allChannels: allChannels,
             categories: categories,
+            showChannelChangeSuccess: showChannelChangeSuccess,
             selectedChannelIndex: selectedChannelIndex));
         add(_TVPlayerEventLoadChannelsByCategory(categories[selectedCategoryIndex]));
       } catch (e) {
@@ -158,6 +192,7 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
           homeCategories: homeCategories,
           allChannels: allChannels,
           categories: categories,
+          showChannelChangeSuccess: showChannelChangeSuccess,
           selectedChannelIndex: selectedChannelIndex));
 
       try {
@@ -180,6 +215,7 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
             homeCategories: homeCategories,
             allChannels: allChannels,
             categories: categories,
+            showChannelChangeSuccess: showChannelChangeSuccess,
             selectedChannelIndex: selectedChannelIndex));
       } catch (e) {
         LoggerManager.log.e(e);
@@ -197,7 +233,30 @@ class TvPlayerBloc extends Bloc<TvPlayerEvent, TvPlayerState> {
           channels: channels,
           homeCategories: homeCategories,
           allChannels: allChannels,
-          categories: categories));
+          categories: categories,
+          showChannelChangeSuccess: showChannelChangeSuccess));
+    });
+    on<_TVPlayerEventShowChannelChangeSuccess>((event, emit) async {
+      showChannelChangeSuccess = event.value;
+      emit(TvPlayerState(
+          status: TVPlayerStatus.loaded,
+          selectedChannelIndex: selectedChannelIndex,
+          showChannelList: showChannelList,
+          selectedCategoryIndex: selectedCategoryIndex,
+          focusEnum: focusEnum,
+          channels: channels,
+          homeCategories: homeCategories,
+          allChannels: allChannels,
+          categories: categories,
+          showChannelChangeSuccess: showChannelChangeSuccess));
+
+      if (event.value) {
+        // Si se pidió mostrar el mensaje
+        hideChannelChangeTimer?.cancel(); // reinicia si ya había uno
+        hideChannelChangeTimer = Timer(const Duration(seconds: 3), () {
+          add(_TVPlayerEventShowChannelChangeSuccess(false));
+        });
+      }
     });
   }
 }

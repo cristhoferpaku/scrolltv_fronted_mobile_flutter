@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_list.dart';
@@ -9,6 +10,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/constants/focus_enum.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/providers/bloc/tv_player_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class LiveTvDetail extends StatefulWidget {
   const LiveTvDetail({super.key});
@@ -26,9 +28,12 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
   final bool isTv = PlatformUtils.isTV;
 
   bool isLandscape = false;
+
   @override
   void initState() {
     super.initState();
+
+    WakelockPlus.enable(); // activa al entrar
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final arguments = ModalRoute.of(context)!.settings.arguments as LiveTvDetailArguments;
@@ -43,6 +48,7 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
   void dispose() {
     _focusNode.dispose();
     _scrollController.dispose();
+    WakelockPlus.disable(); // desactiva al salir
     super.dispose();
   }
 
@@ -66,22 +72,22 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
           focusNode: _focusNode,
           onKeyEvent: (FocusNode node, event) {
             if (event is KeyDownEvent) {
-              BuildContext? ctx = FocusManager.instance.primaryFocus?.context;
-              while (ctx != null) {
-                debugPrint('-> ${ctx.widget.runtimeType}');
-                ctx = ctx.findAncestorStateOfType<State>()?.context;
-              }
               if (livePlayerBloc.state.showChannelList) {
               } else {
                 if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                   livePlayerBloc.add(TvPlayerEvent.showPanelChannel(true));
                   return KeyEventResult.ignored;
                 }
-                if (event.logicalKey == LogicalKeyboardKey.goBack) {
-                  livePlayerBloc.add(TvPlayerEvent.showPanelChannel(false));
 
-                  return KeyEventResult.ignored;
+                if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                  livePlayerBloc.add(TvPlayerEvent.changePreviousChannel());
+                  return KeyEventResult.handled;
                 }
+                if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                  livePlayerBloc.add(TvPlayerEvent.changeNextChannel());
+                  return KeyEventResult.handled;
+                }
+
                 return KeyEventResult.skipRemainingHandlers;
               }
             }
@@ -90,6 +96,11 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
           child: BlocConsumer<TvPlayerBloc, TvPlayerState>(
             bloc: livePlayerBloc,
             listener: (context, state) {
+              if (isTv) {
+                if (state.status == TVPlayerStatus.changeChannelSuccess) {
+                  livePlayerBloc.add(TvPlayerEvent.showChannelChangeSuccess(true));
+                }
+              }
               if (state.focusEnum == FocusEnum.channelView) {
                 _focusNode.requestFocus();
                 return;
@@ -98,7 +109,6 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
             builder: (context, state) {
               return Stack(
                 children: [
-                  // Video Player Area
                   Column(
                     children: [
                       Expanded(child: ChannelView(selectedChannelIndex: state.selectedChannelIndex)),
@@ -110,8 +120,27 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
                         )),
                     ],
                   ),
-
                   ChannelPanel(),
+                  if (state.showChannelChangeSuccess)
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16.r),
+                          color: Colors.black.withValues(alpha: 0.5), // fondo negro con opacidad
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        width: 200.r,
+                        height: 100.r,
+                        child: Center(
+                          child: Text(
+                            'Cambiando al canal ${state.selectedChannelIndex?.name}',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               );
             },

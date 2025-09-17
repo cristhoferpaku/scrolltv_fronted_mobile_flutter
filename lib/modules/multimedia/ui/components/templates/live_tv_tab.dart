@@ -18,6 +18,7 @@ import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/shimmer/shimmer_detail.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/shimmer/shimmer_util.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class LiveTab extends StatefulWidget {
   const LiveTab({super.key, required this.scrollController});
@@ -39,6 +40,7 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
 
   @override
   void initState() {
+    WakelockPlus.enable();
     homeBloc.add(HomeEvent.loadSectionLive());
     super.initState();
     controller = VlcPlayerController.network(
@@ -65,6 +67,7 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
 
   @override
   void dispose() {
+    WakelockPlus.disable();
     routeObserver.unsubscribe(this);
     super.dispose();
   }

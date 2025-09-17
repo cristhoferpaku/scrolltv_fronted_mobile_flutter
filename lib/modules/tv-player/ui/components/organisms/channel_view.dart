@@ -56,28 +56,6 @@ class _ChannelViewState extends State<ChannelView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // const Icon(
-            //   Icons.play_circle_outline,
-            //   size: 120,
-            //   color: Colors.white54,
-            // ),
-            // const SizedBox(height: 20),
-            // Text(
-            //   widget.selectedChannelIndex?.name ?? 'Sin canal',
-            //   style: const TextStyle(
-            //     color: Colors.white,
-            //     fontSize: 24,
-            //     fontWeight: FontWeight.bold,
-            //   ),
-            // ),
-            // const SizedBox(height: 8),
-            // Text(
-            //   widget.selectedChannelIndex?.category.join(', ') ?? 'No hay información disponible',
-            //   style: const TextStyle(
-            //     color: Colors.white70,
-            //     fontSize: 16,
-            //   ),
-            // ),
             Expanded(
               child: ChannelPlayerPage(channelUrl: widget.selectedChannelIndex?.url ?? '', channelName: widget.selectedChannelIndex?.name ?? ''),
             ),
@@ -130,8 +108,6 @@ class _ChannelPlayerPageState extends State<ChannelPlayerPage> {
     _vlcController.stop();
     _vlcController.dispose();
 
-    // volver a orientación normal
-
     super.dispose();
   }
 
@@ -165,7 +141,9 @@ class _VideoPlayerViewState extends State<VideoPlayerView> with SingleTickerProv
   bool isLandscape = false;
   bool showControls = false;
   Timer? _hideTimer;
+  bool isLoading = true; // 👈 nuevo estado
 
+  bool isError = false;
   bool isTv = PlatformUtils.isTV;
 
   changeOrientation() {
@@ -202,6 +180,24 @@ class _VideoPlayerViewState extends State<VideoPlayerView> with SingleTickerProv
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Escucha cambios en el reproductor
+    widget.controller.addListener(() {
+      final value = widget.controller.value;
+
+      setState(() {
+        if (value.playingState == PlayingState.buffering || value.playingState == PlayingState.initializing || value.playingState == PlayingState.initialized) {
+          isLoading = true; // está cargando
+          isError = false;
+        } else if (value.playingState == PlayingState.playing) {
+          isLoading = false; // ya está reproduciendo
+          isError = false;
+        } else if (value.playingState == PlayingState.error) {
+          isLoading = false; // podrías manejar error aparte
+          isError = true;
+        }
+      });
+    });
   }
 
   @override
@@ -209,15 +205,16 @@ class _VideoPlayerViewState extends State<VideoPlayerView> with SingleTickerProv
     _hideTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     widget.controller.stop(); // detener el video al destruir
+    widget.controller.removeListener(() {});
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
-      widget.controller.pause(); // pausa cuando la app va al background
-    }
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
+  //     widget.controller.pause(); // pausa cuando la app va al background
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -238,73 +235,105 @@ class _VideoPlayerViewState extends State<VideoPlayerView> with SingleTickerProv
         }
       },
       child: ExcludeFocusTraversal(
-        child: Scaffold(
-          backgroundColor: Colors.black,
-          body: isTv
-              ? VlcPlayer(
-                  controller: widget.controller,
-                  aspectRatio: widget.aspectRatio,
-                  placeholder: const Center(child: CircularProgressIndicator()),
-                )
-              : InkWell(
-                  autofocus: false,
-                  canRequestFocus: false,
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  splashFactory: NoSplash.splashFactory,
-                  onTap: isTv ? null : _toggleControls,
-                  child: Stack(
-                    children: [
-                      // Video
-                      AnimatedContainer(
-                        height: double.infinity,
-                        width: double.infinity,
-                        duration: const Duration(milliseconds: 300),
-                        child: VlcPlayer(
-                          controller: widget.controller,
-                          aspectRatio: 16 / 9,
-                          placeholder: const Center(child: CircularProgressIndicator()),
-                        ),
-                      ),
-
-                      // Controles con fade in/out
-                      isTv
-                          ? SizedBox()
-                          : AnimatedOpacity(
-                              opacity: showControls ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 300),
-                              child: IgnorePointer(
-                                ignoring: !showControls, // para no interceptar taps cuando está oculto
-                                child: Stack(
-                                  children: [
-                                    // Fondo semi-transparente como YT
-                                    Container(
-                                      color: Colors.black26,
-                                    ),
-                                    Positioned(
-                                      bottom: isLandscape ? 20 : 10,
-                                      right: isLandscape ? 20 : 10,
-                                      child: IconButton(
-                                        icon: Icon(
-                                          isLandscape ? Icons.fullscreen_exit : Icons.fullscreen,
-                                        ),
-                                        color: Colors.white,
-                                        onPressed: () {
-                                          setState(() {
-                                            changeOrientation();
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+          child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                if (isTv)
+                  Expanded(
+                    child: VlcPlayer(
+                      controller: widget.controller,
+                      aspectRatio: widget.aspectRatio,
+                      placeholder: const Center(child: CircularProgressIndicator()),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: InkWell(
+                      autofocus: false,
+                      canRequestFocus: false,
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      splashFactory: NoSplash.splashFactory,
+                      onTap: isTv ? null : _toggleControls,
+                      child: Stack(
+                        children: [
+                          // Video
+                          AnimatedContainer(
+                            height: double.infinity,
+                            width: double.infinity,
+                            duration: const Duration(milliseconds: 300),
+                            child: VlcPlayer(
+                              controller: widget.controller,
+                              aspectRatio: 16 / 9,
+                              placeholder: const Center(child: CircularProgressIndicator()),
                             ),
-                    ],
+                          ),
+
+                          // Controles con fade in/out
+                          isTv
+                              ? SizedBox()
+                              : AnimatedOpacity(
+                                  opacity: showControls ? 1.0 : 0.0,
+                                  duration: const Duration(milliseconds: 300),
+                                  child: IgnorePointer(
+                                    ignoring: !showControls, // para no interceptar taps cuando está oculto
+                                    child: Stack(
+                                      children: [
+                                        // Fondo semi-transparente como YT
+                                        Container(
+                                          color: Colors.black26,
+                                        ),
+                                        Positioned(
+                                          bottom: isLandscape ? 20 : 10,
+                                          right: isLandscape ? 20 : 10,
+                                          child: IconButton(
+                                            icon: Icon(
+                                              isLandscape ? Icons.fullscreen_exit : Icons.fullscreen,
+                                            ),
+                                            color: Colors.white,
+                                            onPressed: () {
+                                              setState(() {
+                                                changeOrientation();
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+              ],
+            ),
+            Positioned.fill(
+              child: isLoading
+                  ? Container(
+                      color: Colors.black.withOpacity(0.5), // fondo negro con opacidad
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : const SizedBox(),
+            ),
+            isError
+                ? Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5), // fondo negro con opacidad
+                      child: Center(
+                        child: Text('El canal no se encuentra\n disponible en estos momentos', style: Theme.of(context).textTheme.bodyLarge, textAlign: TextAlign.center),
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
+          ],
         ),
-      ),
+      )),
     );
   }
 }

@@ -24,6 +24,7 @@ class ElevatedButtonApp extends StatelessWidget {
   final bool enabled;
   final Size minimumSize;
   final FocusNode? focusNode;
+  final bool autofocus;
 
   const ElevatedButtonApp(
       {required this.press,
@@ -47,6 +48,7 @@ class ElevatedButtonApp extends StatelessWidget {
       this.enabled = true,
       this.minimumSize = Size.zero,
       this.focusNode,
+      this.autofocus = false,
       super.key});
 
   // Función por defecto para longPress
@@ -62,6 +64,7 @@ class ElevatedButtonApp extends StatelessWidget {
           child: SizedBox(
               child: ElevatedButton(
             focusNode: focusNode,
+            autofocus: autofocus,
             onPressed: enabled ? press : null,
             style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all<Color?>(colorButton),

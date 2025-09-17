@@ -133,7 +133,7 @@ class ColorManager {
   static const Color darkGray = Color(0xFF1c1c1c);
   static const Color lightgray = Color(0xFF303030);
   static const Color success = Color(0xFF00C897);
-  static const Color warning = Color(0xFFFFD365);
+  static const Color warning = Color(0xFFDC8400);
   // static const Color error = Color(0xFFDE0000);
 
   /*
