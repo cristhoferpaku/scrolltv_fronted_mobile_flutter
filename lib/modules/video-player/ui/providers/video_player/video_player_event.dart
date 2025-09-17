@@ -28,5 +28,11 @@ class VideoPlayerEvent with _$VideoPlayerEvent {
   const factory VideoPlayerEvent.skipForward({required int seconds}) = _VideoPlayerEventSkipForward;
   const factory VideoPlayerEvent.skipBackward({required int seconds}) = _VideoPlayerEventSkipBackward;
 
+  // Eventos de conectividad
+  const factory VideoPlayerEvent.checkConnectivity() = _VideoPlayerEventCheckConnectivity;
+  const factory VideoPlayerEvent.connectionLost() = _VideoPlayerEventConnectionLost;
+  const factory VideoPlayerEvent.connectionRestored() = _VideoPlayerEventConnectionRestored;
+  const factory VideoPlayerEvent.retryConnection() = _VideoPlayerEventRetryConnection;
+
   const factory VideoPlayerEvent.ended() = _VideoPlayerEventEnded;
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -16,10 +17,20 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   VlcPlayerController? controller;
   final MultimediaUseCase _multimediaUseCase = instance<MultimediaUseCase>();
 
+  // Variables para manejo de conectividad
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  String? _lastVideoUrl;
+  int? _lastEpisodeNum;
+  Duration? _lastPosition;
+  bool _hasConnectivity = true;
+
   VideoPlayerBloc() : super(const VideoPlayerState.initial()) {
     // Caché para episodios por seasonId
     final Map<int, List<EpisodeModel>> episodesCache = {};
     // int? currentSeasonId;
+
+    // Inicializar monitoreo de conectividad
+    _initConnectivityMonitoring();
 
     on<VideoPlayerEvent>((event, emit) {});
 
@@ -27,6 +38,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       try {
         await controller?.stop();
         await controller?.dispose();
+
+        // Guardar información para reconexión
+        _lastVideoUrl = event.videoUrl;
+        _lastEpisodeNum = event.episodeNum;
 
         controller = VlcPlayerController.network(
           event.videoUrl,
@@ -57,10 +72,11 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
               showAudioPanel: false,
               showSubtitlePanel: false,
               isPlaying: true,
+              hasConnectivity: _hasConnectivity,
             ),
           );
         } else {
-          emit(VideoPlayerState.error('Error: No se pudo inicializar el reproductor'));
+          emit(VideoPlayerState.error('No se pudo inicializar el reproductor'));
         }
       } catch (e) {
         emit(VideoPlayerState.error('Error cargando video: ${e.toString()}'));
@@ -142,6 +158,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
                 options: VlcPlayerOptions(
                   advanced: VlcAdvancedOptions([
                     '--network-caching=2000', // 2s cache
+                    '--http-reconnect', // Reconectar automáticamente
                   ]),
                 ),
               );
@@ -153,7 +170,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
               hwAcc: HwAcc.auto,
               autoPlay: true,
               options: VlcPlayerOptions(
-                advanced: VlcAdvancedOptions(['--network-caching=2000']),
+                advanced: VlcAdvancedOptions(['--network-caching=2000', '--http-reconnect']),
               ),
             );
           }
@@ -417,6 +434,30 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         }
       }
     });
+
+    // Handlers para eventos de conectividad
+    on<_VideoPlayerEventConnectionLost>((event, emit) {
+      _handleConnectionLost();
+    });
+
+    on<_VideoPlayerEventConnectionRestored>((event, emit) {
+      _handleConnectionRestored();
+    });
+
+    on<_VideoPlayerEventRetryConnection>((event, emit) {
+      _retryConnection();
+    });
+
+    on<_VideoPlayerEventCheckConnectivity>((event, emit) async {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final hasConnection = connectivityResult.any((result) => result != ConnectivityResult.none);
+      _hasConnectivity = hasConnection;
+
+      final currentState = state;
+      if (currentState is VideoPlayerStateLoaded) {
+        emit(currentState.copyWith(hasConnectivity: hasConnection));
+      }
+    });
   }
 
   void _setupPositionListeners() {
@@ -456,7 +497,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
           // ✅ Detectar errores de VLC (cuando no puede reproducir el video)
           if (playingState == PlayingState.error) {
-            emit(VideoPlayerState.error('Error: No se puede reproducir el video. Verifique la URL o su conexión a internet.'));
+            emit(VideoPlayerState.error(' No se puede reproducir el video. Verifique la URL o su conexión a internet.'));
           }
         }
       } else if (controller != null && !controller!.value.isInitialized) {
@@ -466,7 +507,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           // Dar tiempo para la inicialización antes de marcar como error
           Future.delayed(const Duration(seconds: 10), () {
             if (controller != null && !controller!.value.isInitialized && state is VideoPlayerStateLoaded) {
-              emit(VideoPlayerState.error('Error: El video no se pudo cargar. Verifique la URL o su conexión a internet.'));
+              emit(VideoPlayerState.error('El video no se pudo cargar. Verifique la URL o su conexión a internet.'));
             }
           });
         }
@@ -486,10 +527,71 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     if (controller != null) {
       controller!.removeListener(_onVlcPlayerValueChanged);
     }
-    // Limpiar controlador
 
+    // Cancelar suscripción de conectividad
+    await _connectivitySubscription?.cancel();
+
+    // Limpiar controlador
     await controller?.stop();
     await controller?.dispose();
     return super.close();
+  }
+
+  // Métodos para manejo de conectividad
+  void _initConnectivityMonitoring() {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(
+      (List<ConnectivityResult> results) {
+        final hasConnection = results.any((result) => result != ConnectivityResult.none);
+
+        if (_hasConnectivity != hasConnection) {
+          _hasConnectivity = hasConnection;
+
+          if (!hasConnection) {
+            // Perdió conectividad
+            add(const VideoPlayerEvent.connectionLost());
+          } else {
+            // Recuperó conectividad
+            add(const VideoPlayerEvent.connectionRestored());
+          }
+        }
+      },
+    );
+  }
+
+  void _handleConnectionLost() {
+    final currentState = state;
+    if (currentState is VideoPlayerStateLoaded) {
+      _lastPosition = currentState.currentPosition;
+
+      emit(VideoPlayerState.connectionLost(
+        lastVideoUrl: _lastVideoUrl ?? '',
+        lastEpisodeNum: _lastEpisodeNum ?? 1,
+        lastPosition: _lastPosition ?? Duration.zero,
+      ));
+    }
+  }
+
+  void _handleConnectionRestored() {
+    final currentState = state;
+    if (currentState is VideoPlayerStateConnectionLost) {
+      // Intentar reconectar automáticamente
+      add(VideoPlayerEvent.retryConnection());
+    }
+  }
+
+  void _retryConnection() async {
+    if (_lastVideoUrl != null && _lastEpisodeNum != null) {
+      emit(VideoPlayerState.reconnecting(
+        videoUrl: _lastVideoUrl!,
+        episodeNum: _lastEpisodeNum!,
+        lastPosition: _lastPosition ?? Duration.zero,
+      ));
+
+      // Intentar cargar el video nuevamente
+      add(VideoPlayerEvent.loadedVideo(
+        videoUrl: _lastVideoUrl!,
+        episodeNum: _lastEpisodeNum!,
+      ));
+    }
   }
 }

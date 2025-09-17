@@ -467,11 +467,13 @@ class OptionPanelState extends State<OptionPanel> {
                               )
                             : null,
                       ),
-                      onTap: isTV ? null : () {
-                        // Solo permitir onTap en dispositivos no-TV para evitar conflicto con teclas
-                        _changeValue(index);
-                        widget.onClose();
-                      },
+                      onTap: isTV
+                          ? null
+                          : () {
+                              // Solo permitir onTap en dispositivos no-TV para evitar conflicto con teclas
+                              _changeValue(index);
+                              widget.onClose();
+                            },
                     ),
                   );
                 },
@@ -490,7 +492,7 @@ class OptionPanelState extends State<OptionPanel> {
       builder: (context, state) {
         return state.maybeWhen(
           loaded: (videoUrl, controller, status, isPlaying, hasEnded, episodes, episodeIndex, showEpisodesList, isLoading, currentPosition, duration, subtitles, audioTracks, showSubtitlePanel,
-              showAudioPanel, selectedSubtitleIndex, selectedAudioIndex, currentSubtitleIndex, currentAudioIndex) {
+              showAudioPanel, selectedSubtitleIndex, selectedAudioIndex, currentSubtitleIndex, currentAudioIndex, hasConnectivity, isReconnecting) {
             // Verificar si está cargando pistas según el título del panel
             final isLoadingAudio = status == VideoPlayerStatus.loadingAudio;
             final isLoadingSubtitles = status == VideoPlayerStatus.loadingSubtitles;

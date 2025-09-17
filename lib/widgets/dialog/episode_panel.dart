@@ -90,8 +90,6 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
     }
   }
 
-
-
   void _scrollToSelected() {
     if (_scrollController.hasClients && selectedIndex >= 0) {
       final itemWidth = isTV ? 200.0 : 120.0;
@@ -109,33 +107,29 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
   // Solo navegar visualmente sin seleccionar
   void _navigateToIndex(int index) {
     if (index < 0 || index >= episodes.length) return;
-    
+
     setState(() {
       selectedIndex = index;
       _isManuallyNavigating = true; // Marcar como navegación manual
     });
-    
+
     // Scroll para asegurar que el elemento seleccionado sea visible
     if (_scrollController.hasClients) {
       double itemWidth = isTV ? 200.0 : 120.0;
       double spacing = isTV ? 16.0 : 12.0;
       double totalItemWidth = itemWidth + spacing;
       double targetOffset = index * totalItemWidth;
-      
+
       // Calcular el viewport visible
       double viewportWidth = _scrollController.position.viewportDimension;
       double currentOffset = _scrollController.offset;
-      
+
       // Solo hacer scroll si el item no está completamente visible
-      if (targetOffset < currentOffset || 
-          targetOffset + itemWidth > currentOffset + viewportWidth) {
+      if (targetOffset < currentOffset || targetOffset + itemWidth > currentOffset + viewportWidth) {
         // Centrar el item en el viewport si es posible
         double centeredOffset = targetOffset - (viewportWidth - itemWidth) / 2;
-        centeredOffset = centeredOffset.clamp(
-          _scrollController.position.minScrollExtent,
-          _scrollController.position.maxScrollExtent
-        );
-        
+        centeredOffset = centeredOffset.clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent);
+
         _scrollController.animateTo(
           centeredOffset,
           duration: const Duration(milliseconds: 300),
@@ -156,12 +150,10 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
     }
   }
 
-
-
   // Método público para ser llamado desde video_page.dart
   bool handleKeyEvent(KeyEvent event) {
     if (!widget.isVisible || episodes.isEmpty) return false;
-    
+
     if (event is KeyDownEvent) {
       switch (event.logicalKey) {
         case LogicalKeyboardKey.arrowLeft:
@@ -170,14 +162,14 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
             return true; // Evento manejado exitosamente
           }
           return false; // No se puede navegar más a la izquierda, permitir cerrar panel
-          
+
         case LogicalKeyboardKey.arrowRight:
           if (selectedIndex < episodes.length - 1) {
             _navigateToIndex(selectedIndex + 1);
             return true; // Evento manejado exitosamente
           }
           return true; // Evento manejado (incluso si no se puede navegar más)
-          
+
         case LogicalKeyboardKey.arrowUp:
           // Navegación vertical: ir al episodio anterior (como izquierda)
           if (selectedIndex > 0) {
@@ -185,7 +177,7 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
             return true;
           }
           return true; // Mantener el focus en el panel
-          
+
         case LogicalKeyboardKey.arrowDown:
           // Navegación vertical: ir al siguiente episodio (como derecha)
           if (selectedIndex < episodes.length - 1) {
@@ -193,14 +185,14 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
             return true;
           }
           return true; // Mantener el focus en el panel
-          
+
         case LogicalKeyboardKey.enter:
         case LogicalKeyboardKey.select:
           if (selectedIndex >= 0 && selectedIndex < episodes.length) {
             _confirmSelection();
           }
           return true; // Evento manejado
-          
+
         case LogicalKeyboardKey.escape:
         case LogicalKeyboardKey.goBack:
           _isManuallyNavigating = false; // Resetear flag al cerrar
@@ -279,16 +271,16 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
         builder: (context, state) {
           return state.maybeWhen(
               loaded: (videoUrl, controller, status, isPlaying, hasEnded, episodes, episodeIndex, showEpisodesList, isLoading, currentPosition, duration, subtitles, audioTracks, showSubtitlePanel,
-                  showAudioPanel, selectedSubtitleIndex, selectedAudioIndex, currentSubtitleIndex, currentAudioIndex) {
+                  showAudioPanel, selectedSubtitleIndex, selectedAudioIndex, currentSubtitleIndex, currentAudioIndex, hasConnectivity, isReconnecting) {
                 final isLoadingEpisodePanel = status == VideoPlayerStatus.loadingEpisodes || episodes.isEmpty;
                 print('episodios cargados: ${episodes.length}, status: $status');
                 this.episodes = episodes;
-                
+
                 // Solo actualizar automáticamente si no se está navegando manualmente
                 if (!_isManuallyNavigating) {
                   final resolvedIndex = episodes.indexWhere((episode) => episode.episodeNumber == episodeIndex);
                   final calculatedSelectedIndex = resolvedIndex != -1 ? resolvedIndex : 0;
-                  
+
                   // Solo actualizar selectedIndex si es diferente
                   if (selectedIndex != calculatedSelectedIndex) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
