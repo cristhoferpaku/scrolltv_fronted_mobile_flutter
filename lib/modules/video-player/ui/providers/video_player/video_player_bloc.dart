@@ -22,29 +22,49 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     // int? currentSeasonId;
 
     on<VideoPlayerEvent>((event, emit) {});
+
     on<_VideoPlayerEventLoadedVideo>((event, emit) async {
-      await controller?.stop();
-      await controller?.dispose();
-      controller = VlcPlayerController.network(
-        event.videoUrl,
-        hwAcc: HwAcc.auto,
-        autoPlay: true,
-      );
+      try {
+        await controller?.stop();
+        await controller?.dispose();
 
-      // Configurar listeners para posición y duración
-      _setupPositionListeners();
+        controller = VlcPlayerController.network(
+          event.videoUrl,
+          hwAcc: HwAcc.auto,
+          autoPlay: true,
+          options: VlcPlayerOptions(
+            advanced: VlcAdvancedOptions([
+              '--network-caching=3000', // 3s cache para conexiones lentas
+              '--http-reconnect', // Reconectar automáticamente
+            ]),
+          ),
+        );
 
-      emit(
-        VideoPlayerState.loaded(
-          status: VideoPlayerStatus.loaded,
-          videoUrl: event.videoUrl,
-          controller: controller!,
-          episodeIndex: event.episodeNum,
-          showAudioPanel: false,
-          showSubtitlePanel: false,
-          isPlaying: true,
-        ),
-      );
+        // Configurar listeners para posición y duración
+        _setupPositionListeners();
+
+        // Esperar un momento para que VLC intente cargar el video
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Verificar si el controlador se inicializó correctamente
+        if (controller != null) {
+          emit(
+            VideoPlayerState.loaded(
+              status: VideoPlayerStatus.loaded,
+              videoUrl: event.videoUrl,
+              controller: controller!,
+              episodeIndex: event.episodeNum,
+              showAudioPanel: false,
+              showSubtitlePanel: false,
+              isPlaying: true,
+            ),
+          );
+        } else {
+          emit(VideoPlayerState.error('Error: No se pudo inicializar el reproductor'));
+        }
+      } catch (e) {
+        emit(VideoPlayerState.error('Error cargando video: ${e.toString()}'));
+      }
     });
 
     // Evento: cargar episodios
@@ -225,12 +245,20 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           int? subtitleSelected = currentState.currentSubtitleIndex;
           int subtitleSelectedId = subtitleSelected;
 
-          final trackOptions = subtitleTracks.entries.map((entry) {
-            return TrackOptionModel(
-              key: entry.key,
-              value: entry.value,
-            );
-          }).toList();
+          final trackOptions = <TrackOptionModel>[
+            // Agregar opción para desactivar subtítulos
+            TrackOptionModel(
+              key: -1,
+              value: 'Sin subtítulos',
+            ),
+            // Agregar las pistas de subtítulos disponibles
+            ...subtitleTracks.entries.map((entry) {
+              return TrackOptionModel(
+                key: entry.key,
+                value: entry.value,
+              );
+            }),
+          ];
 
           emit(currentState.copyWith(subtitles: trackOptions, currentSubtitleIndex: subtitleSelectedId, showSubtitlePanel: true, showAudioPanel: false, status: VideoPlayerStatus.loadedSubtitles));
         } catch (e) {
@@ -259,7 +287,13 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       final currentState = state;
       if (controller != null) {
         try {
-          await controller!.setSpuTrack(event.trackId);
+          // Si el trackId es -1, desactivar subtítulos
+          if (event.trackId == -1) {
+            await controller!.setSpuTrack(-1); // Desactivar subtítulos en VLC
+          } else {
+            await controller!.setSpuTrack(event.trackId);
+          }
+
           if (currentState is VideoPlayerStateLoaded) {
             emit(currentState.copyWith(currentSubtitleIndex: event.trackId));
           }
@@ -308,6 +342,17 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {
         try {
+          if (!currentState.hasEnded) {
+            await controller!.seekTo(Duration.zero);
+            await controller!.play();
+            emit(currentState.copyWith(
+              hasEnded: false,
+              isPlaying: true,
+              currentPosition: Duration.zero,
+            ));
+            return;
+          }
+
           await controller!.stop(); // detener limpio
           await Future.delayed(const Duration(milliseconds: 300)); // darle tiempo
           await controller!.play();
@@ -331,6 +376,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         ));
       }
     });
+
     on<_VideoPlayerEventSkipForward>((event, emit) async {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {
@@ -349,6 +395,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         await controller?.seekTo(targetPosition);
       }
     });
+
     on<_VideoPlayerEventTogglePlayPause>((event, emit) async {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {
@@ -406,10 +453,30 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
               currentPosition: duration, // asegurar que quede al final
             ));
           }
+
+          // ✅ Detectar errores de VLC (cuando no puede reproducir el video)
+          if (playingState == PlayingState.error) {
+            emit(VideoPlayerState.error('Error: No se puede reproducir el video. Verifique la URL o su conexión a internet.'));
+          }
+        }
+      } else if (controller != null && !controller!.value.isInitialized) {
+        // Si el controlador existe pero no se inicializó después de un tiempo, es probable que haya un error
+        final currentState = state;
+        if (currentState is VideoPlayerStateLoaded) {
+          // Dar tiempo para la inicialización antes de marcar como error
+          Future.delayed(const Duration(seconds: 10), () {
+            if (controller != null && !controller!.value.isInitialized && state is VideoPlayerStateLoaded) {
+              emit(VideoPlayerState.error('Error: El video no se pudo cargar. Verifique la URL o su conexión a internet.'));
+            }
+          });
         }
       }
     } catch (e) {
-      // Ignorar errores de posición para evitar spam en logs
+      // Si hay errores críticos en el listener, emitir estado de error
+      final currentState = state;
+      if (currentState is VideoPlayerStateLoaded) {
+        emit(VideoPlayerState.error('Error crítico del reproductor: ${e.toString()}'));
+      }
     }
   }
 
