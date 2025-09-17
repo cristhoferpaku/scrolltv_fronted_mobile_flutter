@@ -25,7 +25,7 @@ class VideoPlayerState with _$VideoPlayerState {
     @Default(0) int currentSubtitleIndex,
     @Default(0) int currentAudioIndex,
   }) = VideoPlayerStateLoaded;
-  const factory VideoPlayerState.error(String message) = _Error;
+  const factory VideoPlayerState.error(String message) = VideoPlayerStateError;
 }
 
 enum VideoPlayerStatus {
