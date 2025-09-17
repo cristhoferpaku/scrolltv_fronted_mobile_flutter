@@ -15,6 +15,7 @@ import 'package:scrolltv_frontend_mobile_flutter/util/video_controls_manager.dar
 import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/app_dialog_customize.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/episode_panel.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/option_panel.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class VideoPage extends StatefulWidget {
   const VideoPage({super.key});
@@ -86,6 +87,7 @@ class _VideoPageState extends State<VideoPage> {
   void initState() {
     authBloc.add(AuthEvent.validateExpiration());
     super.initState();
+    WakelockPlus.enable();
     bloc = instance<VideoPlayerBloc>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)!.settings.arguments as VideoPageArguments;
@@ -229,6 +231,7 @@ class _VideoPageState extends State<VideoPage> {
   @override
   void dispose() {
     bloc.close();
+    WakelockPlus.disable();
     _controlsManager?.dispose();
     _cancelEpisodePanelTimer();
     _focusNode.dispose();
