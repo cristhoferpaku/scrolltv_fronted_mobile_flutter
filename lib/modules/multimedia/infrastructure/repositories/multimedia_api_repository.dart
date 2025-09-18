@@ -35,14 +35,10 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
         method: Method.get,
       );
 
-      LoggerManager.log.i(response.data);
-      if (response.data != null) {
-        final apiResponse = ApiResponse<GetHomeSectionModel>.fromJson(
-          response.data,
-          (json) => getHomeSectionResponseToModel(GetHomeSectionResponse.fromJson(json as Map<String, dynamic>)),
-        );
-
-        return apiResponse;
+      if (response.data["data"] != null) {
+        final videoResponse = GetHomeSectionResponse.fromJson(response.data["data"]);
+        final video = getHomeSectionResponseToModel(videoResponse);
+        return ApiResponseData<GetHomeSectionModel>(success: true, data: video, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
       } else {
         // Verificar si response.data es un Map y contiene 'message'
         String errorMessage = 'Error desconocido';

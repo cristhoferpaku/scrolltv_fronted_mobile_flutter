@@ -21,7 +21,7 @@ class VideoModel with _$VideoModel {
     int? topNumber,
     String? collectionName,
     String? categories,
-    String? year,
+    int? year,
     String? duration,
     String? bannerImage,
     VideoModel? contentInfo,

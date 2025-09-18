@@ -24,6 +24,7 @@ VideoModel videoResponseToModel(VideoResponse response) {
     firstSeasonId: response.seasonId,
     firstEpisodeNumber: response.episodeNum,
     totalSeasons: response.totalSeasons,
+    year: response.year,
   );
 }
 

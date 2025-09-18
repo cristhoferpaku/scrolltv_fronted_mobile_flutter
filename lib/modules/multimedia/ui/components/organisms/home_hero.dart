@@ -85,7 +85,7 @@ class _HomeHeroState extends State<HomeHero> {
                   SizedBox(
                     width: isTV ? .4.sw : double.infinity,
                     child: Text(
-                      widget.video.title ?? "No data",
+                      widget.video.title ?? "Sin título",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: ColorManager.onSurface,
                           ),
@@ -94,15 +94,15 @@ class _HomeHeroState extends State<HomeHero> {
                     ),
                   ),
                   VideoMetadata(
-                    section: widget.video.collectionName ?? "No data",
-                    year: widget.video.year ?? "2024",
-                    duration: widget.video.duration ?? "No data",
-                    genre: widget.video.categories ?? "No data",
+                    section: widget.video.collectionName ?? "Sin sección",
+                    year: widget.video.year?.toString() ?? "Sin año",
+                    duration: widget.video.duration ?? "Sin duración",
+                    genre: widget.video.categories ?? "Sin género",
                   ),
                   SizedBox(
                     width: isTV ? .4.sw : double.infinity,
                     child: Text(
-                      widget.video.description ?? "No description",
+                      widget.video.description ?? "Sin descripción",
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: ColorManager.onSurface,
                             overflow: TextOverflow.ellipsis,
