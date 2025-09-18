@@ -185,18 +185,20 @@ class _VideoPlayerViewState extends State<VideoPlayerView> with SingleTickerProv
     widget.controller.addListener(() {
       final value = widget.controller.value;
 
-      setState(() {
-        if (value.playingState == PlayingState.buffering || value.playingState == PlayingState.initializing || value.playingState == PlayingState.initialized) {
-          isLoading = true; // está cargando
-          isError = false;
-        } else if (value.playingState == PlayingState.playing) {
-          isLoading = false; // ya está reproduciendo
-          isError = false;
-        } else if (value.playingState == PlayingState.error) {
-          isLoading = false; // podrías manejar error aparte
-          isError = true;
-        }
-      });
+      if (mounted) {
+        setState(() {
+          if (value.playingState == PlayingState.buffering || value.playingState == PlayingState.initializing || value.playingState == PlayingState.initialized) {
+            isLoading = true; // está cargando
+            isError = false;
+          } else if (value.playingState == PlayingState.playing) {
+            isLoading = false; // ya está reproduciendo
+            isError = false;
+          } else if (value.playingState == PlayingState.error) {
+            isLoading = false; // podrías manejar error aparte
+            isError = true;
+          }
+        });
+      }
     });
   }
 
