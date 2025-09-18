@@ -566,6 +566,7 @@ class _VideoPageState extends State<VideoPage> {
           // Manejo del estado de error
           if (state is VideoPlayerStateError) {
             return AppDialogCustomize(
+              title: "Error de reproducción",
               message: state.message,
               onPressed: () {
                 // Reintentar cargar el video

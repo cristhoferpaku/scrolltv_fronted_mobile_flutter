@@ -14,8 +14,7 @@ import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dar
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
-import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/app_dialog.dart';
-import 'package:scrolltv_frontend_mobile_flutter/widgets/enum_widgets.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/app_dialog_customize.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -69,18 +68,14 @@ class _HomePageState extends State<HomePage> {
         onWillPop: () async {
           final result = await showDialog<bool>(
             context: context,
-            builder: (context) => AppDialog(
-              typeDialog: AppDialogType.WARNING,
-              title: 'Advertencia',
-              description: "¿Desea salir de la app?",
-              functionOk: () {
+            builder: (context) => AppDialogCustomize(
+              type: AppDialogCustomizeType.warning,
+              message: "¿Desea salir de la app?",
+              onPressed: () {
                 Navigator.of(context).pop(true);
               },
-              functionCancel: () {
-                Navigator.of(context).pop(false);
-              },
-              labelCancel: 'Cancelar',
-              labelAction: 'Aceptar',
+              labelActionButton: "Aceptar",
+              iconActionButton: Icons.check_rounded,
             ),
           );
 
