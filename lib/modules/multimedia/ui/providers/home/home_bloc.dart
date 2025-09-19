@@ -26,8 +26,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeEvent>((event, emit) async {});
 
     on<_HomeEventStarted>((event, emit) async {
-      firstLetterUsername = await userRepository.getUserName().then((value) => value.substring(0, 1).toUpperCase());
-
+      final user = await userRepository.getUserName();
+      print(user);
+      final userid = await userRepository.getUserId();
+      print(userid);
+      firstLetterUsername = await userRepository.getUserName().then((value) {
+        if (value.isEmpty) return "";
+        return value.substring(0, 1).toUpperCase();
+      });
       emit(HomeState.loaded(
           channels: selectedChannel,
           movies: moviesSection,

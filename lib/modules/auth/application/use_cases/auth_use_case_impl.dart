@@ -19,12 +19,12 @@ class AuthUseCaseImpl implements AuthUseCase {
     if (response.success == true && response.data.tokens?.accessToken != null) {
       final accessToken = response.data.tokens?.accessToken;
       if (accessToken != null) {
-        _userRepository.saveToken(accessToken);
-        _userRepository.saveTokenRefresh(response.data.tokens?.refreshToken ?? "");
-        _userRepository.saveUser("", response.data.user?.username ?? "", "");
-        _userRepository.saveUserId(response.data.user?.id?.toString() ?? "");
+        await _userRepository.saveToken(accessToken);
+        await _userRepository.saveTokenRefresh(response.data.tokens?.refreshToken ?? "");
+        await _userRepository.saveUser("", response.data.user?.username ?? "", "");
+        await _userRepository.saveUserId(response.data.user?.id?.toString() ?? "");
         final deviceId = await PlatformUtils().getDeviceId();
-        _userRepository.saveDeviceId(deviceId);
+        await _userRepository.saveDeviceId(deviceId);
       }
     }
     return response;

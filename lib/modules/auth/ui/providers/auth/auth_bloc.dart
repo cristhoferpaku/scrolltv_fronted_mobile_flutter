@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
 
 part 'auth_bloc.freezed.dart';
 part 'auth_event.dart';
@@ -37,8 +38,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await userRepository.logoutUser();
         emit(AuthState.loaded(status: AuthStatus.logoutSuccess));
       } catch (e) {
+        LoggerManager.log.i(e.toString());
         await userRepository.logoutUser();
         emit(AuthState.loaded(status: AuthStatus.logoutError));
+      } finally {
+        instance.popScope();
       }
     });
   }

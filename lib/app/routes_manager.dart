@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/colors_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/components/ui/components/pages/typography_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/screens/mobile/components_page.dart';
@@ -46,6 +47,7 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => isTv ? const tv.LoginPage() : const mobile.LoginPage());
 
       case Routes.homeRoute:
+        initSessionModule();
         return MaterialPageRoute(builder: (_) => const HomePage());
 
       case Routes.componentsRoute:
@@ -67,7 +69,6 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ProfilePage());
 
       case Routes.videoRoute:
-
         return MaterialPageRoute(builder: (_) => const VideoPage(), settings: RouteSettings(name: Routes.videoRoute, arguments: routeSettings.arguments));
 
       case Routes.videoDetailsRoute:

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/colors/colors.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_panel.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/tv-player/ui/components/organisms/channel_view.dart';
@@ -128,16 +129,21 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16.r),
-                          color: Colors.black.withValues(alpha: 0.5), // fondo negro con opacidad
+                          color: ColorManager.primaryContainer.withValues(alpha: 0.5), // fondo negro con opacidad
                         ),
-                        padding: const EdgeInsets.all(8),
-                        width: 200.r,
-                        height: 100.r,
-                        child: Center(
-                          child: Text(
-                            'Cambiando al canal ${state.selectedChannelIndex?.name}',
-                            textAlign: TextAlign.center,
-                          ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        width: 240.r,
+                        child: Row(
+                          spacing: 8,
+                          children: [
+                            Icon(Icons.live_tv_rounded, color: ColorManager.white, size: 32.r),
+                            Expanded(
+                              child: Text(
+                                'Cambiando al canal "${state.selectedChannelIndex?.name}"',
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

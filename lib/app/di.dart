@@ -41,6 +41,10 @@ Future<void> initAppModule() async {
   initInfoVersion();
   initRepositoryModule();
   initAuthDependencies();
+}
+
+initSessionModule() {
+  instance.pushNewScope(scopeName: 'session');
   initHomeDependencies();
   initProfileDependencies();
   initVideoDetailsDependencies();
