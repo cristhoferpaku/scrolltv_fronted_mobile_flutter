@@ -204,3 +204,51 @@ scrolltv
 dart run flutter_launcher_icons -f flutter_launcher_icons_scroll_tv.yaml
 
 ```
+
+###
+
+Generar apk ScrollTV:
+
+```bash
+dart run flutter_launcher_icons -f flutter_launcher_icons_scroll_tv.yaml
+```
+
+```bash
+flutter pub run flutter_native_splash:create --path=flutter_native_splash_scroll_tv.yaml
+```
+
+```bash
+flutter build apk --release --flavor scrolltvMobile --dart-define=IS_TV=false --dart-define=VARIANT=scrolltv
+```
+
+```bash
+flutter build apk --release --flavor scrolltvTv --dart-define=IS_TV=true --dart-define=VARIANT=scrolltv
+```
+
+subir al drive de releases
+
+subir apk de tv a bunnynet - storage - scroll-tv-movie-home-storage - apks - copiar url
+
+Generar apk MovieHome:
+
+```bash
+dart run flutter_launcher_icons -f flutter_launcher_icons_movie_home.yaml
+```
+
+splash
+
+```bash
+flutter pub run flutter_native_splash:create --path=flutter_native_splash_movie_home.yaml
+```
+
+```bash
+flutter build apk --release --flavor moviehomeMobile --dart-define=IS_TV=false --dart-define=VARIANT=moviehome
+```
+
+```bash
+flutter build apk --release --flavor moviehomeTv --dart-define=IS_TV=true --dart-define=VARIANT=moviehome
+```
+
+subir al drive de releases
+
+subir apk de tv a bunnynet - storage - scroll-tv-movie-home-storage - apks - copiar url
