@@ -263,10 +263,9 @@ class _VideoPlayerViewState extends State<VideoPlayerView> with SingleTickerProv
                       child: Stack(
                         children: [
                           // Video
-                          AnimatedContainer(
+                          SizedBox(
                             height: double.infinity,
                             width: double.infinity,
-                            duration: const Duration(milliseconds: 300),
                             child: VlcPlayer(
                               controller: widget.controller,
                               aspectRatio: 16 / 9,

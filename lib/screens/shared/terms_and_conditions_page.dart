@@ -108,63 +108,61 @@ class _TermsAndConditionsPageState extends State<TermsAndConditionsPage> {
           children: [
             HomeNavbar(),
             SizedBox(height: AppPadding.p16.r),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: AppPadding.p8.r,
-                children: [
-                  Center(
-                    child: Text(
-                      "Políticas de Privacidad",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: AppPadding.p8.r,
+              children: [
+                Center(
+                  child: Text(
+                    "Políticas de Privacidad",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  Column(
-                    spacing: AppPadding.p24.r,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: sections
-                        .map((section) => ContainerFocus(
-                              onTap: () {},
-                              showBorder: true,
-                              scale: 1,
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: Column(
-                                  spacing: AppPadding.p8.r,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (section.title.isNotEmpty)
-                                      Text(
-                                        section.title,
-                                        style: Theme.of(context).textTheme.titleMedium,
-                                      ),
-                                    ...section.items.map((item) {
-                                      // Si el texto empieza con "*", renderizamos como bullet
-                                      if (item.startsWith("*")) {
-                                        return Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const Text("• ").withPadding(left: AppPadding.p8.r),
-                                            Expanded(
-                                              child: buildFormattedText(item.substring(1).trim(), context),
-                                            ),
-                                          ],
-                                        );
-                                      } else {
-                                        // Texto normal
-                                        return buildFormattedText(item, context);
-                                      }
-                                    }),
-                                  ],
-                                ),
+                ),
+                Column(
+                  spacing: AppPadding.p24.r,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: sections
+                      .map((section) => ContainerFocus(
+                            onTap: () {},
+                            showBorder: true,
+                            scale: 1,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: Column(
+                                spacing: AppPadding.p8.r,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (section.title.isNotEmpty)
+                                    Text(
+                                      section.title,
+                                      style: Theme.of(context).textTheme.titleMedium,
+                                    ),
+                                  ...section.items.map((item) {
+                                    // Si el texto empieza con "*", renderizamos como bullet
+                                    if (item.startsWith("*")) {
+                                      return Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text("• ").withPadding(left: AppPadding.p8.r),
+                                          Expanded(
+                                            child: buildFormattedText(item.substring(1).trim(), context),
+                                          ),
+                                        ],
+                                      );
+                                    } else {
+                                      // Texto normal
+                                      return buildFormattedText(item, context);
+                                    }
+                                  }),
+                                ],
                               ),
-                            ))
-                        .toList(),
-                  ),
-                ],
-              ),
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ],
             ),
           ],
         ),
