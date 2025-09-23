@@ -30,8 +30,8 @@ class _ChannelCategoryBarState extends State<ChannelCategoryBar> {
       _scrollController.scrollTo(
         index: index,
         duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        alignment: 0.5, // lo centra
+        curve: Curves.ease,
+        alignment: 0.15, // 👈 inicio en vez de centro
       );
     }
   }
@@ -85,36 +85,35 @@ class _ChannelCategoryBarState extends State<ChannelCategoryBar> {
                       ),
                       color: ColorManager.onInverseSurface,
                     ),
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ...widget.categories.map((category) {
-                            final index = widget.categories.indexOf(category);
-                            final isSelected = widget.selectedCategoryIndex == index;
-
-                            return ElevatedButtonApp(
-                              evelationButton: 0,
-                              hasShadow: false,
-                              textButton: category.name,
-                              paddingHorizontal: 24,
-                              paddingVertical: 6,
-                              press: () {
-                                tvPlayerBloc.add(TvPlayerEvent.changeCategory(index));
-                                Navigator.pop(context); // 👈 cerrar modal
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  _scrollTo(index); // 👈 desplazar
-                                });
-                              },
-                              colorButton: isSelected ? ColorManager.primaryContainer : ColorManager.onInverseSurface,
-                              textStyleButton: Theme.of(context).textTheme.labelMedium,
-                              isExpanded: false,
-                            );
-                          }),
-                        ],
-                      ).withPadding(all: 16),
-                    ),
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 3.8,
+                      ),
+                      itemCount: widget.categories.length,
+                      itemBuilder: (context, index) {
+                        final category = widget.categories[index];
+                        final isSelected = widget.selectedCategoryIndex == index;
+                        return ElevatedButtonApp(
+                          evelationButton: 0,
+                          hasShadow: false,
+                          textButton: category.name,
+                          paddingHorizontal: 24,
+                          paddingVertical: 6,
+                          press: () {
+                            tvPlayerBloc.add(TvPlayerEvent.changeCategory(index));
+                            Navigator.pop(context); // 👈 cerrar modal
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _scrollTo(index); // 👈 desplazar
+                            });
+                          },
+                          colorButton: isSelected ? ColorManager.primaryContainer : ColorManager.onInverseSurface,
+                          textStyleButton: Theme.of(context).textTheme.labelMedium,
+                          isExpanded: false,
+                        );
+                      },
+                    ).withPadding(all: 16),
                   ),
                 );
               },

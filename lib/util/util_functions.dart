@@ -23,7 +23,7 @@ String convertMinsToHoursAndMinutes(int? mins) {
 String convertIsoDateToLocal(String? isoString) {
   if (isoString == null) return "";
   final date = DateTime.parse(isoString).toLocal();
-  return DateFormat('dd/MM/yyyy').format(date);
+  return DateFormat('dd/MM/yyyy HH:mm:ss').format(date);
 }
 
 // String formatDuration(Duration duration) {

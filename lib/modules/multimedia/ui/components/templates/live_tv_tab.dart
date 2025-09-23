@@ -51,14 +51,6 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
     );
   }
 
-  // @override
-  // void didUpdateWidget(covariant LiveTab oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   if (oldWidget.scrollController != widget.scrollController) {
-  //     controller.stop();
-  //     controller.setMediaFromNetwork(tvPlayerBloc.state.channels[0].url, autoPlay: true);
-  //   }
-  // }
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -83,16 +75,6 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
     controller.play(); // volvemos → reanudar video
     _isVisible = true;
   }
-
-  // Detecta cuando la app entra en background/foreground
-  // @override
-  // void didChangeAppLifecycleState(AppLifecycleState state) {
-  //   if (state == AppLifecycleState.paused) {
-  //     controller.pause();
-  //   } else if (state == AppLifecycleState.resumed) {
-  //     controller.play();
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -119,80 +101,85 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
             child: Column(
               children: [
                 // Video Player Area
-                isTv ? const SizedBox(height: 140) : const SizedBox(height: 0),
+                isTv ? const SizedBox(height: 120) : const SizedBox(height: 0),
                 Expanded(
-                  flex: 3,
-                  child: ContainerFocus(
-                    onTap: () {
-                      Navigator.pushNamed(context, Routes.liveTvRoute, arguments: LiveTvDetailArguments(showChannelList: false));
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                  child: Row(
+                    spacing: AppPadding.p16,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: ContainerFocus(
+                          onTap: () {
+                            Navigator.pushNamed(context, Routes.liveTvRoute, arguments: LiveTvDetailArguments(showChannelList: false));
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: BlocConsumer<TvPlayerBloc, TvPlayerState>(
+                                bloc: tvPlayerBloc,
+                                buildWhen: (previous, current) {
+                                  return _isVisible;
+                                },
+                                listener: (context, state) {
+                                  if (state.status == TVPlayerStatus.changeChannelSuccess) {
+                                    controller.setMediaFromNetwork(state.selectedChannelIndex?.url ?? '', autoPlay: _isVisible);
+                                  }
+                                },
+                                builder: (context, state) {
+                                  return VideoPlayerView(
+                                    controller: controller,
+                                    aspectRatio: 2 / 1,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      clipBehavior: Clip.antiAlias,
-                      child: AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: BlocConsumer<TvPlayerBloc, TvPlayerState>(
+                      Expanded(
+                        flex: 1,
+                        child: BlocBuilder<TvPlayerBloc, TvPlayerState>(
                           bloc: tvPlayerBloc,
-                          buildWhen: (previous, current) {
-                            return _isVisible;
-                          },
-                          listener: (context, state) {
-                            if (state.status == TVPlayerStatus.changeChannelSuccess) {
-                              controller.setMediaFromNetwork(state.selectedChannelIndex?.url ?? '', autoPlay: _isVisible);
-                            }
-                          },
                           builder: (context, state) {
-                            return VideoPlayerView(
-                              controller: controller,
-                              aspectRatio: 16 / 9,
+                            return LayoutBuilder(
+                              builder: (context, constraints) {
+                                return Column(
+                                  children: [
+                                    if (state.status == TVPlayerStatus.loadingChannels)
+                                      Expanded(
+                                        child: Column(
+                                          spacing: AppPadding.p16,
+                                          children: List.generate(
+                                            4,
+                                            (index) => Expanded(child: ShimmerAnimation(shimmerGradient, 0, double.infinity, 8)),
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      Expanded(
+                                        child: FocusTraversalGroup(
+                                          policy: VerticalEdgeBlockPolicy(),
+                                          child: Column(
+                                            spacing: AppPadding.p16,
+                                            children: List.generate(
+                                              state.homeCategories.length,
+                                              (index) => Expanded(child: ChannelHomeCard(channels: state.homeCategories, tvPlayerBloc: tvPlayerBloc, channelWidth: 120, index: index)),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
                             );
                           },
                         ),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                Expanded(
-                  flex: 1,
-                  child: BlocBuilder<TvPlayerBloc, TvPlayerState>(
-                    bloc: tvPlayerBloc,
-                    builder: (context, state) {
-                      return SizedBox(
-                        height: 20,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return Column(
-                              children: [
-                                if (state.status == TVPlayerStatus.loadingChannels)
-                                  Expanded(
-                                    child: Row(
-                                      spacing: AppPadding.p16,
-                                      children: List.generate(
-                                        4,
-                                        (index) => Expanded(child: ShimmerAnimation(shimmerGradient, 0, double.infinity, 8)),
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  Expanded(
-                                    child: Row(
-                                      spacing: AppPadding.p16,
-                                      children: List.generate(
-                                        state.homeCategories.length,
-                                        (index) => Expanded(child: channel_home_card(channels: state.homeCategories, tvPlayerBloc: tvPlayerBloc, channelWidth: 120, index: index)),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
-                        ),
-                      );
-                    },
+                    ],
                   ),
                 ),
               ],
@@ -204,8 +191,8 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
   }
 }
 
-class channel_home_card extends StatelessWidget {
-  const channel_home_card({
+class ChannelHomeCard extends StatelessWidget {
+  const ChannelHomeCard({
     super.key,
     required this.channels,
     required this.tvPlayerBloc,
@@ -229,7 +216,7 @@ class channel_home_card extends StatelessWidget {
         }
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.r),
+        padding: EdgeInsets.symmetric(horizontal: 16.r),
         constraints: BoxConstraints(
           minWidth: 150.r,
         ),
@@ -253,8 +240,8 @@ class channel_home_card extends StatelessWidget {
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: ImageWithPlaceholder(
-                      width: 60.r,
-                      height: 60.r,
+                      width: 46.r,
+                      height: 46.r,
                       imageUrl: channels[index].logo,
                       fit: BoxFit.cover,
                     ),

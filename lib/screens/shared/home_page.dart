@@ -13,7 +13,6 @@ import 'package:scrolltv_frontend_mobile_flutter/screens/shared/live_tv_detail.d
 import 'package:scrolltv_frontend_mobile_flutter/screens/shared/profile_page.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
-import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/app_dialog_customize.dart';
 
 class HomePage extends StatefulWidget {
@@ -66,6 +65,7 @@ class _HomePageState extends State<HomePage> {
       ],
       child: WillPopScope(
         onWillPop: () async {
+          if (isLandscape) return true;
           final result = await showDialog<bool>(
             context: context,
             builder: (context) => AppDialogCustomize(
@@ -82,7 +82,6 @@ class _HomePageState extends State<HomePage> {
           return result ?? false;
         },
         child: ResponsiveManager(
-          desktopView: _desktopView(),
           mobileView: _mobileView(),
         ),
       ),
@@ -90,85 +89,79 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _getBody() {
-    if (_currentIndex == 0) return HomeTabBar();
-    if (_currentIndex == 1 && isScrollTV) return LiveTvDetail();
-    return ProfilePage();
+    return IndexedStack(
+      index: _currentIndex == 0 ? 0 : 1,
+      children: [
+        HomeTabBar(),
+        Builder(
+          builder: (context) {
+            if (_currentIndex == 1) {
+              return isScrollTV ? LiveTvDetail() : SizedBox.shrink();
+            } else if (_currentIndex == 2) {
+              return ProfilePage();
+            }
+            return SizedBox.shrink();
+          },
+        ),
+      ],
+    );
   }
 
   Widget _mobileView() {
     return SafeArea(
       child: Scaffold(
         backgroundColor: ColorManager.surfaceContainerLowest,
-        bottomNavigationBar: Theme(
-          data: ThemeData(
-            splashFactory: NoSplash.splashFactory, // elimina ripple
-            highlightColor: Colors.transparent, // elimina highlight
-            splashColor: Colors.transparent,
-          ),
-          child: isLandscape
-              ? SizedBox()
-              : BottomNavigationBar(
-                  useLegacyColorScheme: false,
-
-                  backgroundColor: ColorManager.surfaceContainerLowest,
-                  onTap: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-
-                  currentIndex: _currentIndex,
-                  selectedItemColor: ColorManager.primary, // color del texto activo
-                  unselectedItemColor: Colors.white, // color de los inactivos
-                  showUnselectedLabels: false,
-                  showSelectedLabels: false,
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home),
-                      label: 'Home',
-                    ),
-                    if (isScrollTV)
-                      BottomNavigationBarItem(
-                        activeIcon: SvgPicture.asset(ImageAssets.iconLive, color: ColorManager.primary),
-                        icon: SvgPicture.asset(ImageAssets.iconLive),
-                        label: 'Search',
-                      ),
-                    BottomNavigationBarItem(
-                      icon: Icon(
-                        Icons.person,
-                      ),
-                      label: 'Profile',
-                    ),
-                  ],
+        bottomNavigationBar: PlatformUtils.isTV
+            ? SizedBox()
+            : Theme(
+                data: ThemeData(
+                  splashFactory: NoSplash.splashFactory, // elimina ripple
+                  highlightColor: Colors.transparent, // elimina highlight
+                  splashColor: Colors.transparent,
                 ),
-        ),
+                child: isLandscape
+                    ? SizedBox()
+                    : BottomNavigationBar(
+                        useLegacyColorScheme: false,
+
+                        backgroundColor: ColorManager.surfaceContainerLowest,
+                        onTap: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                          });
+                        },
+
+                        currentIndex: _currentIndex,
+                        selectedItemColor: ColorManager.primary, // color del texto activo
+                        unselectedItemColor: Colors.white, // color de los inactivos
+                        showUnselectedLabels: false,
+                        showSelectedLabels: false,
+                        items: [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.home),
+                            label: 'Home',
+                          ),
+                          if (isScrollTV)
+                            BottomNavigationBarItem(
+                              activeIcon: SvgPicture.asset(ImageAssets.iconLive, color: ColorManager.primary),
+                              icon: SvgPicture.asset(ImageAssets.iconLive),
+                              label: 'Search',
+                            ),
+                          BottomNavigationBarItem(
+                            icon: Icon(
+                              Icons.person,
+                            ),
+                            label: 'Profile',
+                          ),
+                        ],
+                      ),
+              ),
         body: BlocBuilder<HomeBloc, HomeState>(
           bloc: homeBloc,
           builder: (context, state) {
-            return _getBody();
+            return PlatformUtils.isTV ? HomeTabBar() : _getBody();
           },
         ),
-      ),
-    );
-  }
-
-  Widget _desktopView() {
-    return AppScaffold(
-      padding: AppPadding.p0,
-      body: Column(
-        spacing: AppPadding.p16,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: BlocBuilder<HomeBloc, HomeState>(
-              bloc: homeBloc,
-              builder: (context, state) {
-                return HomeTabBar();
-              },
-            ),
-          ),
-        ],
       ),
     );
   }

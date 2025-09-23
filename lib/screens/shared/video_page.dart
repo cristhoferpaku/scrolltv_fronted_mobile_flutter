@@ -92,6 +92,8 @@ class _VideoPageState extends State<VideoPage> {
     super.initState();
     WakelockPlus.enable();
     bloc = instance<VideoPlayerBloc>();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)!.settings.arguments as VideoPageArguments;
       initialEpisodeNumber = args.episodeNumber;
@@ -244,6 +246,8 @@ class _VideoPageState extends State<VideoPage> {
         DeviceOrientation.portraitDown,
       ]);
     }
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     super.dispose();
   }
 

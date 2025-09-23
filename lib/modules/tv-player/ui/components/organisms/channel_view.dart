@@ -35,7 +35,7 @@ class _ChannelViewState extends State<ChannelView> {
         child: Container(
           width: double.infinity,
           height: double.infinity,
-          color: Colors.grey,
+          color: Colors.black,
         ),
       );
     }
@@ -158,7 +158,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> with SingleTickerProv
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     }
   }
 

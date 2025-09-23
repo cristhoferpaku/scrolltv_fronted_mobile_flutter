@@ -37,10 +37,12 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
     WakelockPlus.enable(); // activa al entrar
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final arguments = ModalRoute.of(context)!.settings.arguments as LiveTvDetailArguments;
+      if (isTv) {
+        final arguments = ModalRoute.of(context)!.settings.arguments as LiveTvDetailArguments;
 
-      if (arguments.showChannelList && isTv) {
-        livePlayerBloc.add(TvPlayerEvent.showPanelChannelByHome());
+        if (arguments.showChannelList) {
+          livePlayerBloc.add(TvPlayerEvent.showPanelChannelByHome());
+        }
       }
     });
   }
