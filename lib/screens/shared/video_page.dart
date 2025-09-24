@@ -74,7 +74,7 @@ class _VideoPageState extends State<VideoPage> {
   bool get _isValidFocusIndex => _currentFocusIndex >= 0 && _currentFocusIndex <= _maxFocusIndex;
 
   // Getter para verificar si hay algún panel abierto
-  bool get _hasAnyPanelOpen => showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel;
+  bool get _hasAnyPanelOpen => showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel || (_controlsManager?.showControls ?? false);
 
   // Función para validar y corregir el focus si es necesario
   void _validateAndCorrectFocus() {
@@ -567,14 +567,28 @@ class _VideoPageState extends State<VideoPage> {
     return PopScope(
       canPop: !_hasAnyPanelOpen,
       onPopInvoked: (didPop) {
+        print('🔙 PopScope - didPop: $didPop, _hasAnyPanelOpen: $_hasAnyPanelOpen');
+        print('📱 Paneles - subtitle: $showSubtitlePanel, audio: $showAudioPanel, quality: $showQualityPanel, episode: $showEpisodePanel');
+        print('🎮 Controles - showControls: ${_controlsManager?.showControls ?? false}');
+
         if (didPop) return; // ya se hizo el pop por el sistema
-        // Si no se hizo pop (porque canPop == false), cerramos paneles
+
+        // Si no se hizo pop (porque canPop == false), verificamos qué cerrar
         if (_hasAnyPanelOpen) {
           setState(() {
-            showSubtitlePanel = false;
-            showAudioPanel = false;
-            showQualityPanel = false;
-            showEpisodePanel = false;
+            // Primero cerramos los paneles si están abiertos
+            if (showSubtitlePanel || showAudioPanel || showQualityPanel || showEpisodePanel) {
+              print('🔒 Cerrando paneles...');
+              showSubtitlePanel = false;
+              showAudioPanel = false;
+              showQualityPanel = false;
+              showEpisodePanel = false;
+            }
+            // Si solo están los controles visibles, los ocultamos
+            else if (_controlsManager?.showControls ?? false) {
+              print('🎮 Ocultando controles...');
+              _controlsManager?.hideControls();
+            }
           });
           //_cancelEpisodePanelTimer();
           //_controlsManager?.dispose();
@@ -698,7 +712,7 @@ class _VideoPageState extends State<VideoPage> {
                                 Spacer(),
                                 //CONTROLS
                                 Padding(
-                                  padding: EdgeInsets.all(isTV ? 32 : 16),
+                                  padding: EdgeInsets.all(16),
                                   child: Column(
                                     children: [
                                       // Play/Pause Button and Times Row (above slider)
@@ -719,7 +733,7 @@ class _VideoPageState extends State<VideoPage> {
                                                 icon: Icon(
                                                   state.hasEnded ? Icons.replay : (state.isPlaying ? Icons.pause : Icons.play_arrow),
                                                   color: Colors.white,
-                                                  size: isTV ? 48 : 32,
+                                                  size: 32,
                                                 ),
                                                 onPressed: () async {
                                                   if (state.hasEnded) {
@@ -764,8 +778,8 @@ class _VideoPageState extends State<VideoPage> {
                                             inactiveTrackColor: Colors.white.withOpacity(0.3),
                                             thumbColor: Colors.white,
                                             overlayColor: Colors.white.withOpacity(0.2),
-                                            trackHeight: 4,
-                                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                                            trackHeight: 3,
+                                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
                                           ),
                                           child: Slider(
                                             value: state.duration.inMilliseconds > 0 ? (state.currentPosition.inMilliseconds / state.duration.inMilliseconds).clamp(0.0, 1.0) : 0.0,
@@ -811,7 +825,7 @@ class _VideoPageState extends State<VideoPage> {
                                                 child: Row(
                                                   children: [
                                                     IconButton(
-                                                      icon: Icon(Icons.video_collection_outlined, color: Colors.white, size: isTV ? 40 : 32),
+                                                      icon: Icon(Icons.video_collection_outlined, color: Colors.white, size: 32),
                                                       onPressed: () {
                                                         print('🎬 Cargando episodios con seasonId: $seasonId');
                                                         bloc.add(VideoPlayerEvent.loadEpisodes(seasonId: seasonId ?? 0));
@@ -840,7 +854,7 @@ class _VideoPageState extends State<VideoPage> {
                                                   )
                                                 : null,
                                             child: IconButton(
-                                              icon: Icon(Icons.replay, color: Colors.white, size: isTV ? 40 : 32),
+                                              icon: Icon(Icons.replay, color: Colors.white, size: 32),
                                               onPressed: () async {
                                                 bloc.add(const VideoPlayerEvent.restart());
                                                 _controlsManager?.resetTimer();
@@ -862,7 +876,7 @@ class _VideoPageState extends State<VideoPage> {
                                                   )
                                                 : null,
                                             child: IconButton(
-                                              icon: Icon(Icons.volume_up, color: Colors.white, size: isTV ? 40 : 32),
+                                              icon: Icon(Icons.volume_up, color: Colors.white, size: 32),
                                               onPressed: () {
                                                 bloc.add(VideoPlayerEvent.loadAudioTracks());
                                                 _showAudioPanel();
@@ -885,7 +899,7 @@ class _VideoPageState extends State<VideoPage> {
                                                   )
                                                 : null,
                                             child: IconButton(
-                                              icon: Icon(Icons.closed_caption, color: Colors.white, size: isTV ? 40 : 32),
+                                              icon: Icon(Icons.closed_caption, color: Colors.white, size: 32),
                                               onPressed: () {
                                                 bloc.add(VideoPlayerEvent.loadSubtitleTracks());
                                                 _showSubtitlePanel();
@@ -908,7 +922,7 @@ class _VideoPageState extends State<VideoPage> {
                                                   )
                                                 : null,
                                             child: IconButton(
-                                              icon: Icon(Icons.settings, color: Colors.white, size: isTV ? 40 : 32),
+                                              icon: Icon(Icons.settings, color: Colors.white, size: 32),
                                               onPressed: () {
                                                 _showQualityPanel();
                                                 _controlsManager?.resetTimer();

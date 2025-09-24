@@ -281,7 +281,7 @@ class OptionPanelState extends State<OptionPanel> {
   }
 
   Widget _buildPanel({required List<TrackOptionModel> options, required int selectedKey, required Function(int) onValueChanged}) {
-    final panelWidth = isTV ? 450.0 : 300.0;
+    final panelWidth = isTV ? 400.0 : 300.0;
 
     print('OptionPanel: selectedKey $selectedKey');
     print('Opciones del panel ${options.map((o) => o.key).toList()}');
@@ -327,16 +327,16 @@ class OptionPanelState extends State<OptionPanel> {
             // Header
             Container(
               padding: EdgeInsets.all(isTV ? 32 : 20),
-              decoration: isTV
-                  ? BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: const Color(0xFF2DD4BF).withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                    )
-                  : null,
+              // decoration: isTV
+              //     ? BoxDecoration(
+              //         border: Border(
+              //           bottom: BorderSide(
+              //             color: const Color(0xFF2DD4BF).withOpacity(0.3),
+              //             width: 1,
+              //           ),
+              //         ),
+              //       )
+              //     : null,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -363,7 +363,7 @@ class OptionPanelState extends State<OptionPanel> {
                         widget.title,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: isTV ? 32 : 24,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -417,15 +417,15 @@ class OptionPanelState extends State<OptionPanel> {
                     ),
                     child: ListTile(
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: isTV ? 24 : 16,
-                        vertical: isTV ? 18 : 12,
+                        horizontal: 16,
+                        vertical: 12,
                       ),
                       title: Text(
                         option.value,
                         style: TextStyle(
                           color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          fontSize: isTV ? 22 : 18,
+                          fontSize: 18,
                           shadows: isSelected
                               ? [
                                   Shadow(
