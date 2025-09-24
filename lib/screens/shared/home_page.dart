@@ -32,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
   UserRepository userRepository = instance<UserRepository>();
   bool isLandscape = false;
+  bool isTV = PlatformUtils.isTV;
 
   @override
   void initState() {
@@ -65,7 +66,7 @@ class _HomePageState extends State<HomePage> {
       ],
       child: WillPopScope(
         onWillPop: () async {
-          if (isLandscape) return true;
+          if (!isTV && isLandscape) return true;
           final result = await showDialog<bool>(
             context: context,
             builder: (context) => AppDialogCustomize(
@@ -96,7 +97,7 @@ class _HomePageState extends State<HomePage> {
         Builder(
           builder: (context) {
             if (_currentIndex == 1) {
-              return isScrollTV ? LiveTvDetail() : SizedBox.shrink();
+              return isScrollTV ? LiveTvDetail() : ProfilePage();
             } else if (_currentIndex == 2) {
               return ProfilePage();
             }

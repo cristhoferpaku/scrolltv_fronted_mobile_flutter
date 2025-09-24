@@ -110,7 +110,16 @@ class AuthApiRepository implements AuthRepositoryPort {
       LoggerManager.log.i(response.data.toString());
 
       if (response.data != null) {
-        if (response.data["message"] == "Dispositivo no encontrado o no autorizado para este usuario") {
+        // if (response.data["data"] != null) {
+        //   ExpirationResponse expirationResponse = ExpirationResponse.fromJson(response.data["data"]);
+        //   if (expirationResponse.success == false) {
+        //     throw Exception(expirationResponse.message);
+        //   }
+        // }
+        if (response.data["message"] == "Su cuenta ha expirado") {
+          throw Exception("El servicio ha expirado, contacte al administrador");
+        }
+        if (response.data["message"] == "Limite de dispositivos alcanzado") {
           throw Exception("Dispositivo no encontrado o no autorizado para este usuario");
         }
         return ApiResponse<void>.fromJson(response.data, (json) {});
