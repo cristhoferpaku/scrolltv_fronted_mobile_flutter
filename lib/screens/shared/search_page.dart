@@ -25,6 +25,7 @@ class _SearchPageState extends State<SearchPage> {
   final SearchBloc searchBloc = instance<SearchBloc>();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _keyboardFocus = FocusNode();
+  bool isTV = PlatformUtils.isTV;
 
   @override
   void initState() {
@@ -36,7 +37,6 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return ResponsiveManager(
       mobileView: _mobileView(),
-      desktopView: _desktopView(),
     );
   }
 
@@ -66,16 +66,32 @@ class _SearchPageState extends State<SearchPage> {
             },
             builder: (context, state) {
               if (state is SearchStateLoaded) {
-                return Column(
-                  children: [
-                    SearchInput(
-                      searchController: _searchController,
-                      keyboardFocus: _keyboardFocus,
-                      searchBloc: searchBloc,
-                    ),
-                    Expanded(child: SearchResults().withPadding(top: AppPadding.p16)),
-                  ],
-                ).withPadding(top: AppPadding.p16);
+                return isTV
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: AppPadding.p16.r,
+                        children: [
+                          Expanded(
+                            flex: 6,
+                            child: SearchInput(searchController: _searchController, keyboardFocus: _keyboardFocus, searchBloc: searchBloc),
+                          ),
+                          Expanded(
+                            flex: 10,
+                            child: SearchResults(),
+                          ),
+                        ],
+                      ).withPadding(top: AppPadding.p16)
+                    : Column(
+                        children: [
+                          SearchInput(
+                            searchController: _searchController,
+                            keyboardFocus: _keyboardFocus,
+                            searchBloc: searchBloc,
+                          ),
+                          Expanded(child: SearchResults().withPadding(top: AppPadding.p16)),
+                        ],
+                      ).withPadding(top: AppPadding.p16);
               }
               return const SizedBox.shrink();
             },
@@ -83,57 +99,6 @@ class _SearchPageState extends State<SearchPage> {
         )
       ],
     ));
-  }
-
-  AppScaffold _desktopView() {
-    return AppScaffold(
-      body: Stack(
-        children: [
-          BlurBackground(
-            top: 0,
-            left: 0,
-            width: 300,
-            height: 300,
-            offset: Offset(-100, 0),
-          ),
-          BlurBackground(
-            right: 0,
-            bottom: 0,
-            width: 300,
-            height: 300,
-            offset: Offset(100, 0),
-          ),
-          Positioned.fill(
-            child: BlocConsumer<SearchBloc, SearchState>(
-              bloc: searchBloc,
-              listener: (context, state) {
-                searchListener(context, state);
-              },
-              builder: (context, state) {
-                if (state is SearchStateLoaded) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: AppPadding.p16.r,
-                    children: [
-                      Expanded(
-                        flex: 6,
-                        child: SearchInput(searchController: _searchController, keyboardFocus: _keyboardFocus, searchBloc: searchBloc),
-                      ),
-                      Expanded(
-                        flex: 10,
-                        child: SearchResults(),
-                      ),
-                    ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          )
-        ],
-      ),
-    );
   }
 }
 
