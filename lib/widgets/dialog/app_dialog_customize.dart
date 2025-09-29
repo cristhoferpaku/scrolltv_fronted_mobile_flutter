@@ -113,7 +113,7 @@ class _AppDialogCustomizeState extends State<AppDialogCustomize> {
             Center(
               child: Container(
                 constraints: BoxConstraints(maxWidth: 400),
-                padding: EdgeInsets.all(32),
+                padding: EdgeInsets.all(20),
                 child: Card(
                   shadowColor: Colors.transparent,
                   elevation: 8,
