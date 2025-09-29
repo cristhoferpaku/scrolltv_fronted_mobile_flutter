@@ -203,7 +203,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           _buildTextField(
             controller: _emailController,
             focusNode: _emailFocusNode,
-            hintText: 'Uisesxs31',
+            hintText: 'Ingrese su cuenta',
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
@@ -219,7 +219,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
           // Label Contraseña
           Text(
-            'Contraseña',
+            'Ingrese su contraseña',
             style: TextStyle(
               color: ColorManager.white,
               fontSize: PlatformUtils.isTV ? 18 : 16,
