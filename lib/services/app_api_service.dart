@@ -48,7 +48,7 @@ class HttpDioService {
       headers: header(),
       validateStatus: (status) {
         // Acepta cualquier status < 500 para que llegue al try/catch
-        if (status == 401 || status == 403 || status == 491) {
+        if (status == 401 || status == 491) {
           return false; // hará que dispare onError
         }
         return status != null && status < 500;
@@ -76,7 +76,7 @@ class HttpDioService {
             }
             final refreshTokenUser = await userRepository.getTokenRefresh();
 
-            if (refreshTokenUser.isNotEmpty && (error.response?.statusCode == 401 || error.response?.statusCode == 403)) {
+            if (refreshTokenUser.isNotEmpty && (error.response?.statusCode == 401)) {
               try {
                 await refreshToken();
 
@@ -139,7 +139,7 @@ class HttpDioService {
         response = await _dio!.get(url, queryParameters: params);
       }
 
-      if (response.statusCode == 200 || response.statusCode == 304) {
+      if (response.statusCode == 200 || response.statusCode == 304 || response.statusCode == 403) {
         return response;
       } else if (response.statusCode == 401) {
         throw Exception('No autorizado. Verifica tus credenciales.');

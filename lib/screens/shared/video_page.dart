@@ -88,7 +88,6 @@ class _VideoPageState extends State<VideoPage> {
   AuthBloc authBloc = instance<AuthBloc>();
   @override
   void initState() {
-    authBloc.add(AuthEvent.validateExpiration());
     super.initState();
     WakelockPlus.enable();
     bloc = instance<VideoPlayerBloc>();

@@ -38,12 +38,12 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     homeBloc.add(HomeEvent.started());
     searchBloc.add(SearchEvent.getInitialVideos());
-    authBloc.add(AuthEvent.validateExpiration());
     livePlayerBloc.add(TvPlayerEvent.started());
+    authBloc.add(AuthEvent.startValidate());
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      LoggerManager.log.i(await userRepository.getToken());
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   LoggerManager.log.i(await userRepository.getToken());
+    // });
   }
 
   @override
