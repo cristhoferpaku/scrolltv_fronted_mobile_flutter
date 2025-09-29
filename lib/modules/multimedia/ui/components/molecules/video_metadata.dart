@@ -26,7 +26,7 @@ class VideoMetadata extends StatelessWidget {
             paddingHorizontal: 8,
             paddingVertical: 4,
             isExpanded: false,
-            textButton: section,
+            textButton: genre,
             colorButton: ColorManager.transparent,
             colorBorder: ColorManager.onSurface,
             textStyleButton: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -51,21 +51,21 @@ class VideoMetadata extends StatelessWidget {
           backgroundColor: ColorManager.neutro200,
         ),
         Text(
-          duration,
+          duration.isNotEmpty ? duration : "No hay duración",
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: ColorManager.onSurface,
               ),
         ),
-        CircleAvatar(
-          radius: 2,
-          backgroundColor: ColorManager.neutro200,
-        ),
-        Text(
-          genre,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: ColorManager.onSurface,
-              ),
-        ),
+        // CircleAvatar(
+        //   radius: 2,
+        //   backgroundColor: ColorManager.neutro200,
+        // ),
+        // Text(
+        //   genre,
+        //   style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        //         color: ColorManager.onSurface,
+        //       ),
+        // ),
       ],
     );
   }
