@@ -24,6 +24,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   Duration? _lastPosition;
   bool _hasConnectivity = true;
 
+  // Variables para preservar pistas de audio y subtítulos
+  int? _lastAudioTrack;
+  int? _lastSubtitleTrack;
+
   VideoPlayerBloc() : super(const VideoPlayerState.initial()) {
     // Caché para episodios por seasonId
     final Map<int, List<EpisodeModel>> episodesCache = {};
@@ -36,6 +40,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
     on<_VideoPlayerEventLoadedVideo>((event, emit) async {
       try {
+        // Guardar las pistas actuales antes de destruir el controlador
+        _saveCurrentTracks();
+
         await controller?.stop();
         await controller?.dispose();
 
@@ -57,7 +64,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
         // Configurar listeners para posición y duración
         _setupPositionListeners();
-
+        await _applyPreferredTracks();
         // Esperar un momento para que VLC intente cargar el video
         await Future.delayed(const Duration(milliseconds: 500));
 
@@ -73,8 +80,12 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
               showSubtitlePanel: false,
               isPlaying: true,
               hasConnectivity: _hasConnectivity,
+              currentAudioIndex: _lastAudioTrack ?? 0,
+              currentSubtitleIndex: _lastSubtitleTrack ?? -1,
             ),
           );
+
+          // Restaurar las pistas después de emitir el estado
         } else {
           emit(VideoPlayerState.error('No se pudo inicializar el reproductor'));
         }
@@ -126,6 +137,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     on<_VideoPlayerEventChangeEpisode>((event, emit) async {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded) {
+        // Guardar las pistas actuales antes de cambiar episodio
+        _saveCurrentTracks();
+
         emit(currentState.copyWith(
           status: VideoPlayerStatus.loading,
           isLoading: true,
@@ -145,6 +159,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
                 autoPlay: true,
                 // si tu versión lo soporta, puedes pasar opciones aquí
               );
+              await _applyPreferredTracks();
             } catch (e) {
               // fallback: si setMediaFromNetwork falla, recreamos de forma segura
               try {
@@ -190,6 +205,8 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
               showAudioPanel: false,
               showSubtitlePanel: false,
               isLoading: false,
+              currentAudioIndex: _lastAudioTrack ?? latest.currentAudioIndex,
+              currentSubtitleIndex: _lastSubtitleTrack ?? latest.currentSubtitleIndex,
             ));
           } else {
             // si por alguna razón el state cambió, emitir loaded nuevo
@@ -203,6 +220,8 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
               showAudioPanel: false,
               showSubtitlePanel: false,
               isLoading: false,
+              currentAudioIndex: _lastAudioTrack ?? 0,
+              currentSubtitleIndex: _lastSubtitleTrack ?? -1,
             ));
           }
         } catch (e) {
@@ -286,36 +305,41 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
     // Evento: cambiar pista de audio
     on<_VideoPlayerEventChangeAudioTrack>((event, emit) async {
+      // Guardar preferencia siempre
+      _lastAudioTrack = event.trackId;
+
       final currentState = state;
       if (controller != null) {
         try {
+          // Intentar aplicar inmediatamente (si funciona mejor), si no, _applyPreferredTracks se encargará
           await controller!.setAudioTrack(event.trackId);
           if (currentState is VideoPlayerStateLoaded) {
             emit(currentState.copyWith(currentAudioIndex: event.trackId));
           }
-        } catch (e) {
-          // Error al cambiar pista de audio
+          return;
+        } catch (_) {
+          // si falla, continuamos: la preferencia quedó guardada y será aplicada por _applyPreferredTracks
         }
       }
     });
 
     // Evento: cambiar pista de subtítulos
     on<_VideoPlayerEventChangeSubtitleTrack>((event, emit) async {
+      _lastSubtitleTrack = event.trackId;
       final currentState = state;
       if (controller != null) {
         try {
-          // Si el trackId es -1, desactivar subtítulos
           if (event.trackId == -1) {
-            await controller!.setSpuTrack(-1); // Desactivar subtítulos en VLC
+            await controller!.setSpuTrack(-1);
           } else {
             await controller!.setSpuTrack(event.trackId);
           }
-
           if (currentState is VideoPlayerStateLoaded) {
             emit(currentState.copyWith(currentSubtitleIndex: event.trackId));
           }
-        } catch (e) {
-          // Error al cambiar subtítulos
+          return;
+        } catch (_) {
+          // dejar guardada la preferencia para reintento
         }
       }
     });
@@ -359,13 +383,19 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {
         try {
+          // Guardar las pistas actuales antes de reiniciar
+          _saveCurrentTracks();
+
           if (!currentState.hasEnded) {
             await controller!.seekTo(Duration.zero);
             await controller!.play();
+            await _applyPreferredTracks();
             emit(currentState.copyWith(
               hasEnded: false,
               isPlaying: true,
               currentPosition: Duration.zero,
+              currentAudioIndex: _lastAudioTrack ?? currentState.currentAudioIndex,
+              currentSubtitleIndex: _lastSubtitleTrack ?? currentState.currentSubtitleIndex,
             ));
             return;
           }
@@ -377,7 +407,12 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
             hasEnded: false,
             isPlaying: true,
             currentPosition: Duration.zero,
+            currentAudioIndex: _lastAudioTrack ?? currentState.currentAudioIndex,
+            currentSubtitleIndex: _lastSubtitleTrack ?? currentState.currentSubtitleIndex,
           ));
+
+          // Restaurar las pistas después de reiniciar
+          await _applyPreferredTracks();
         } catch (e) {
           // Error al reiniciar
         }
@@ -592,6 +627,84 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         videoUrl: _lastVideoUrl!,
         episodeNum: _lastEpisodeNum!,
       ));
+    }
+  }
+
+  // Método helper para guardar las pistas actuales antes de recrear el controlador
+  void _saveCurrentTracks() {
+    final currentState = state;
+    if (currentState is VideoPlayerStateLoaded) {
+      _lastAudioTrack = currentState.currentAudioIndex;
+      _lastSubtitleTrack = currentState.currentSubtitleIndex;
+    }
+  }
+
+// Reemplaza _restoreTracksAfterDelay por esto:
+  Future<void> _applyPreferredTracks({Duration timeout = const Duration(seconds: 4)}) async {
+    if (controller == null) return;
+
+    final start = DateTime.now();
+
+    // Esperar a que el controller esté inicializado (timeout)
+    while (!controller!.value.isInitialized) {
+      if (DateTime.now().difference(start) > timeout) break;
+      await Future.delayed(const Duration(milliseconds: 150));
+    }
+
+    // Intenta recuperar y aplicar pista de audio si existe
+    if (_lastAudioTrack != null && _lastAudioTrack! >= 0) {
+      final audioStart = DateTime.now();
+      bool applied = false;
+
+      while (!applied && DateTime.now().difference(audioStart) <= timeout) {
+        try {
+          final audioTracks = await controller!.getAudioTracks();
+          if (audioTracks.containsKey(_lastAudioTrack)) {
+            await controller!.setAudioTrack(_lastAudioTrack!);
+            // Emitir estado actualizado si estamos en loaded
+            final currentState = state;
+            if (currentState is VideoPlayerStateLoaded) {
+              emit(currentState.copyWith(currentAudioIndex: _lastAudioTrack ?? 0));
+            }
+            applied = true;
+            break;
+          }
+        } catch (_) {
+          // ignorar y reintentar
+        }
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+    }
+
+    // Intenta recuperar y aplicar pista de subtítulo si existe
+    if (_lastSubtitleTrack != null) {
+      final subStart = DateTime.now();
+      bool appliedSub = false;
+
+      while (!appliedSub && DateTime.now().difference(subStart) <= timeout) {
+        try {
+          final spuTracks = await controller!.getSpuTracks();
+          if (_lastSubtitleTrack == -1) {
+            // opción para desactivar subtítulos
+            await controller!.setSpuTrack(-1);
+            final currentState = state;
+            if (currentState is VideoPlayerStateLoaded) {
+              emit(currentState.copyWith(currentSubtitleIndex: -1));
+            }
+            appliedSub = true;
+            break;
+          } else if (spuTracks.containsKey(_lastSubtitleTrack)) {
+            await controller!.setSpuTrack(_lastSubtitleTrack!);
+            final currentState = state;
+            if (currentState is VideoPlayerStateLoaded) {
+              emit(currentState.copyWith(currentSubtitleIndex: _lastSubtitleTrack ?? 0));
+            }
+            appliedSub = true;
+            break;
+          }
+        } catch (_) {}
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
     }
   }
 }

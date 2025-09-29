@@ -15,6 +15,7 @@ class EpisodePanel extends StatefulWidget {
   final Function(EpisodeModel) onValueChanged;
   final VoidCallback onClose;
   final VideoPlayerBloc bloc;
+  final VoidCallback? onInteraction; // Callback para resetear timer de controles
 
   const EpisodePanel({
     super.key,
@@ -25,6 +26,7 @@ class EpisodePanel extends StatefulWidget {
     required this.onValueChanged,
     required this.onClose,
     required this.bloc,
+    this.onInteraction, // Opcional para resetear timer
   }) : super();
 
   @override
@@ -155,6 +157,9 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
     if (!widget.isVisible || episodes.isEmpty) return false;
 
     if (event is KeyDownEvent) {
+      // Resetear timer de controles en cualquier interacción
+      widget.onInteraction?.call();
+      
       switch (event.logicalKey) {
         case LogicalKeyboardKey.arrowLeft:
           if (selectedIndex > 0) {
@@ -390,6 +395,8 @@ class EpisodePanelState extends State<EpisodePanel> with TickerProviderStateMixi
                                             ),
                                             child: GestureDetector(
                                               onTap: () {
+                                                // Resetear timer de controles al hacer tap
+                                                widget.onInteraction?.call();
                                                 _navigateToIndex(index);
                                                 _confirmSelection();
                                               },

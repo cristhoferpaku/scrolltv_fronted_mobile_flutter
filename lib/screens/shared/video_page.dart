@@ -215,7 +215,7 @@ class _VideoPageState extends State<VideoPage> {
   // Métodos para manejar el timer específico del episode panel
   void _startEpisodePanelTimer() {
     _cancelEpisodePanelTimer();
-    _episodePanelTimer = Timer(Duration(seconds: 8), () {
+    _episodePanelTimer = Timer(Duration(seconds: 4), () {
       if (mounted && showEpisodePanel) {
         _hideEpisodePanel();
       }
@@ -638,10 +638,10 @@ class _VideoPageState extends State<VideoPage> {
                         onTap: () {
                           if (!state.controller.value.isBuffering || state.controller.value.isInitialized) {
                             if (_controlsManager?.showControls == true && state.controller.value.isBuffering == false && state.controller.value.isPlaying == true) {
-                              print('👀 Ocultando controles');
+                              //print('👀 Ocultando controles');
                               _controlsManager?.hideControls();
                             } else {
-                              print('👀 Mostrando controles y reiniciando timer');
+                              //print('👀 Mostrando controles y reiniciando timer');
                               _controlsManager?.show(); // fuerza a visible
                               showAudioPanel = false;
                               showSubtitlePanel = false;
@@ -1008,6 +1008,11 @@ class _VideoPageState extends State<VideoPage> {
                                   showEpisodePanel = false;
                                 },
                                 onClose: _hideEpisodePanel,
+                                onInteraction: () {
+                                  // Resetear timer de controles cuando hay interacción en el panel
+                                  _controlsManager?.resetTimer();
+                                  _resetEpisodePanelTimer();
+                                },
                               ),
                           ],
                         ),
