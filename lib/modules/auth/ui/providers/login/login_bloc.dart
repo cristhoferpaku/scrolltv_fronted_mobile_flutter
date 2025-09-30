@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
+import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/entities/login_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/domain/ports/inbound/auth_use_case.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
@@ -29,6 +30,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         } else {
           emit(LoginState.error('Error de autenticación'));
         }
+      } on ExceptionApp catch (e) {
+        // Manejar específicamente ExceptionApp para mostrar solo el mensaje
+        LoggerManager.log.e('Error en login: ${e.message}');
+        emit(LoginState.error(e.message));
       } catch (e) {
         LoggerManager.log.e('Error en login: $e');
 
