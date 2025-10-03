@@ -20,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<AuthEvent>((event, emit) {});
     on<_AuthEventStartValidate>((event, emit) {
+      add(_AuthEventValidateExpiration());
       _startExpirationTimer();
     });
 
@@ -29,7 +30,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<_AuthEventValidateExpiration>((event, emit) async {
       emit(AuthState.loaded(status: AuthStatus.loading));
       try {
-        print("token: ${await userRepository.getToken()}");
         final deviceId = await userRepository.getDeviceId() ?? "";
         final response = await authUseCase.validateServiceExpiration(deviceId);
 
@@ -62,7 +62,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   void _startExpirationTimer() {
     _stopExpirationTimer(); // evita duplicados
-    _timer = Timer.periodic(const Duration(minutes: 5), (_) {
+    _timer = Timer.periodic(const Duration(hours: 1), (_) {
       add(const AuthEvent.validateExpiration());
     });
 

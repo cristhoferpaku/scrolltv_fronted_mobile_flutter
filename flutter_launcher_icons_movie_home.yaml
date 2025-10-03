@@ -9,3 +9,4 @@ flutter_launcher_icons:
     image: assets/images/img_launcher_icon_movie_home.png
     adaptive_icon_background: "#0F1312"
     adaptive_icon_foreground: "assets/images/img_launcher_icon_movie_home_android_12.png"
+  legacy_icon: true

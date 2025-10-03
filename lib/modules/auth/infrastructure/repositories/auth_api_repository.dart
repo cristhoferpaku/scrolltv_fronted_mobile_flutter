@@ -115,13 +115,7 @@ class AuthApiRepository implements AuthRepositoryPort {
         //   if (expirationResponse.success == false) {
         //     throw Exception(expirationResponse.message);
         //   }
-        // }
-        if (response.data["message"] == "Su cuenta ha expirado") {
-          throw Exception("El servicio ha expirado, contacte al administrador");
-        }
-        if (response.data["message"] == "Limite de dispositivos alcanzado") {
-          throw Exception("Dispositivo no encontrado o no autorizado para este usuario");
-        }
+
         return ApiResponse<void>.fromJson(response.data, (json) {});
       } else {
         throw Exception("Something wen't wrong");

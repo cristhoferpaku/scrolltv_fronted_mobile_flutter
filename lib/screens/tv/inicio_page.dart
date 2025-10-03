@@ -34,6 +34,7 @@ class _InicioPageState extends State<InicioPage> {
                   width: 400,
                 ),
                 ElevatedButtonApp(
+                  autofocus: true,
                   paddingHorizontal: AppPadding.p120,
                   isExpanded: false,
                   textButton: AppString.iniciarSesion,
