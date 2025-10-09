@@ -26,19 +26,35 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late String initialRouteApp;
   final AuthBloc authBloc = instance<AuthBloc>();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     initialRouteApp = getRouteByUserLogged(
       widget.logUser,
     );
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   final bool isTv = PlatformUtils.isTV;
+  // 🔸 Detectar cuando la app pasa a segundo plano o vuelve
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      authBloc.pauseTimer();
+    } else if (state == AppLifecycleState.resumed) {
+      authBloc.resumeTimer();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

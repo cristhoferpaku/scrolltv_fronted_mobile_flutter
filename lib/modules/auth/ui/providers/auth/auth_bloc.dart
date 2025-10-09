@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
@@ -73,6 +73,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _stopExpirationTimer() {
     _timer?.cancel();
     _timer = null;
+  }
+
+  // 👇 NUEVOS MÉTODOS
+  void pauseTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void resumeTimer() {
+    if (_timer == null) {
+      _startExpirationTimer();
+    }
   }
 
   @override

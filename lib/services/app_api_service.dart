@@ -6,7 +6,6 @@ import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_stor
 //import 'package:scrolltv_frontend_mobile_flutter/util/logger_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
-import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/repositories/user_repository.dart';
 import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
@@ -160,7 +159,7 @@ class HttpDioService {
         if (e.response?.data is Map<String, dynamic> && e.response?.data['message'] != null) {
           errorMessage = e.response?.data['message'].toString() ?? errorMessage;
         }
-        throw ExceptionApp(500, errorMessage);
+        throw Exception(errorMessage);
       } else if (e.message?.contains('Connection refused') == true || e.message?.contains('connection errored') == true) {
         throw Exception('No se puede conectar al servidor. Verifica que el servidor esté ejecutándose en la URL configurada.');
       } else {
