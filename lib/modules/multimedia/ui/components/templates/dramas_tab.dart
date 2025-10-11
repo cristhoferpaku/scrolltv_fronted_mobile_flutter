@@ -43,7 +43,7 @@ class _DramasTabState extends State<DramasTab> {
         child: BlocConsumer<HomeBloc, HomeState>(
           buildWhen: (previous, current) {
             if (current is HomeStateLoaded) {
-              return current.status == HomeStateStatus.loadedDramas || current.status == HomeStateStatus.loadingDramas;
+              return current.status == HomeStateStatus.loadedDramas || current.status == HomeStateStatus.loadingDramas || current.status == HomeStateStatus.error;
             }
             return false;
           },
@@ -53,27 +53,30 @@ class _DramasTabState extends State<DramasTab> {
             if (state is HomeStateLoaded) {
               if (state.status == HomeStateStatus.loadingDramas) {
                 return HomeSkeleton();
-              }
-              return Column(
-                children: [
-                  FocusTraversalGroup(
-                    policy: CustomGridTraversalPolicyStrictVertical(),
-                    child: Column(
-                      spacing: AppPadding.p36,
-                      children: [
-                        HomeHero(video: state.dramas?.banner ?? VideoModel()),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            CollectionList(collection: state.dramas?.collectionsContent ?? []),
-                          ],
-                        ).withPadding(all: AppPadding.p16),
-                      ],
+              } else if (state.status == HomeStateStatus.loadedDramas) {
+                return Column(
+                  children: [
+                    FocusTraversalGroup(
+                      policy: CustomGridTraversalPolicyStrictVertical(),
+                      child: Column(
+                        spacing: AppPadding.p36,
+                        children: [
+                          HomeHero(video: state.dramas?.banner ?? VideoModel()),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              CollectionList(collection: state.dramas?.collectionsContent ?? []),
+                            ],
+                          ).withPadding(all: AppPadding.p16),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              );
+                  ],
+                );
+              } else {
+                return Container();
+              }
             } else {
               return Container();
             }

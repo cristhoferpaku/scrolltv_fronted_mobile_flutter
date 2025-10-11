@@ -12,6 +12,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
+import 'package:scrolltv_frontend_mobile_flutter/widgets/dialog/app_dialog_customize.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/section_card_list_skeleton.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/video_details_skeleton.dart';
 
@@ -52,7 +53,11 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    if (state.status == VideoDetailsStateStatus.loadingVideo)
+                    if (state.status == VideoDetailsStateStatus.error)
+                      ContainerError(
+                        message: 'El video no esta disponible en estos momentos',
+                      )
+                    else if (state.status == VideoDetailsStateStatus.loadingVideo)
                       VideoDetailsSkeleton()
                     else if (state.videoContent?.video != null)
                       HomeHero(
@@ -81,6 +86,30 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
               return const SizedBox.shrink();
             },
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class ContainerError extends StatelessWidget {
+  final String message;
+  const ContainerError({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 1.sh,
+      child: Center(
+        child: AppDialogCustomize(
+          canPop: true,
+          message: message,
+          type: AppDialogCustomizeType.error,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          labelActionButton: "Regresar",
+          showCancelButton: false,
         ),
       ),
     );

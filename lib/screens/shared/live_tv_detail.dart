@@ -79,6 +79,7 @@ class _LiveTvDetailState extends State<LiveTvDetail> {
               } else {
                 if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                   livePlayerBloc.add(TvPlayerEvent.showPanelChannel(true));
+
                   return KeyEventResult.ignored;
                 }
 

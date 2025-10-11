@@ -43,7 +43,7 @@ class _KidsTabState extends State<KidsTab> {
         child: BlocConsumer<HomeBloc, HomeState>(
           buildWhen: (previous, current) {
             if (current is HomeStateLoaded) {
-              return current.status == HomeStateStatus.loadedKids || current.status == HomeStateStatus.loadingKids;
+              return current.status == HomeStateStatus.loadedKids || current.status == HomeStateStatus.loadingKids || current.status == HomeStateStatus.error;
             }
             return false;
           },
@@ -53,27 +53,30 @@ class _KidsTabState extends State<KidsTab> {
             if (state is HomeStateLoaded) {
               if (state.status == HomeStateStatus.loadingKids) {
                 return HomeSkeleton();
-              }
-              return Column(
-                children: [
-                  FocusTraversalGroup(
-                    policy: CustomGridTraversalPolicy(),
-                    child: Column(
-                      spacing: AppPadding.p36,
-                      children: [
-                        HomeHero(video: state.kids?.banner ?? VideoModel()),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            CollectionList(collection: state.kids?.collectionsContent ?? []),
-                          ],
-                        ).withPadding(all: AppPadding.p16),
-                      ],
+              } else if (state.status == HomeStateStatus.loadedKids) {
+                return Column(
+                  children: [
+                    FocusTraversalGroup(
+                      policy: CustomGridTraversalPolicy(),
+                      child: Column(
+                        spacing: AppPadding.p36,
+                        children: [
+                          HomeHero(video: state.kids?.banner ?? VideoModel()),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              CollectionList(collection: state.kids?.collectionsContent ?? []),
+                            ],
+                          ).withPadding(all: AppPadding.p16),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              );
+                  ],
+                );
+              } else {
+                return Container();
+              }
             } else {
               return Container();
             }

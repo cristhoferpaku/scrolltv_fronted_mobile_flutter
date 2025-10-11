@@ -18,7 +18,7 @@ class ScrollToTopOnUp extends StatelessWidget {
     return Focus(
       canRequestFocus: false,
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        if ((event is KeyDownEvent || event is KeyRepeatEvent) && event.logicalKey == LogicalKeyboardKey.arrowUp) {
           final currentFocus = FocusManager.instance.primaryFocus;
 
           if (currentFocus != null) {

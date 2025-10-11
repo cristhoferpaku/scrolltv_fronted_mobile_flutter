@@ -46,14 +46,7 @@ class _ChannelListState extends State<ChannelList> {
     return BlocConsumer<TvPlayerBloc, TvPlayerState>(
       bloc: tvPlayerBloc,
       listener: (context, state) {
-        if (state.status == TVPlayerStatus.showPanelChannelByHomeSuccess) {
-          tvPlayerBloc.add(TvPlayerEvent.showPanelChannel(true));
-          Actions.invoke(
-            context,
-            DirectionalFocusIntent(TraversalDirection.left),
-          );
-          return;
-        } else if (state.status == TVPlayerStatus.changeCategorySuccess) {
+        if (state.status == TVPlayerStatus.changeCategorySuccess) {
           if (scrollController.hasClients) {
             scrollController.jumpTo(0);
           }
@@ -70,16 +63,31 @@ class _ChannelListState extends State<ChannelList> {
               }
             },
             onKeyEvent: (FocusNode node, event) {
-              if (event is KeyDownEvent) {
+              if (event is KeyDownEvent || event is KeyRepeatEvent) {
                 if (widget.focusNodes.first.hasFocus && event.logicalKey == LogicalKeyboardKey.arrowUp) {
                   return KeyEventResult.handled;
                 }
                 if (widget.focusNodes.last.hasFocus && event.logicalKey == LogicalKeyboardKey.arrowDown) {
                   return KeyEventResult.handled;
                 }
+
+                if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                  Actions.invoke(
+                    context,
+                    const DirectionalFocusIntent(TraversalDirection.left),
+                  );
+                  return KeyEventResult.handled;
+                }
+
                 if (state.focusEnum == FocusEnum.channelList && event.logicalKey == LogicalKeyboardKey.arrowRight) {
                   tvPlayerBloc.add(TvPlayerEvent.showPanelChannel(false));
-                  return KeyEventResult.ignored;
+                  tvPlayerBloc.add(TvPlayerEvent.changeFocus(FocusEnum.channelView));
+
+                  final parent = FocusScope.of(context).parent;
+                  if (parent != null) {
+                    parent.nextFocus(); // o requestFocus(nodo específico)
+                  }
+                  return KeyEventResult.handled;
                 }
               }
               return KeyEventResult.ignored;

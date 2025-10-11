@@ -35,19 +35,23 @@ class SectionCardList extends StatefulWidget {
 
 class _SectionCardListState extends State<SectionCardList> {
   bool isTV = PlatformUtils.isTV;
-  @override
-  void initState() {
-    super.initState();
-  }
+  List<FocusNode> focusNodes = [];
+  int lastFocusindex = 0;
 
   @override
   Widget build(BuildContext context) {
+    if (focusNodes.length != widget.videos.length) {
+      for (var node in focusNodes) {
+        node.dispose();
+      }
+      focusNodes = List.generate(widget.videos.length, (_) => FocusNode());
+    }
     final isTV = PlatformUtils.isTV;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         FocusTraversalGroup(
-          policy: CustomGridTraversalPolicy(),
+          policy: CustomGridSectionHorizontal(),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,20 +105,53 @@ class _SectionCardListState extends State<SectionCardList> {
               else
                 SizedBox(
                   height: 216.r,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: widget.videos.length,
-                    separatorBuilder: (context, index) => SizedBox(width: AppPadding.p16),
-                    itemBuilder: (context, index) => SectionCard(
-                        title: widget.videos[index].title ?? "",
-                        coverImage: widget.videos[index].coverImage ?? "",
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            Routes.videoDetailsRoute,
-                            arguments: VideoDetailsPageArguments(videoId: widget.videos[index].id ?? 0),
-                          );
-                        }),
+                  child: Focus(
+                    canRequestFocus: false,
+                    skipTraversal: true,
+                    onFocusChange: (hasFocus) {
+                      if (hasFocus) {
+                        // Usar Future.delayed para esperar que Flutter haya renderizado
+                        FocusScope.of(context).requestFocus(focusNodes[lastFocusindex]);
+                        Future.delayed(Duration.zero, () {
+                          if (focusNodes[lastFocusindex].context != null) {
+                            Scrollable.ensureVisible(
+                              focusNodes[lastFocusindex].context!,
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOut,
+                              alignment: 0.8,
+                            );
+                          }
+                        });
+                      }
+                    },
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: widget.videos.length,
+                      separatorBuilder: (context, index) => SizedBox(width: AppPadding.p16),
+                      itemBuilder: (context, index) => Focus(
+                        onFocusChange: (hasFocus) {
+                          if (hasFocus) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (hasFocus) {
+                                print("setfocus: $index");
+                                lastFocusindex = index;
+                              }
+                            });
+                          }
+                        },
+                        child: SectionCard(
+                            focusNode: focusNodes[index],
+                            title: widget.videos[index].title ?? "",
+                            coverImage: widget.videos[index].coverImage ?? "",
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                Routes.videoDetailsRoute,
+                                arguments: VideoDetailsPageArguments(videoId: widget.videos[index].id ?? 0),
+                              );
+                            }),
+                      ),
+                    ),
                   ),
                 ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
             ],

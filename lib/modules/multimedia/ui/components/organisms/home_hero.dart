@@ -61,13 +61,14 @@ class _HomeHeroState extends State<HomeHero> {
           ),
           if (widget.goBack)
             Positioned(
-              top: AppPadding.p0.r,
-              left: AppPadding.p0.r,
-              child: IconButton(
-                icon: Icon(Icons.arrow_back, color: ColorManager.white),
-                onPressed: () {
+              top: AppPadding.p16.r,
+              left: AppPadding.p16.r,
+              child: ContainerFocus(
+                autofocus: true,
+                onTap: () {
                   Navigator.pop(context);
                 },
+                child: Icon(Icons.arrow_back, color: ColorManager.white).withPadding(all: AppPadding.p8),
               ),
             ),
           Positioned.fill(
@@ -124,7 +125,7 @@ class _HomeHeroState extends State<HomeHero> {
                                 color: ColorManager.onPrimaryContainer,
                               ),
                           roundedButton: AppSize.s400,
-                          press: () async {
+                          press: () {
                             Navigator.pushNamed(context, Routes.videoRoute,
                                 arguments: VideoPageArguments(
                                   videoId: widget.video.id ?? 0,

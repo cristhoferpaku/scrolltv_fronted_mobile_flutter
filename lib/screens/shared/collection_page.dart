@@ -5,6 +5,7 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/components/molecules/blur_background.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/container_focus.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/video_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/collection/collection_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
@@ -62,11 +63,12 @@ class _CollectionPageState extends State<CollectionPage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      InkWell(
+                      ContainerFocus(
+                        autofocus: true,
                         onTap: () {
                           Navigator.pop(context);
                         },
-                        child: Icon(Icons.arrow_back, color: ColorManager.white),
+                        child: Icon(Icons.arrow_back, color: ColorManager.white).withPadding(all: AppPadding.p8),
                       ).withPadding(top: AppPadding.p16),
                       Text(
                         state.collectionName,

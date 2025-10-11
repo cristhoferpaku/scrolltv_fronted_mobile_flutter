@@ -68,7 +68,10 @@ class HttpDioService {
 
             return handler.next(requestOptions);
           },
-          onResponse: (response, handler) => handler.next(response),
+          onResponse: (response, handler) {
+            print("onResponse: ${response.statusCode}");
+            handler.next(response);
+          },
           onError: (error, handler) async {
             if (error.requestOptions.path.contains("auth/client-refresh")) {
               return handler.next(error); // no volver a refrescar

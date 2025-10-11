@@ -43,7 +43,7 @@ class _SeriesTabState extends State<SeriesTab> {
         child: BlocConsumer<HomeBloc, HomeState>(
           buildWhen: (previous, current) {
             if (current is HomeStateLoaded) {
-              return current.status == HomeStateStatus.loadedSeries || current.status == HomeStateStatus.loadingSeries;
+              return current.status == HomeStateStatus.loadedSeries || current.status == HomeStateStatus.loadingSeries || current.status == HomeStateStatus.error;
             }
             return false;
           },
@@ -53,25 +53,28 @@ class _SeriesTabState extends State<SeriesTab> {
             if (state is HomeStateLoaded) {
               if (state.status == HomeStateStatus.loadingSeries) {
                 return HomeSkeleton();
+              } else if (state.status == HomeStateStatus.loadedSeries) {
+                return Column(
+                  children: [
+                    Column(
+                      spacing: AppPadding.p36,
+                      children: [
+                        HomeHero(video: state.series?.banner ?? VideoModel()),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            TopCardList(videos: state.series?.top10 ?? []),
+                            CollectionList(collection: state.series?.collectionsContent ?? []),
+                          ],
+                        ).withPadding(all: AppPadding.p16),
+                      ],
+                    ),
+                  ],
+                );
+              } else {
+                return Container();
               }
-              return Column(
-                children: [
-                  Column(
-                    spacing: AppPadding.p36,
-                    children: [
-                      HomeHero(video: state.series?.banner ?? VideoModel()),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          TopCardList(videos: state.series?.top10 ?? []),
-                          CollectionList(collection: state.series?.collectionsContent ?? []),
-                        ],
-                      ).withPadding(all: AppPadding.p16),
-                    ],
-                  ),
-                ],
-              );
             } else {
               return Container();
             }

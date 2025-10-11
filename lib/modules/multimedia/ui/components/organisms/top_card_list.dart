@@ -20,39 +20,81 @@ class TopCardList extends StatefulWidget {
 
 class _TopCardListState extends State<TopCardList> {
   final bool isTV = PlatformUtils.isTV;
+  List<FocusNode> focusNodes = [];
+  int lastFocusindex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    focusNodes = List.generate(widget.videos.length, (_) => FocusNode());
+  }
+
+  @override
+  void dispose() {
+    for (var node in focusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return FocusTraversalGroup(
-      policy: CustomGridTraversalPolicy(),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: AppPadding.p16,
-        children: [
-          Text(
-            "Top streaming",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          if (widget.videos.isEmpty)
-            NoContentBox()
-          else
-            SingleChildScrollView(
+      policy: CustomGridSectionHorizontal(),
+      child: Column(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, spacing: AppPadding.p16, children: [
+        Text(
+          "Top streaming",
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        if (widget.videos.isEmpty)
+          NoContentBox()
+        else
+          Focus(
+            canRequestFocus: false,
+            skipTraversal: true,
+            onFocusChange: (hasFocus) {
+              if (hasFocus) {
+                // Usar Future.delayed para esperar que Flutter haya renderizado
+                FocusScope.of(context).requestFocus(focusNodes[lastFocusindex]);
+                Future.delayed(Duration.zero, () {
+                  if (focusNodes[lastFocusindex].context != null) {
+                    Scrollable.ensureVisible(
+                      focusNodes[lastFocusindex].context!,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      alignment: 0.8,
+                    );
+                  }
+                });
+              }
+            },
+            child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 spacing: isTV ? AppPadding.p36 : AppPadding.p16,
                 children: widget.videos
-                    .map((video) => TopCard(
+                    .map((video) => Focus(
+                        onFocusChange: (hasFocus) {
+                          if (hasFocus) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (hasFocus) {
+                                lastFocusindex = widget.videos.indexOf(video);
+                              }
+                            });
+                          }
+                        },
+                        child: TopCard(
+                          focusNode: focusNodes[widget.videos.indexOf(video)],
                           title: video.title ?? "",
                           topNumber: video.topNumber ?? 0,
                           coverImage: video.coverImage ?? "",
                           videoId: video.id ?? 0,
-                        ))
+                        )))
                     .toList(),
               ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
-            )
-        ],
-      ),
+            ),
+          ),
+      ]),
     );
   }
 }

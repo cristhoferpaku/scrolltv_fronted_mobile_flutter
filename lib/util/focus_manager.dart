@@ -1,6 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+class CustomDirectionalPolicy extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
+  @override
+  Iterable<FocusNode> sortDescendants(
+    Iterable<FocusNode> descendants,
+    FocusNode currentNode,
+  ) {
+    final sorted = descendants.toList()
+      ..sort((a, b) {
+        final rectA = a.rect ?? Rect.zero;
+        final rectB = b.rect ?? Rect.zero;
+        if (rectA.top == rectB.top) {
+          return rectA.left.compareTo(rectB.left);
+        }
+        return rectA.top.compareTo(rectB.top);
+      });
+    return sorted;
+  }
+}
+
 class CustomGridTraversalPolicy extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
   @override
   @override
@@ -82,6 +101,264 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy with DirectionalFoc
       }
     }
 
+    return closest;
+  }
+
+  @override
+  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants, FocusNode currentNode) {
+    final sorted = descendants.toList()
+      ..sort((a, b) {
+        final aPos = (a.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        final bPos = (b.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        if ((aPos.dy - bPos.dy).abs() < 10) {
+          return aPos.dx.compareTo(bPos.dx);
+        }
+        return aPos.dy.compareTo(bPos.dy);
+      });
+    return sorted;
+  }
+}
+
+//
+class CustomGridSection extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
+  @override
+  bool inDirection(FocusNode currentNode, TraversalDirection direction) {
+    final next = _findClosest(currentNode, direction);
+
+    if (next != null) {
+      _scrollIntoView(next);
+      next.requestFocus();
+      return true;
+    }
+
+    // Si es horizontal y no hay candidato, bloquea el salto de fila
+    if (direction == TraversalDirection.left || direction == TraversalDirection.right) {
+      return true;
+    }
+
+    // Si es vertical y no hay nada, deja que Flutter maneje el foco
+    return super.inDirection(currentNode, direction);
+  }
+
+  void _scrollIntoView(FocusNode node) {
+    if (node.context != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Scrollable.ensureVisible(
+          node.context!,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          alignment: 0.3,
+        );
+      });
+    }
+  }
+
+  FocusNode? _findClosest(FocusNode currentNode, TraversalDirection direction) {
+    final context = currentNode.context;
+    if (context == null) return null;
+
+    final renderBox = context.findRenderObject() as RenderBox;
+    final currentPos = renderBox.localToGlobal(Offset.zero);
+
+    final scope = FocusScope.of(context);
+    final nodes = scope.traversalDescendants.where((n) => n != currentNode && n.canRequestFocus);
+
+    FocusNode? closest;
+    double minDistance = double.infinity;
+
+    const double toleranceY = 20; // misma fila para izquierda/derecha
+
+    for (final node in nodes) {
+      final nodeContext = node.context;
+      if (nodeContext == null) continue;
+
+      final nodeBox = nodeContext.findRenderObject() as RenderBox;
+      final nodePos = nodeBox.localToGlobal(Offset.zero);
+
+      bool isValid = false;
+
+      switch (direction) {
+        case TraversalDirection.up:
+          isValid = nodePos.dy < currentPos.dy - 10;
+          break;
+        case TraversalDirection.down:
+          isValid = nodePos.dy > currentPos.dy + 10;
+          break;
+        case TraversalDirection.left:
+          isValid = (nodePos.dx < currentPos.dx - 10) && (nodePos.dy - currentPos.dy).abs() < toleranceY;
+          break;
+        case TraversalDirection.right:
+          isValid = (nodePos.dx > currentPos.dx + 10) && (nodePos.dy - currentPos.dy).abs() < toleranceY;
+          break;
+      }
+
+      if (!isValid) continue;
+
+      double distance;
+
+      // 🧭 Nuevo comportamiento: arriba/abajo = estrictamente por eje Y
+      if (direction == TraversalDirection.up || direction == TraversalDirection.down) {
+        distance = (nodePos.dy - currentPos.dy).abs();
+      } else {
+        // Izquierda/Derecha = distancia euclidiana (mantener)
+        distance = (nodePos - currentPos).distance;
+      }
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = node;
+      }
+    }
+
+    // 🔁 Si hay varios en la misma dirección vertical,
+    // el que tenga menor diferencia horizontal será elegido.
+    if (closest == null && (direction == TraversalDirection.up || direction == TraversalDirection.down)) {
+      // Tomar el primer nodo visible desde la izquierda
+      final candidates = nodes.where((n) => n.context != null).toList();
+      candidates.sort((a, b) {
+        final aPos = (a.context!.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
+        final bPos = (b.context!.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
+        return aPos.dx.compareTo(bPos.dx); // siempre primero desde la izquierda
+      });
+      closest = candidates.isNotEmpty ? candidates.first : null;
+    }
+
+    return closest;
+  }
+
+  @override
+  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants, FocusNode currentNode) {
+    final sorted = descendants.toList()
+      ..sort((a, b) {
+        final aPos = (a.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        final bPos = (b.context?.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero) ?? Offset.zero;
+        if ((aPos.dy - bPos.dy).abs() < 10) {
+          return aPos.dx.compareTo(bPos.dx);
+        }
+        return aPos.dy.compareTo(bPos.dy);
+      });
+    return sorted;
+  }
+}
+
+class CustomGridSectionHorizontal extends FocusTraversalPolicy with DirectionalFocusTraversalPolicyMixin {
+  @override
+  bool inDirection(FocusNode currentNode, TraversalDirection direction) {
+    final next = _findClosest(currentNode, direction);
+
+    if (next != null) {
+      _scrollIntoView(next, direction);
+      next.requestFocus();
+      return true;
+    }
+
+    // Si es horizontal y no hay candidato, bloquea el salto de fila
+    if (direction == TraversalDirection.left || direction == TraversalDirection.right) {
+      return true;
+    }
+
+    // Si es vertical y no hay nada, deja que Flutter maneje el foco
+    return super.inDirection(currentNode, direction);
+  }
+
+  void _scrollIntoView(FocusNode node, TraversalDirection direction) {
+    if (node.context != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (direction == TraversalDirection.left || direction == TraversalDirection.right) {
+          final renderBox = node.context!.findRenderObject() as RenderBox;
+          final scrollable = Scrollable.of(node.context!);
+          final scrollPosition = scrollable.position;
+          final viewport = scrollPosition.viewportDimension;
+          final nodeOffset = renderBox
+              .localToGlobal(
+                Offset.zero,
+                ancestor: scrollable.context.findRenderObject(),
+              )
+              .dx; // solo eje X
+          final scrollOffset = scrollPosition.pixels;
+
+          double targetOffset;
+          if (nodeOffset < 0) {
+            targetOffset = scrollOffset + nodeOffset;
+          } else if (nodeOffset + renderBox.size.width > viewport) {
+            targetOffset = scrollOffset + (nodeOffset + renderBox.size.width - viewport);
+          } else {
+            targetOffset = scrollOffset;
+          }
+
+          scrollPosition.animateTo(
+            targetOffset,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          );
+        }
+        // si es vertical, no hace scroll
+      });
+    }
+  }
+
+  FocusNode? _findClosest(FocusNode currentNode, TraversalDirection direction) {
+    final context = currentNode.context;
+    if (context == null) return null;
+
+    final renderBox = context.findRenderObject() as RenderBox;
+    final currentPos = renderBox.localToGlobal(Offset.zero);
+
+    final scope = FocusScope.of(context);
+    final nodes = scope.traversalDescendants.where((n) => n != currentNode && n.canRequestFocus);
+
+    FocusNode? closest;
+    double minDistance = double.infinity;
+
+    const double toleranceY = 20; // misma fila para izquierda/derecha
+
+    for (final node in nodes) {
+      final nodeContext = node.context;
+      if (nodeContext == null) continue;
+
+      final nodeBox = nodeContext.findRenderObject() as RenderBox;
+      final nodePos = nodeBox.localToGlobal(Offset.zero);
+
+      bool isValid = false;
+
+      switch (direction) {
+        case TraversalDirection.up:
+          isValid = nodePos.dy < currentPos.dy - 10;
+          break;
+        case TraversalDirection.down:
+          isValid = nodePos.dy > currentPos.dy + 10;
+          break;
+        case TraversalDirection.left:
+          isValid = (nodePos.dx < currentPos.dx - 10) && (nodePos.dy - currentPos.dy).abs() < toleranceY;
+          break;
+        case TraversalDirection.right:
+          isValid = (nodePos.dx > currentPos.dx + 10) && (nodePos.dy - currentPos.dy).abs() < toleranceY;
+          break;
+      }
+
+      if (!isValid) continue;
+
+      double distance;
+
+      // 🧭 Nuevo comportamiento: arriba/abajo = estrictamente por eje Y
+      if (direction == TraversalDirection.up || direction == TraversalDirection.down) {
+        distance = (nodePos.dy - currentPos.dy).abs();
+      } else {
+        // Izquierda/Derecha = distancia euclidiana (mantener)
+        distance = (nodePos - currentPos).distance;
+      }
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = node;
+      }
+    }
+
+    // 🔁 Si hay varios en la misma dirección vertical,
+    // el que tenga menor diferencia horizontal será elegido.
+    if (closest == null) {
+      return null; // no hacer nada, el foco se queda donde está
+    }
     return closest;
   }
 

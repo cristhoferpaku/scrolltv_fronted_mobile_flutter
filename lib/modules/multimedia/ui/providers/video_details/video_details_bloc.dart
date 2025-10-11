@@ -20,6 +20,10 @@ class VideoDetailsBloc extends Bloc<VideoDetailsEvent, VideoDetailsState> {
       homeSectionData = null;
     });
     on<VideoDetailsEventStarted>((event, emit) async {
+      if (event.videoId == 0) {
+        emit(VideoDetailsState.loaded(status: VideoDetailsStateStatus.error, videoContent: videoContent, homeSectionData: homeSectionData));
+        return;
+      }
       add(VideoDetailsEventReset());
       add(VideoDetailsEventGetVideoById(event.videoId));
     });

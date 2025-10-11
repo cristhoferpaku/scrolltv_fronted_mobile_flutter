@@ -43,7 +43,7 @@ class _AnimesTabState extends State<AnimesTab> {
         child: BlocConsumer<HomeBloc, HomeState>(
           buildWhen: (previous, current) {
             if (current is HomeStateLoaded) {
-              return current.status == HomeStateStatus.loadedAnimes || current.status == HomeStateStatus.loadingAnimes;
+              return current.status == HomeStateStatus.loadedAnimes || current.status == HomeStateStatus.loadingAnimes || current.status == HomeStateStatus.error;
             }
             return false;
           },
@@ -53,31 +53,34 @@ class _AnimesTabState extends State<AnimesTab> {
             if (state is HomeStateLoaded) {
               if (state.status == HomeStateStatus.loadingAnimes) {
                 return HomeSkeleton();
-              }
-              return Column(
-                children: [
-                  FocusTraversalGroup(
-                    policy: CustomGridTraversalPolicyStrictVertical(),
-                    child: Column(
-                      spacing: AppPadding.p36,
-                      children: [
-                        HomeHero(video: state.animes?.banner ?? VideoModel()),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Column(
-                              children: [
-                                CollectionList(collection: state.animes?.collectionsContent ?? []),
-                              ],
-                            )
-                          ],
-                        ).withPadding(all: AppPadding.p16),
-                      ],
+              } else if (state.status == HomeStateStatus.loadedAnimes) {
+                return Column(
+                  children: [
+                    FocusTraversalGroup(
+                      policy: CustomGridTraversalPolicyStrictVertical(),
+                      child: Column(
+                        spacing: AppPadding.p36,
+                        children: [
+                          HomeHero(video: state.animes?.banner ?? VideoModel()),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Column(
+                                children: [
+                                  CollectionList(collection: state.animes?.collectionsContent ?? []),
+                                ],
+                              )
+                            ],
+                          ).withPadding(all: AppPadding.p16),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              );
+                  ],
+                );
+              } else {
+                return Container();
+              }
             } else {
               return Container();
             }

@@ -11,12 +11,14 @@ class TopCard extends StatefulWidget {
   final int topNumber;
   final String coverImage;
   final int videoId;
+  final FocusNode focusNode;
   const TopCard({
     super.key,
     required this.title,
     required this.topNumber,
     required this.coverImage,
     required this.videoId,
+    required this.focusNode,
   });
 
   @override
@@ -27,6 +29,7 @@ class _TopCardState extends State<TopCard> {
   @override
   Widget build(BuildContext context) {
     return ContainerFocus(
+      focusNode: widget.focusNode,
       scale: 1.08,
       onTap: () => {Navigator.pushNamed(context, Routes.videoDetailsRoute, arguments: VideoDetailsPageArguments(videoId: widget.videoId))},
       child: Container(

@@ -18,6 +18,7 @@ class AppDialogCustomize extends StatefulWidget {
   final IconData iconCancelButton;
   final void Function()? onCancelPressed;
   final bool showCancelButton;
+  final bool canPop;
 
   const AppDialogCustomize({
     super.key,
@@ -31,6 +32,7 @@ class AppDialogCustomize extends StatefulWidget {
     this.iconCancelButton = Icons.arrow_back_rounded,
     this.onCancelPressed,
     this.showCancelButton = true,
+    this.canPop = false,
     //required this.bloc,
   });
 
@@ -96,7 +98,7 @@ class _AppDialogCustomizeState extends State<AppDialogCustomize> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: widget.canPop,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
