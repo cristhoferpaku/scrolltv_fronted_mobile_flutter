@@ -9,6 +9,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/component
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/molecules/video_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/providers/collection/collection_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/app_scaffold.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/skeleton/collection_skeleton.dart';
 
@@ -22,6 +23,7 @@ class CollectionPage extends StatefulWidget {
 class _CollectionPageState extends State<CollectionPage> {
   final collectionBloc = instance<CollectionBloc>();
 
+  bool isTV = PlatformUtils.isTV;
   @override
   void initState() {
     super.initState();
@@ -64,11 +66,11 @@ class _CollectionPageState extends State<CollectionPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ContainerFocus(
-                        autofocus: true,
+                        autofocus: isTV ? true : false,
                         onTap: () {
                           Navigator.pop(context);
                         },
-                        child: Icon(Icons.arrow_back, color: ColorManager.white).withPadding(all: AppPadding.p8),
+                        child: Icon(Icons.arrow_back, color: ColorManager.white).withPadding(right: AppPadding.p8, vertical: AppPadding.p8, left: isTV ? AppPadding.p8 : null),
                       ).withPadding(top: AppPadding.p16),
                       Text(
                         state.collectionName,

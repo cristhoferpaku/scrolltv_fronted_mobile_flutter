@@ -61,14 +61,18 @@ class _HomeHeroState extends State<HomeHero> {
           ),
           if (widget.goBack)
             Positioned(
-              top: AppPadding.p16.r,
-              left: AppPadding.p16.r,
+              top: AppPadding.p16,
+              left: AppPadding.p16,
               child: ContainerFocus(
-                autofocus: true,
+                autofocus: isTV ? true : false,
                 onTap: () {
                   Navigator.pop(context);
                 },
-                child: Icon(Icons.arrow_back, color: ColorManager.white).withPadding(all: AppPadding.p8),
+                child: Icon(Icons.arrow_back, color: ColorManager.white).withPadding(
+                  vertical: AppPadding.p8,
+                  right: AppPadding.p8,
+                  left: isTV ? AppPadding.p8 : null,
+                ),
               ),
             ),
           Positioned.fill(

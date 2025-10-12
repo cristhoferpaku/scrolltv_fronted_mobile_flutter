@@ -13,14 +13,13 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Timer? _timer;
+  final UserRepository userRepository = instance<UserRepository>();
 
   AuthBloc() : super(_Initial()) {
     final AuthUseCase authUseCase = instance<AuthUseCase>();
-    final UserRepository userRepository = instance<UserRepository>();
 
     on<AuthEvent>((event, emit) {});
     on<_AuthEventStartValidate>((event, emit) {
-      add(_AuthEventValidateExpiration());
       _startExpirationTimer();
     });
 
@@ -76,13 +75,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   // 👇 NUEVOS MÉTODOS
-  void pauseTimer() {
-    _timer?.cancel();
-    _timer = null;
+  void pauseTimer() async {
+    if (await userRepository.isUserLogged() && _timer != null) {
+      _timer?.cancel();
+      _timer = null;
+    }
   }
 
-  void resumeTimer() {
-    if (_timer == null) {
+  void resumeTimer() async {
+    if (await userRepository.isUserLogged() && _timer == null) {
       _startExpirationTimer();
     }
   }

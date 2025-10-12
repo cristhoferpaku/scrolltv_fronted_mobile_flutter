@@ -75,7 +75,7 @@ class AuthApiRepository implements AuthRepositoryPort {
     } catch (e) {
       // Cualquier otro error no manejado
       LoggerManager.log.e(e.toString());
-      throw Exception(e.toString());
+      rethrow;
     }
   }
 
@@ -96,7 +96,7 @@ class AuthApiRepository implements AuthRepositoryPort {
       }
     } catch (e) {
       LoggerManager.log.e(e.toString());
-      throw Exception(e.toString());
+      rethrow;
     }
   }
 
@@ -122,7 +122,7 @@ class AuthApiRepository implements AuthRepositoryPort {
       }
     } catch (e) {
       LoggerManager.log.e(e.toString());
-      throw Exception(e.toString());
+      rethrow;
     }
   }
 }

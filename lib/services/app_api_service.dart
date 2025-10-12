@@ -69,7 +69,6 @@ class HttpDioService {
             return handler.next(requestOptions);
           },
           onResponse: (response, handler) {
-            print("onResponse: ${response.statusCode}");
             handler.next(response);
           },
           onError: (error, handler) async {
@@ -100,6 +99,8 @@ class HttpDioService {
               } catch (e) {
                 return handler.next(error); // si algo falla, recién pasamos el error
               }
+            } else {
+              print("onError: ${error.response?.statusCode}");
             }
 
             return handler.next(error);
@@ -157,7 +158,9 @@ class HttpDioService {
     } on FormatException catch (e) {
       throw Exception('Formato de respuesta inválido: $e');
     } on DioException catch (e) {
-      if (e.response?.statusCode == 500) {
+      if (e.response?.statusCode == 401) {
+        throw Exception('No autorizado. Verifica tus credenciales.');
+      } else if (e.response?.statusCode == 500) {
         String errorMessage = 'Error interno del servidor';
         if (e.response?.data is Map<String, dynamic> && e.response?.data['message'] != null) {
           errorMessage = e.response?.data['message'].toString() ?? errorMessage;
