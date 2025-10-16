@@ -27,6 +27,13 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   // Variables para preservar pistas de audio y subtítulos
   int? _lastAudioTrack;
   int? _lastSubtitleTrack;
+  
+  // Variables para controlar el seeking
+  bool _isSeeking = false;
+  Timer? _seekingTimer;
+  Duration? _pendingSeekPosition;
+  Duration? _accumulatedSeekPosition;
+  int _seekCount = 0;
 
   VideoPlayerBloc() : super(const VideoPlayerState.initial()) {
     // Caché para episodios por seasonId
@@ -348,7 +355,15 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     on<_VideoPlayerEventSeekTo>((event, emit) async {
       if (controller != null) {
         try {
-          await controller!.seekTo(event.position);
+          // Para seeking directo (slider), actualizar inmediatamente y ejecutar
+          final currentState = state;
+          if (currentState is VideoPlayerStateLoaded) {
+            // Actualizar visualmente de inmediato
+            emit(currentState.copyWith(currentPosition: event.position));
+            
+            // Ejecutar seeking directo para slider (móvil)
+            await controller!.seekTo(event.position);
+          }
         } catch (e) {
           // Error al cambiar posición
         }
@@ -435,16 +450,25 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         final newPosition = currentState.currentPosition + Duration(seconds: event.seconds);
         final maxPosition = currentState.duration;
         final targetPosition = newPosition > maxPosition ? maxPosition : newPosition;
-        await controller?.seekTo(targetPosition);
+        
+        // Actualizar visualmente de inmediato
+        emit(currentState.copyWith(currentPosition: targetPosition));
+        
+        // Acumular seeking para TV
+        _handleAccumulatedSeek(targetPosition);
       }
     });
     on<_VideoPlayerEventSkipBackward>((event, emit) async {
       final currentState = state;
       if (currentState is VideoPlayerStateLoaded && controller != null) {
         final newPosition = currentState.currentPosition - Duration(seconds: event.seconds);
-        final maxPosition = currentState.duration;
-        final targetPosition = newPosition > maxPosition ? maxPosition : newPosition;
-        await controller?.seekTo(targetPosition);
+        final targetPosition = newPosition.isNegative ? Duration.zero : newPosition;
+        
+        // Actualizar visualmente de inmediato
+        emit(currentState.copyWith(currentPosition: targetPosition));
+        
+        // Acumular seeking para TV
+        _handleAccumulatedSeek(targetPosition);
       }
     });
 
@@ -513,8 +537,21 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           final duration = controller!.value.duration;
           final playingState = controller!.value.playingState;
 
+          // Solo actualizar posición si no estamos en proceso de seeking acumulado
+          // o si la posición es muy diferente a la acumulada
+          bool shouldUpdatePosition = _accumulatedSeekPosition == null;
+          
+          if (_accumulatedSeekPosition != null) {
+            // Si tenemos seeking acumulado, solo actualizar si la posición actual está cerca de la posición objetivo
+            final difference = (position.inMilliseconds - _accumulatedSeekPosition!.inMilliseconds).abs();
+            shouldUpdatePosition = difference < 2000; // Tolerancia de 2 segundos para TV
+          }
+
           // Actualizar posición y duración
-          if (position.inMilliseconds >= 0 && duration.inMilliseconds > 0 && (position != currentState.currentPosition || duration != currentState.duration)) {
+          if (shouldUpdatePosition && 
+              position.inMilliseconds >= 0 && 
+              duration.inMilliseconds > 0 && 
+              (position != currentState.currentPosition || duration != currentState.duration)) {
             emit(currentState.copyWith(
               currentPosition: position,
               duration: duration,
@@ -565,6 +602,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
     // Cancelar suscripción de conectividad
     await _connectivitySubscription?.cancel();
+    
+    // Cancelar timer de seeking
+    _seekingTimer?.cancel();
 
     // Limpiar controlador
     await controller?.stop();
@@ -639,7 +679,29 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     }
   }
 
-// Reemplaza _restoreTracksAfterDelay por esto:
+  // Método para manejar seeking acumulado en TV
+  void _handleAccumulatedSeek(Duration targetPosition) {
+    _accumulatedSeekPosition = targetPosition;
+    _seekCount++;
+    
+    // Cancelar timer anterior
+    _seekingTimer?.cancel();
+    
+    // Establecer nuevo timer para ejecutar el seek después de un breve delay
+    _seekingTimer = Timer(const Duration(milliseconds: 300), () async {
+      if (_accumulatedSeekPosition != null && controller != null) {
+        try {
+          await controller!.seekTo(_accumulatedSeekPosition!);
+        } catch (e) {
+          // Error en seeking
+        }
+        _accumulatedSeekPosition = null;
+        _seekCount = 0;
+      }
+    });
+  }
+
+// Método para aplicar pistas preferidas después de cargar video:
   Future<void> _applyPreferredTracks({Duration timeout = const Duration(seconds: 4)}) async {
     if (controller == null) return;
 
