@@ -27,7 +27,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   // Variables para preservar pistas de audio y subtítulos
   int? _lastAudioTrack;
   int? _lastSubtitleTrack;
-  
+
   // Variables para controlar el seeking
   bool _isSeeking = false;
   Timer? _seekingTimer;
@@ -360,7 +360,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           if (currentState is VideoPlayerStateLoaded) {
             // Actualizar visualmente de inmediato
             emit(currentState.copyWith(currentPosition: event.position));
-            
+
             // Ejecutar seeking directo para slider (móvil)
             await controller!.seekTo(event.position);
           }
@@ -450,10 +450,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         final newPosition = currentState.currentPosition + Duration(seconds: event.seconds);
         final maxPosition = currentState.duration;
         final targetPosition = newPosition > maxPosition ? maxPosition : newPosition;
-        
+
         // Actualizar visualmente de inmediato
         emit(currentState.copyWith(currentPosition: targetPosition));
-        
+
         // Acumular seeking para TV
         _handleAccumulatedSeek(targetPosition);
       }
@@ -463,10 +463,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       if (currentState is VideoPlayerStateLoaded && controller != null) {
         final newPosition = currentState.currentPosition - Duration(seconds: event.seconds);
         final targetPosition = newPosition.isNegative ? Duration.zero : newPosition;
-        
+
         // Actualizar visualmente de inmediato
         emit(currentState.copyWith(currentPosition: targetPosition));
-        
+
         // Acumular seeking para TV
         _handleAccumulatedSeek(targetPosition);
       }
@@ -540,7 +540,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           // Solo actualizar posición si no estamos en proceso de seeking acumulado
           // o si la posición es muy diferente a la acumulada
           bool shouldUpdatePosition = _accumulatedSeekPosition == null;
-          
+
           if (_accumulatedSeekPosition != null) {
             // Si tenemos seeking acumulado, solo actualizar si la posición actual está cerca de la posición objetivo
             final difference = (position.inMilliseconds - _accumulatedSeekPosition!.inMilliseconds).abs();
@@ -548,10 +548,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           }
 
           // Actualizar posición y duración
-          if (shouldUpdatePosition && 
-              position.inMilliseconds >= 0 && 
-              duration.inMilliseconds > 0 && 
-              (position != currentState.currentPosition || duration != currentState.duration)) {
+          if (shouldUpdatePosition && position.inMilliseconds >= 0 && duration.inMilliseconds > 0 && (position != currentState.currentPosition || duration != currentState.duration)) {
             emit(currentState.copyWith(
               currentPosition: position,
               duration: duration,
@@ -602,13 +599,17 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
     // Cancelar suscripción de conectividad
     await _connectivitySubscription?.cancel();
-    
+
     // Cancelar timer de seeking
     _seekingTimer?.cancel();
 
     // Limpiar controlador
-    await controller?.stop();
-    await controller?.dispose();
+    try {
+      if (controller != null && controller!.value.isInitialized) {
+        await controller!.stop();
+      }
+      await controller?.dispose();
+    } catch (e) {}
     return super.close();
   }
 
@@ -683,10 +684,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   void _handleAccumulatedSeek(Duration targetPosition) {
     _accumulatedSeekPosition = targetPosition;
     _seekCount++;
-    
+
     // Cancelar timer anterior
     _seekingTimer?.cancel();
-    
+
     // Establecer nuevo timer para ejecutar el seek después de un breve delay
     _seekingTimer = Timer(const Duration(milliseconds: 300), () async {
       if (_accumulatedSeekPosition != null && controller != null) {
