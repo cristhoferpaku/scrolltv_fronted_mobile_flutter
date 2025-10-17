@@ -41,12 +41,12 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
 
   @override
   void initState() {
+    super.initState();
     WakelockPlus.enable();
     homeBloc.add(HomeEvent.loadSectionLive());
-    super.initState();
     controller = VlcPlayerController.network(
       tvPlayerBloc.state.selectedChannelIndex?.url ?? "",
-      hwAcc: HwAcc.full,
+      hwAcc: HwAcc.auto,
       autoPlay: true,
       options: VlcPlayerOptions(),
     );
@@ -62,6 +62,13 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
   void dispose() {
     WakelockPlus.disable();
     routeObserver.unsubscribe(this);
+
+    try {
+      if (controller.value.isInitialized) {
+        controller.stop();
+      }
+      controller.dispose();
+    } catch (e) {}
     super.dispose();
   }
 

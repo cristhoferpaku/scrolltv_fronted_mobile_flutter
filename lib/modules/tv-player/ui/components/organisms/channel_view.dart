@@ -88,7 +88,7 @@ class _ChannelPlayerPageState extends State<ChannelPlayerPage> {
     super.initState();
     _vlcController = VlcPlayerController.network(
       widget.channelUrl,
-      hwAcc: HwAcc.full,
+      hwAcc: HwAcc.auto,
       autoPlay: true,
       options: VlcPlayerOptions(),
     );
