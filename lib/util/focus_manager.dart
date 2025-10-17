@@ -47,8 +47,9 @@ class CustomGridTraversalPolicy extends FocusTraversalPolicy with DirectionalFoc
         Scrollable.ensureVisible(
           node.context!,
           duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          alignment: 0.3, // opcional: 0.5 para centrar
+          curve: Curves.ease,
+          alignment: 0.5, // opcional: 0.5 para centrar
+          alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
         );
       });
     }
@@ -146,8 +147,8 @@ class CustomGridSection extends FocusTraversalPolicy with DirectionalFocusTraver
         Scrollable.ensureVisible(
           node.context!,
           duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          alignment: 0.3,
+          curve: Curves.ease,
+          alignment: 0.5,
         );
       });
     }

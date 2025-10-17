@@ -26,7 +26,7 @@ class LogoutCard extends StatelessWidget {
               ImageAssets.iconLogout,
               height: 32.r,
             ),
-            Text("Cerrar sesión", style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11.r)).withPadding(top: AppPadding.p8.r),
+            Text("Cerrar sesión", textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11.r)).withPadding(top: AppPadding.p8.r),
           ],
         ).withPadding(all: 12.w),
       ),

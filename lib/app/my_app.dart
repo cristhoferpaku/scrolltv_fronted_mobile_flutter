@@ -9,7 +9,6 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/app/ui/constants/utils/
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_bloc.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/auth/ui/providers/auth/auth_listener.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
-import 'package:scrolltv_frontend_mobile_flutter/util/string_manager.dart';
 
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -65,7 +64,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       splitScreenMode: true,
       builder: (context, child) => MaterialApp(
         navigatorKey: navigatorKey,
-        title: AppString.headerTitle, // for web title
+        title: PlatformUtils.getNameApplication(), // for web title
         onGenerateRoute: RouteGenerator.getRoute,
         initialRoute: initialRouteApp,
         debugShowCheckedModeBanner: false,

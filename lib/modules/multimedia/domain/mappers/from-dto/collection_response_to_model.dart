@@ -8,3 +8,7 @@ CollectionModel collectionResponseToModel(CollectionResponse response) {
     content: response.content,
   );
 }
+
+List<CollectionModel> collectionResponseToModelList(List<CollectionResponse> response) {
+  return response.map((e) => collectionResponseToModel(e)).toList();
+}

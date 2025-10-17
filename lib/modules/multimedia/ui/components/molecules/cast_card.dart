@@ -7,14 +7,17 @@ import 'package:scrolltv_frontend_mobile_flutter/widgets/avatar/circle_avatar_as
 
 class CastCard extends StatelessWidget {
   final CastModel cast;
+  final FocusNode? focusNode;
   const CastCard({
     super.key,
     required this.cast,
+    this.focusNode,
   });
 
   @override
   Widget build(BuildContext context) {
     return ContainerFocus(
+      focusNode: focusNode,
       onTap: () {},
       borderRadius: 999,
       child: Row(

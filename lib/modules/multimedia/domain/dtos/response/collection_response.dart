@@ -12,6 +12,7 @@ class CollectionResponse with _$CollectionResponse {
     @JsonKey(name: "content") List<VideoModel>? content,
   }) = _CollectionResponse;
 
-  factory CollectionResponse.fromJson(Map<String, dynamic> json) =>
-      _$CollectionResponseFromJson(json);
+  factory CollectionResponse.fromJson(Map<String, dynamic> json) => _$CollectionResponseFromJson(json);
+
+  static List<CollectionResponse> fromJsonList(List<dynamic> json) => json.map((e) => CollectionResponse.fromJson(e)).toList();
 }

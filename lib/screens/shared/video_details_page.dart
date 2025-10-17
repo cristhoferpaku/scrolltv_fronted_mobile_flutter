@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/atoms/scroll_to_top_on_up.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/cast_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/collection_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/home_hero.dart';
@@ -40,51 +41,52 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       padding: 0,
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        child: FocusTraversalGroup(
-          policy: CustomGridTraversalPolicy(),
-          child: BlocConsumer<VideoDetailsBloc, VideoDetailsState>(
-            bloc: videoDetailsBloc,
-            listener: (context, state) {},
-            builder: (context, state) {
-              if (state is VideoDetailsStateLoaded) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    if (state.status == VideoDetailsStateStatus.error)
-                      ContainerError(
-                        message: 'El video no esta disponible en estos momentos',
-                      )
-                    else if (state.status == VideoDetailsStateStatus.loadingVideo)
-                      VideoDetailsSkeleton()
-                    else if (state.videoContent?.video != null)
-                      HomeHero(
-                        height: .9.sh,
-                        detailsDisabled: true,
-                        goBack: true,
-                        video: state.videoContent!.video!,
-                      ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      spacing: AppPadding.p32.r,
-                      children: [
-                        if (state.videoContent?.seasons != null) SeasonTabBar(seasons: state.videoContent!.seasons!),
-                        if (state.videoContent?.casts != null) CastCardList(casts: state.videoContent!.casts!),
-                        if (state.status == VideoDetailsStateStatus.loadingSection)
-                          SectionCardListSkeleton()
-                        else if (state.homeSectionData?.collectionsContent != null)
-                          CollectionList(collection: state.homeSectionData!.collectionsContent!),
-                      ],
-                    ).withPadding(top: AppPadding.p32.r, horizontal: AppPadding.p16.r),
-                  ],
-                );
-              }
+      body: ScrollToTopOnUp(
+        scrollController: _scrollController,
+        height: 1,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: FocusTraversalGroup(
+            policy: CustomGridTraversalPolicy(),
+            child: BlocConsumer<VideoDetailsBloc, VideoDetailsState>(
+              bloc: videoDetailsBloc,
+              listener: (context, state) {},
+              builder: (context, state) {
+                if (state is VideoDetailsStateLoaded) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      if (state.status == VideoDetailsStateStatus.error)
+                        ContainerError(
+                          message: 'El video no esta disponible en estos momentos',
+                        )
+                      else if (state.status == VideoDetailsStateStatus.loadingVideo)
+                        VideoDetailsSkeleton()
+                      else if (state.videoContent?.video != null)
+                        HomeHero(
+                          height: .9.sh,
+                          detailsDisabled: true,
+                          goBack: true,
+                          video: state.videoContent!.video!,
+                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        spacing: AppPadding.p32.r,
+                        children: [
+                          if (state.videoContent?.seasons != null) SeasonTabBar(seasons: state.videoContent!.seasons!),
+                          if (state.videoContent?.casts != null && state.videoContent?.video?.firstSeasonId == null) CastCardList(casts: state.videoContent!.casts!),
+                          if (state.status == VideoDetailsStateStatus.loadingSection) SectionCardListSkeleton() else if (state.collections != null) CollectionList(collection: state.collections!),
+                        ],
+                      ).withPadding(top: AppPadding.p32.r, horizontal: AppPadding.p16.r),
+                    ],
+                  );
+                }
 
-              return const SizedBox.shrink();
-            },
+                return const SizedBox.shrink();
+              },
+            ),
           ),
         ),
       ),

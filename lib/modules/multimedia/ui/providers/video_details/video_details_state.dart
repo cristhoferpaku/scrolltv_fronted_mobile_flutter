@@ -6,7 +6,7 @@ class VideoDetailsState with _$VideoDetailsState {
   const factory VideoDetailsState.loaded({
     required VideoDetailsStateStatus status,
     required VideoContentModel? videoContent,
-    required GetHomeSectionModel? homeSectionData,
+    required List<CollectionModel>? collections,
   }) = VideoDetailsStateLoaded;
 }
 

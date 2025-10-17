@@ -41,5 +41,19 @@ void authListener(BuildContext context, AuthState state, AuthBloc block) {
     if (state.status == AuthStatus.logoutError) {
       Navigator.pushNamedAndRemoveUntil(navigatorKey.currentContext!, Routes.inicioRoute, (route) => false);
     }
+    if (state.status == AuthStatus.error) {
+      showAppDialog(
+          context: navigatorKey.currentContext!,
+          appDialog: AppDialogCustomize(
+            type: AppDialogCustomizeType.error,
+            message: state.message ?? "Algo salio mal",
+            onPressed: () async {
+              Navigator.pop(navigatorKey.currentContext!);
+            },
+            labelActionButton: "Aceptar",
+            iconActionButton: Icons.check,
+            showCancelButton: false,
+          ));
+    }
   }
 }

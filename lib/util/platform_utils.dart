@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:android_id/android_id.dart';
 import 'package:flutter/foundation.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/assets_manager.dart';
 
@@ -62,17 +62,9 @@ class PlatformUtils {
   // }
 
   Future<String> getDeviceId() async {
-    final deviceInfo = DeviceInfoPlugin();
+    final androidIdPlugin = AndroidId();
 
-    if (Platform.isAndroid) {
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      return androidInfo.id;
-    } else if (Platform.isIOS) {
-      final iosInfo = await deviceInfo.iosInfo;
-      return iosInfo.identifierForVendor ?? 'unknown';
-    }
-
-    return 'unsupported';
+    return await androidIdPlugin.getId() ?? 'unknown';
   }
 
   static String getLogo() {
@@ -80,6 +72,14 @@ class PlatformUtils {
       return ImageAssets.logoScrollTv;
     } else {
       return ImageAssets.logoMovieHome;
+    }
+  }
+
+  static String getNameApplication() {
+    if (isScrollTV) {
+      return "ScrollTV";
+    } else {
+      return "MovieHome";
     }
   }
 

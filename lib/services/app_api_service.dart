@@ -158,6 +158,14 @@ class HttpDioService {
     } on FormatException catch (e) {
       throw Exception('Formato de respuesta inválido: $e');
     } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.unknown ||
+          e.message?.contains('Failed host lookup') == true ||
+          e.message?.contains('Connection refused') == true ||
+          e.message?.contains('Network is unreachable') == true) {
+        throw Exception('Sin conexión a Internet. Verifica tu red Wi-Fi o datos móviles.');
+      }
+
       if (e.response?.statusCode == 401) {
         throw Exception('No autorizado. Verifica tus credenciales.');
       } else if (e.response?.statusCode == 500) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
@@ -77,7 +78,6 @@ class _HomeHeroState extends State<HomeHero> {
             ),
           Positioned.fill(
             child: FocusTraversalGroup(
-              policy: CustomGridTraversalPolicyStrictVertical(),
               child: Column(
                 spacing: AppPadding.p16,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -115,57 +115,73 @@ class _HomeHeroState extends State<HomeHero> {
                       maxLines: 7,
                     ),
                   ),
-                  Row(
-                    spacing: AppPadding.p16,
-                    children: [
-                      ContainerFocus(
-                        borderRadius: 999,
-                        child: ElevatedButtonApp(
-                          iconData: Icon(Icons.play_arrow, size: ResponsiveUtils.getIconSize(context)),
-                          isExpanded: false,
-                          textButton: AppString.buttonWatchNow,
-                          colorButton: ColorManager.primaryContainer,
-                          textStyleButton: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: ColorManager.onPrimaryContainer,
-                              ),
-                          roundedButton: AppSize.s400,
-                          press: () {
-                            Navigator.pushNamed(context, Routes.videoRoute,
-                                arguments: VideoPageArguments(
-                                  videoId: widget.video.id ?? 0,
-                                  videoUrl: widget.video.videoUrl ?? "",
-                                  seasonId: widget.video.firstSeasonId ?? 0,
-                                  episodeNumber: widget.video.firstEpisodeNumber ?? 0,
-                                  type: widget.video.type ?? "movie",
-                                ));
-                          },
-                        ),
-                      ),
-                      if (!widget.detailsDisabled)
-                        ContainerFocus(
-                          borderRadius: 999,
-                          child: ElevatedButtonApp(
-                            iconData: Icon(Icons.info_outline, size: ResponsiveUtils.getIconSize(context)),
-                            isExpanded: false,
-                            textButton: AppString.buttonDetails,
-                            colorButton: ColorManager.transparent,
-                            colorBorder: ColorManager.primaryContainer,
-                            textStyleButton: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                  color: ColorManager.onPrimaryContainer,
-                                ),
-                            roundedButton: AppSize.s400,
-                            press: () async {
-                              Navigator.pushNamed(
-                                context,
-                                Routes.videoDetailsRoute,
-                                arguments: VideoDetailsPageArguments(
-                                  videoId: widget.video.id ?? 0,
-                                ),
-                              );
-                            },
+                  Focus(
+                    canRequestFocus: false,
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent || event is KeyRepeatEvent) {
+                        if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                          Actions.invoke(context, const DirectionalFocusIntent(TraversalDirection.down));
+                          return KeyEventResult.handled;
+                        }
+                        return KeyEventResult.ignored;
+                      }
+                      return KeyEventResult.ignored;
+                    },
+                    child: FocusTraversalGroup(
+                      policy: CustomGridSectionHorizontal(),
+                      child: Row(
+                        spacing: AppPadding.p16,
+                        children: [
+                          ContainerFocus(
+                            borderRadius: 999,
+                            child: ElevatedButtonApp(
+                              iconData: Icon(Icons.play_arrow, size: ResponsiveUtils.getIconSize(context)),
+                              isExpanded: false,
+                              textButton: AppString.buttonWatchNow,
+                              colorButton: ColorManager.primaryContainer,
+                              textStyleButton: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    color: ColorManager.onPrimaryContainer,
+                                  ),
+                              roundedButton: AppSize.s400,
+                              press: () {
+                                Navigator.pushNamed(context, Routes.videoRoute,
+                                    arguments: VideoPageArguments(
+                                      videoId: widget.video.id ?? 0,
+                                      videoUrl: widget.video.videoUrl ?? "",
+                                      seasonId: widget.video.firstSeasonId ?? 0,
+                                      episodeNumber: widget.video.firstEpisodeNumber ?? 0,
+                                      type: widget.video.type ?? "movie",
+                                    ));
+                              },
+                            ),
                           ),
-                        ),
-                    ],
+                          if (!widget.detailsDisabled)
+                            ContainerFocus(
+                              borderRadius: 999,
+                              child: ElevatedButtonApp(
+                                iconData: Icon(Icons.info_outline, size: ResponsiveUtils.getIconSize(context)),
+                                isExpanded: false,
+                                textButton: AppString.buttonDetails,
+                                colorButton: ColorManager.transparent,
+                                colorBorder: ColorManager.primaryContainer,
+                                textStyleButton: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                      color: ColorManager.onPrimaryContainer,
+                                    ),
+                                roundedButton: AppSize.s400,
+                                press: () async {
+                                  Navigator.pushNamed(
+                                    context,
+                                    Routes.videoDetailsRoute,
+                                    arguments: VideoDetailsPageArguments(
+                                      videoId: widget.video.id ?? 0,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ).withPadding(all: AppPadding.p16),

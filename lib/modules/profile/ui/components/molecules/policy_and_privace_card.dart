@@ -26,7 +26,7 @@ class PolicyAndPrivaceCard extends StatelessWidget {
               ImageAssets.iconPrivacyAndPolicy,
               height: 32.r,
             ),
-            Text("Política & Privacidad", style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11.r)).withPadding(top: AppPadding.p8.r),
+            Text("Política & Privacidad", textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11.r)).withPadding(top: AppPadding.p8.r),
           ],
         ).withPadding(all: 12.w),
       ),

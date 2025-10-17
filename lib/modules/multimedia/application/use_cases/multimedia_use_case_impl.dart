@@ -1,4 +1,5 @@
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/collection_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_content_model.dart';
@@ -40,6 +41,12 @@ class MultimediaUseCaseImpl implements MultimediaUseCase {
   Future<ApiResponse<List<EpisodeModel>>> getEpisodesBySeasonId(int seasonId) async {
     final response = await _multimediaRepositoryPort.getEpisodesBySeasonId(seasonId);
     LoggerManager.log.i(response);
+    return response;
+  }
+
+  @override
+  Future<ApiResponse<List<CollectionModel>>> getCollectionsByVideoId(int videoId) async {
+    final response = await _multimediaRepositoryPort.getCollectionsByVideoId(videoId);
     return response;
   }
 }

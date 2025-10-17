@@ -21,6 +21,7 @@ class TopCardList extends StatefulWidget {
 class _TopCardListState extends State<TopCardList> {
   final bool isTV = PlatformUtils.isTV;
   List<FocusNode> focusNodes = [];
+  FocusNode focusNodeTopCardList = FocusNode();
   int lastFocusindex = 0;
 
   @override
@@ -50,16 +51,17 @@ class _TopCardListState extends State<TopCardList> {
           NoContentBox()
         else
           Focus(
+            focusNode: focusNodeTopCardList,
             canRequestFocus: false,
             skipTraversal: true,
             onFocusChange: (hasFocus) {
               if (hasFocus) {
                 // Usar Future.delayed para esperar que Flutter haya renderizado
                 FocusScope.of(context).requestFocus(focusNodes[lastFocusindex]);
-                Future.delayed(Duration.zero, () {
-                  if (focusNodes[lastFocusindex].context != null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (focusNodeTopCardList.context != null) {
                     Scrollable.ensureVisible(
-                      focusNodes[lastFocusindex].context!,
+                      focusNodeTopCardList.context!,
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOut,
                       alignment: 0.8,

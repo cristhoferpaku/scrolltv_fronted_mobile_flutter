@@ -152,7 +152,7 @@ initProfileModule() {
 
 initVideoDetailsModule() {
   if (!GetIt.I.isRegistered<VideoDetailsBloc>()) {
-    instance.registerLazySingleton<VideoDetailsBloc>(() => VideoDetailsBloc());
+    instance.registerFactory<VideoDetailsBloc>(() => VideoDetailsBloc());
   }
 }
 
@@ -254,7 +254,7 @@ initUserRepositoryPort() {
 // widgets
 initTabBarModule() {
   if (!GetIt.I.isRegistered<CustomTabBarBloc>()) {
-    instance.registerLazySingleton<CustomTabBarBloc>(() => CustomTabBarBloc());
+    instance.registerFactory<CustomTabBarBloc>(() => CustomTabBarBloc());
   }
 }
 

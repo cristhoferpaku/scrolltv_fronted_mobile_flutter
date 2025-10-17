@@ -35,6 +35,7 @@ class SectionCardList extends StatefulWidget {
 
 class _SectionCardListState extends State<SectionCardList> {
   bool isTV = PlatformUtils.isTV;
+  FocusNode focusNodeCardList = FocusNode();
   List<FocusNode> focusNodes = [];
   int lastFocusindex = 0;
 
@@ -52,109 +53,116 @@ class _SectionCardListState extends State<SectionCardList> {
       children: [
         FocusTraversalGroup(
           policy: CustomGridSectionHorizontal(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: AppPadding.p16,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, Routes.collectionRoute, arguments: CollectionPageArguments(collectionId: widget.id, collectionName: widget.title));
-                      },
-                      child: Row(
-                        children: [
-                          Text(
-                            widget.title,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          if (!isTV)
-                            IconButton(
-                                onPressed: () {},
-                                icon: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: ColorManager.onSurface,
-                                  size: ResponsiveUtils.getIconSize(context),
-                                )),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (isTV)
-                    ElevatedButtonApp(
-                      press: () {
-                        Navigator.pushNamed(context, Routes.collectionRoute, arguments: CollectionPageArguments(collectionId: widget.id, collectionName: widget.title));
-                      },
-                      textStyleButton: Theme.of(context).textTheme.bodySmall,
-                      textButton: 'Ver colección',
-                      colorButton: ColorManager.transparent,
-                      colorBorder: ColorManager.primaryContainer,
-                      roundedButton: AppSize.s120,
-                      paddingHorizontal: AppPadding.p40,
-                      paddingVertical: AppPadding.p12,
-                      widthBorder: 1.5,
-                      isExpanded: false,
-                    )
-                ],
-              ),
-              if (widget.videos.isEmpty)
-                NoContentBox()
-              else
-                SizedBox(
-                  height: 216.r,
-                  child: Focus(
-                    canRequestFocus: false,
-                    skipTraversal: true,
-                    onFocusChange: (hasFocus) {
-                      if (hasFocus) {
-                        // Usar Future.delayed para esperar que Flutter haya renderizado
-                        FocusScope.of(context).requestFocus(focusNodes[lastFocusindex]);
-                        Future.delayed(Duration.zero, () {
-                          if (focusNodes[lastFocusindex].context != null) {
-                            Scrollable.ensureVisible(
-                              focusNodes[lastFocusindex].context!,
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOut,
-                              alignment: 0.8,
-                            );
-                          }
-                        });
-                      }
-                    },
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: widget.videos.length,
-                      separatorBuilder: (context, index) => SizedBox(width: AppPadding.p16),
-                      itemBuilder: (context, index) => Focus(
-                        onFocusChange: (hasFocus) {
-                          if (hasFocus) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (hasFocus) {
-                                print("setfocus: $index");
-                                lastFocusindex = index;
-                              }
-                            });
-                          }
+          child: Focus(
+            focusNode: focusNodeCardList,
+            canRequestFocus: false,
+            skipTraversal: true,
+            onFocusChange: (hasFocus) {
+              if (hasFocus) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Scrollable.ensureVisible(
+                    focusNodeCardList.context!,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    alignment: 0.5,
+                  );
+                });
+              }
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: AppPadding.p16,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, Routes.collectionRoute, arguments: CollectionPageArguments(collectionId: widget.id, collectionName: widget.title));
                         },
-                        child: SectionCard(
-                            focusNode: focusNodes[index],
-                            title: widget.videos[index].title ?? "",
-                            coverImage: widget.videos[index].coverImage ?? "",
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                Routes.videoDetailsRoute,
-                                arguments: VideoDetailsPageArguments(videoId: widget.videos[index].id ?? 0),
-                              );
-                            }),
+                        child: Row(
+                          children: [
+                            Text(
+                              widget.title,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            if (!isTV)
+                              IconButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, Routes.collectionRoute, arguments: CollectionPageArguments(collectionId: widget.id, collectionName: widget.title));
+                                  },
+                                  icon: Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: ColorManager.onSurface,
+                                    size: ResponsiveUtils.getIconSize(context),
+                                  )),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
-            ],
+                    if (isTV)
+                      ElevatedButtonApp(
+                        press: () {
+                          Navigator.pushNamed(context, Routes.collectionRoute, arguments: CollectionPageArguments(collectionId: widget.id, collectionName: widget.title));
+                        },
+                        textStyleButton: Theme.of(context).textTheme.bodySmall,
+                        textButton: 'Ver colección',
+                        colorButton: ColorManager.transparent,
+                        colorBorder: ColorManager.primaryContainer,
+                        roundedButton: AppSize.s120,
+                        paddingHorizontal: AppPadding.p40,
+                        paddingVertical: AppPadding.p12,
+                        widthBorder: 1.5,
+                        isExpanded: false,
+                      )
+                  ],
+                ),
+                if (widget.videos.isEmpty)
+                  NoContentBox()
+                else
+                  SizedBox(
+                    height: 216.r,
+                    child: Focus(
+                      canRequestFocus: false,
+                      skipTraversal: true,
+                      onFocusChange: (hasFocus) {
+                        if (hasFocus) {
+                          FocusScope.of(context).requestFocus(focusNodes[lastFocusindex]);
+                        }
+                      },
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: widget.videos.length,
+                        separatorBuilder: (context, index) => SizedBox(width: AppPadding.p16),
+                        itemBuilder: (context, index) => Focus(
+                          onFocusChange: (hasFocus) {
+                            if (hasFocus) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (hasFocus) {
+                                  lastFocusindex = index;
+                                }
+                              });
+                            }
+                          },
+                          child: SectionCard(
+                              focusNode: focusNodes[index],
+                              title: widget.videos[index].title ?? "",
+                              coverImage: widget.videos[index].coverImage ?? "",
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.videoDetailsRoute,
+                                  arguments: VideoDetailsPageArguments(videoId: widget.videos[index].id ?? 0),
+                                );
+                              }),
+                        ),
+                      ),
+                    ),
+                  ).withPadding(vertical: AppPadding.p16, left: isTV ? AppPadding.p16 : AppPadding.p0),
+              ],
+            ),
           ),
         ),
         if (widget.hasBlurLeft)

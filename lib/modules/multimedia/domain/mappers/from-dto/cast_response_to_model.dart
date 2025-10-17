@@ -8,3 +8,7 @@ CastModel castResponseToModel(CastResponse response) {
     image: response.image,
   );
 }
+
+List<CastModel> castResponseToModelList(List<CastResponse> response) {
+  return response.map((response) => castResponseToModel(response)).toList();
+}

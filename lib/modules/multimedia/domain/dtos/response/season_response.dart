@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/cast_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/episode_model.dart';
 
 part 'season_response.freezed.dart';
@@ -12,6 +13,7 @@ class SeasonResponse with _$SeasonResponse {
     String? coverImage,
     String? description,
     List<EpisodeResponse>? episodes,
+    @JsonKey(name: "cast") List<CastResponse>? casts,
   }) = _SeasonResponse;
 
   factory SeasonResponse.fromJson(Map<String, dynamic> json) => _$SeasonResponseFromJson(json);

@@ -77,22 +77,26 @@ class _ProfilePageState extends State<ProfilePage> {
                       user: state.user,
                       onTap: () {},
                     ),
-                    Row(
-                      spacing: AppPadding.p16.r,
-                      children: [
-                        Expanded(
-                          child: PolicyAndPrivaceCard(
-                            onTap: () {
-                              Navigator.pushNamed(context, Routes.termsAndConditionsRoute);
-                            },
+                    IntrinsicHeight(
+                      child: Row(
+                        spacing: AppPadding.p16.r,
+                        children: [
+                          Expanded(
+                            child: PolicyAndPrivaceCard(
+                              onTap: () {
+                                Navigator.pushNamed(context, Routes.termsAndConditionsRoute);
+                              },
+                            ),
                           ),
-                        ),
-                        Expanded(child: LogoutCard(
-                          onTap: () {
-                            authBloc.add(AuthEvent.logout());
-                          },
-                        )),
-                      ],
+                          Expanded(
+                            child: LogoutCard(
+                              onTap: () {
+                                authBloc.add(AuthEvent.logout());
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ).withPadding(top: AppPadding.p16.r),

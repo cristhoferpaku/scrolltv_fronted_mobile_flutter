@@ -11,15 +11,18 @@ import 'package:scrolltv_frontend_mobile_flutter/util/my_utils.dart';
 class EpisodeCard extends StatelessWidget {
   final int seasonId;
   final EpisodeModel episode;
+  final FocusNode? focusNode;
   const EpisodeCard({
     super.key,
     required this.episode,
     required this.seasonId,
+    this.focusNode,
   });
 
   @override
   Widget build(BuildContext context) {
     return ContainerFocus(
+      focusNode: focusNode,
       onTap: () {
         Navigator.pushNamed(context, Routes.videoRoute,
             arguments: VideoPageArguments(videoId: 0, videoUrl: episode.videoUrl ?? "", episodeNumber: episode.episodeNumber ?? 0, seasonId: seasonId, type: "series"));

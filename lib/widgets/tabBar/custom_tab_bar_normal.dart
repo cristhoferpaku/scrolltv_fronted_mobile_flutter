@@ -89,7 +89,6 @@ class _CustomTabBarNormalState extends State<CustomTabBarNormal> with SingleTick
                                     return FocusableActionDetector(
                                       focusNode: _focusNodes[position],
                                       onFocusChange: (hasFocus) {
-                                        setState(() {});
                                         if (lastItemWithFocus != 0) {
                                           _focusNodes[lastItemWithFocus].requestFocus();
                                           lastItemWithFocus = 0;

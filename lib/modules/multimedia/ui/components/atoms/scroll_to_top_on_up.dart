@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 
 class ScrollToTopOnUp extends StatelessWidget {
   final Widget child;
+  final double height;
   final ScrollController scrollController;
 
   const ScrollToTopOnUp({
     super.key,
     required this.child,
     required this.scrollController,
+    this.height = 1,
   });
 
   @override
@@ -36,7 +38,7 @@ class ScrollToTopOnUp extends StatelessWidget {
 
                   print("Nuevo foco posición: $positionInScroll");
 
-                  if (positionInScroll < screenHeight * 1) {
+                  if (positionInScroll < screenHeight * height) {
                     scrollController.animateTo(
                       0,
                       duration: const Duration(milliseconds: 300),

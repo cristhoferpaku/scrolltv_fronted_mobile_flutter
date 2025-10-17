@@ -5,14 +5,17 @@ import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/domain/dto/generic/exception/exception_app.dart';
 import 'package:scrolltv_frontend_mobile_flutter/env/env.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/app/domain/entities/dtos/response/api_response.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/collection_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/get_home_section_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/video_content_response.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/dtos/response/video_response.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/collection_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/episode_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/get_home_section_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_content_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entities/video_model.dart';
+import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/collection_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/episode_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/get_home_section_response_to_model.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/mappers/from-dto/video_content_response_to_model.dart';
@@ -152,6 +155,28 @@ class MultimediaApiRepository implements MultimediaRepositoryPort {
         throw Exception("Something wen't wrong");
       }
     } catch (e) {
+      throw Exception("Something wen't wrong");
+    }
+  }
+
+  @override
+  Future<ApiResponse<List<CollectionModel>>> getCollectionsByVideoId(int videoId) async {
+    final httpService = await dio;
+
+    try {
+      final response = await httpService.request(url: "$baseApiUrl/get-related-collections/$videoId", method: Method.get);
+      LoggerManager.log.i(response.data);
+
+      if (response.data["data"] != null) {
+        final collectionResponse = CollectionResponse.fromJsonList(response.data["data"]);
+        final collection = collectionResponseToModelList(collectionResponse);
+        return ApiResponseData<List<CollectionModel>>(success: true, data: collection, timestamp: DateTime.now().toIso8601String(), path: response.requestOptions.path);
+      } else {
+        LoggerManager.log.i(response.data);
+        throw Exception("Something wen't wrong");
+      }
+    } catch (e) {
+      LoggerManager.log.i(e);
       throw Exception("Something wen't wrong");
     }
   }

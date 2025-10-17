@@ -38,7 +38,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthState.loaded(status: AuthStatus.errorServiceExpired, message: response.message));
         }
       } catch (e) {
-        emit(AuthState.loaded(status: AuthStatus.errorServiceExpired, message: e.toString()));
+        final message = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
+        emit(AuthState.loaded(status: AuthStatus.error, message: message));
       }
     });
 
