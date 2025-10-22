@@ -4,6 +4,7 @@ import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/domain/entit
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/cast_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/modules/multimedia/ui/components/organisms/episode_card_list.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/focus_manager.dart';
+import 'package:scrolltv_frontend_mobile_flutter/util/platform_utils.dart';
 import 'package:scrolltv_frontend_mobile_flutter/util/values_manager.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/custom_tab_bar.dart';
 import 'package:scrolltv_frontend_mobile_flutter/widgets/tabBar/custom_tab_bar_normal.dart';
@@ -21,6 +22,8 @@ class SeasonTabBar extends StatefulWidget {
 
 class _SeasonTabBarState extends State<SeasonTabBar> {
   final FocusNode focusNodeSeasonTabBar = FocusNode();
+  final bool isTV = PlatformUtils.isTV;
+
   @override
   Widget build(BuildContext context) {
     if (widget.seasons.isEmpty) return const SizedBox.shrink();
@@ -34,14 +37,16 @@ class _SeasonTabBarState extends State<SeasonTabBar> {
           skipTraversal: true,
           onFocusChange: (hasFocus) {
             if (hasFocus) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Scrollable.ensureVisible(
-                  focusNodeSeasonTabBar.context!,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
-                  alignment: 0.5,
-                );
-              });
+              if (isTV) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Scrollable.ensureVisible(
+                    focusNodeSeasonTabBar.context!,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    alignment: 0.5,
+                  );
+                });
+              }
             }
           },
           child: CustomTabBarNormal(
