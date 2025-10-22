@@ -90,7 +90,12 @@ class _ChannelPlayerPageState extends State<ChannelPlayerPage> {
       widget.channelUrl,
       hwAcc: HwAcc.auto,
       autoPlay: true,
-      options: VlcPlayerOptions(),
+      options: VlcPlayerOptions(
+        video: VlcVideoOptions([
+          '--android-display=texture',
+          '--no-overlay',
+        ]),
+      ),
     );
   }
 
@@ -98,17 +103,27 @@ class _ChannelPlayerPageState extends State<ChannelPlayerPage> {
   void didUpdateWidget(covariant ChannelPlayerPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.channelUrl != widget.channelUrl) {
-      _vlcController.stop();
-      _vlcController.setMediaFromNetwork(widget.channelUrl, autoPlay: true);
+      try {
+        _vlcController.stop();
+        _vlcController.setMediaFromNetwork(widget.channelUrl, autoPlay: true);
+      } catch (e) {
+        debugPrint("Error actualizando VLC controller: $e");
+      }
     }
   }
 
   @override
   void dispose() {
-    _vlcController.stop();
-    _vlcController.dispose();
-
-    super.dispose();
+    try {
+      if (_vlcController.value.isInitialized) {
+        _vlcController.stop();
+      }
+      _vlcController.dispose();
+    } catch (e) {
+      debugPrint("Error liberando VLC controller: $e");
+    } finally {
+      super.dispose();
+    }
   }
 
   @override
@@ -206,9 +221,17 @@ class _VideoPlayerViewState extends State<VideoPlayerView> with SingleTickerProv
   void dispose() {
     _hideTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    widget.controller.stop(); // detener el video al destruir
-    widget.controller.removeListener(() {});
-    super.dispose();
+
+    try {
+      if (widget.controller.value.isInitialized) {
+        widget.controller.stop(); // detener el video al destruir
+      }
+      widget.controller.removeListener(() {});
+    } catch (e) {
+      debugPrint("Error liberando VLC controller: $e");
+    } finally {
+      super.dispose();
+    }
   }
 
   // @override

@@ -48,7 +48,12 @@ class _LiveTabState extends State<LiveTab> with RouteAware {
       tvPlayerBloc.state.selectedChannelIndex?.url ?? "",
       hwAcc: HwAcc.auto,
       autoPlay: true,
-      options: VlcPlayerOptions(),
+      options: VlcPlayerOptions(
+        video: VlcVideoOptions([
+          '--android-display=texture',
+          '--no-overlay',
+        ]),
+      ),
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -73,6 +74,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 Column(
                   spacing: AppPadding.p16.r,
                   children: [
+                    TextButton(
+                      onPressed: () => {
+                        FirebaseCrashlytics.instance.crash(), // fuerza un crash real
+                      },
+                      child: const Text("Throw Test Exception"),
+                    ),
                     ProfileCard(
                       user: state.user,
                       onTap: () {},

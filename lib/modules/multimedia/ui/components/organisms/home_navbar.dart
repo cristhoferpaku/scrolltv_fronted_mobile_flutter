@@ -47,6 +47,7 @@ class _HomeNavbarState extends State<HomeNavbar> {
                     spacing: AppPadding.p16,
                     children: [
                       ContainerFocus(
+                        autofocus: isTV ? true : false,
                         onTap: () {
                           Navigator.pushNamed(context, Routes.searchRoute);
                         },
