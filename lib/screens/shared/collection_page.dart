@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/di.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/extensions_widgets.dart';
 import 'package:scrolltv_frontend_mobile_flutter/app/routes_arguments.dart';
@@ -52,16 +51,17 @@ class _CollectionPageState extends State<CollectionPage> {
             height: 300,
             offset: Offset(100, 0),
           ),
-          SingleChildScrollView(
-            child: BlocConsumer<CollectionBloc, CollectionState>(
-              bloc: collectionBloc,
-              listener: (context, state) {},
-              builder: (context, state) {
-                if (state is CollectionStateLoaded) {
-                  if (state.status == CollectionStateStatus.loading) {
-                    return CollectionSkeleton();
-                  }
-                  return Column(
+          BlocConsumer<CollectionBloc, CollectionState>(
+            bloc: collectionBloc,
+            listener: (context, state) {},
+            builder: (context, state) {
+              if (state is CollectionStateLoaded) {
+                if (state.status == CollectionStateStatus.loading) {
+                  return CollectionSkeleton();
+                }
+                return SizedBox(
+                  width: double.infinity,
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -76,17 +76,15 @@ class _CollectionPageState extends State<CollectionPage> {
                         state.collectionName,
                         style: Theme.of(context).textTheme.titleLarge,
                       ).withPadding(top: AppPadding.p16),
-                      if (state.videos != null)
-                        SizedBox(
-                          height: .9.sh,
-                          child: VideoCardList(videos: state.videos!),
-                        ).withPadding(top: AppPadding.p16),
+                      Expanded(
+                        child: VideoCardList(videos: state.videos!),
+                      ),
                     ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
           ),
         ],
       ),
