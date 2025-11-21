@@ -218,11 +218,11 @@ flutter pub run flutter_native_splash:create --path=flutter_native_splash_scroll
 ```
 
 ```bash
-flutter build apk --release --flavor scrolltvMobile --dart-define=IS_TV=false --dart-define=VARIANT=scrolltv --no-enable-impeller
+flutter build apk --release --flavor scrolltvMobile --dart-define=IS_TV=false --dart-define=VARIANT=scrolltv
 ```
 
 ```bash
-flutter build apk --release --flavor scrolltvTv --dart-define=IS_TV=true --dart-define=VARIANT=scrolltv --target-platform android-arm,android-arm64,android-x64 --no-enable-impeller
+flutter build apk --release --flavor scrolltvTv --dart-define=IS_TV=true --dart-define=VARIANT=scrolltv --target-platform android-arm,android-arm64,android-x64
 ```
 
 subir al drive de releases
@@ -242,12 +242,12 @@ flutter pub run flutter_native_splash:create --path=flutter_native_splash_movie_
 ```
 
 ```bash
-flutter build apk --release --flavor moviehomeMobile --dart-define=IS_TV=false --dart-define=VARIANT=moviehome --no-enable-impeller
+flutter build apk --release --flavor moviehomeMobile --dart-define=IS_TV=false --dart-define=VARIANT=moviehome
 
 ```
 
 ```bash
-flutter build apk --release --flavor moviehomeTv --dart-define=IS_TV=true --dart-define=VARIANT=moviehome --target-platform android-arm,android-arm64,android-x64 --no-enable-impeller
+flutter build apk --release --flavor moviehomeTv --dart-define=IS_TV=true --dart-define=VARIANT=moviehome --target-platform android-arm,android-arm64,android-x64
 
 
 ```
