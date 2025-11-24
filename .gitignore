@@ -90,3 +90,7 @@ Desktop.ini
 # Temporary files
 *.tmp
 *.temp
+
+*.rar
+*.apk
+*.zip

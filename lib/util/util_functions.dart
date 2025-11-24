@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 
 String getStringByLanguage(String? currentLanguage, String textToSpanish, String textToEnglish) {
   if (currentLanguage == 'ES' || currentLanguage == null) {
@@ -48,5 +52,18 @@ String formatDuration(Duration duration) {
     return '${duration.inHours}:$twoDigitMinutes:$twoDigitSeconds';
   } else {
     return '$twoDigitMinutes:$twoDigitSeconds';
+  }
+}
+
+Future<void> saveLog(String message) async {
+  try {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/flutter_log.txt');
+    final timestamp = DateTime.now().toIso8601String();
+
+    await file.writeAsString('[$timestamp] $message\n', mode: FileMode.append);
+  } catch (e) {
+    // Si incluso guardar el log falla
+    debugPrint('Error guardando log: $e');
   }
 }

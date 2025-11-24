@@ -52,7 +52,8 @@ class _HomeHeroState extends State<HomeHero> {
         children: [
           BackgroundImage(
             networkImage: isTV ? widget.video.bannerImage : widget.video.coverImage,
-            fit: BoxFit.cover,
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.topCenter,
           ),
           LinearGradientBox(
             colors: ValuesManager.heroLinearGradientColors,

@@ -15,7 +15,7 @@ void main() async {
   final userRepo = instance<UserRepository>();
 
   const bool isTv = bool.fromEnvironment('IS_TV', defaultValue: false);
-  const String variant = String.fromEnvironment('VARIANT', defaultValue: 'not_set');
+  // const String variant = String.fromEnvironment('VARIANT', defaultValue: 'not_set');
 
   if (isTv) {
     await SystemChrome.setPreferredOrientations([
@@ -30,8 +30,22 @@ void main() async {
       DeviceOrientation.portraitDown,
     ]);
   }
+  runApp(MyApp(logUser: await userRepo.isUserLogged()));
 
-  runApp(MyApp(
-    logUser: await userRepo.isUserLogged(),
-  ));
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
+
+  // // 🔥 Configura Crashlytics
+  // FlutterError.onError = (FlutterErrorDetails details) async {
+  //   FlutterError.presentError(details);
+  //   FirebaseCrashlytics.instance.recordFlutterError(details); // reporta a Firebase
+  // };
+
+  // runZonedGuarded(() async {
+  //   runApp(MyApp(logUser: await userRepo.isUserLogged()));
+  // }, (error, stack) async {
+  //   // Reporta errores no capturados
+  //   FirebaseCrashlytics.instance.recordError(error, stack);
+  // });
 }

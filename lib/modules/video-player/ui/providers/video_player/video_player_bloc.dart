@@ -29,18 +29,20 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   int? _lastSubtitleTrack;
 
   // Variables para controlar el seeking
-  bool _isSeeking = false;
+  final bool _isSeeking = false;
   Timer? _seekingTimer;
   Duration? _pendingSeekPosition;
   Duration? _accumulatedSeekPosition;
   int _seekCount = 0;
+  bool _preferredAppliedOnce = false;
+  bool _postPlayApplied = false;
 
   VideoPlayerBloc() : super(const VideoPlayerState.initial()) {
     // Caché para episodios por seasonId
     final Map<int, List<EpisodeModel>> episodesCache = {};
     // int? currentSeasonId;
 
-    // Inicializar monitoreo de conectividad
+    // Inicializar monitoreo de conectivida
     _initConnectivityMonitoring();
 
     on<VideoPlayerEvent>((event, emit) {});
@@ -52,6 +54,8 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
         await controller?.stop();
         await controller?.dispose();
+        _preferredAppliedOnce = false;
+        _postPlayApplied = false;
 
         // Guardar información para reconexión
         _lastVideoUrl = event.videoUrl;
@@ -153,6 +157,8 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           showEpisodesList: false, // Cerrar la lista al cambiar episodio
           episodeIndex: event.episode.episodeNumber ?? 1,
         ));
+        _preferredAppliedOnce = false;
+        _postPlayApplied = false;
         try {
           if (controller != null) {
             // Limpiar listener anterior antes de cambiar el media
@@ -531,6 +537,10 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   void _onVlcPlayerValueChanged() {
     try {
       if (controller != null && controller!.value.isInitialized) {
+        if (!_preferredAppliedOnce) {
+          _preferredAppliedOnce = true;
+          _applyPreferredTracks(timeout: const Duration(seconds: 6));
+        }
         final currentState = state;
         if (currentState is VideoPlayerStateLoaded) {
           final position = controller!.value.position;
@@ -567,6 +577,17 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           // ✅ Detectar errores de VLC (cuando no puede reproducir el video)
           if (playingState == PlayingState.error) {
             emit(VideoPlayerState.error(' No se puede reproducir el video. Verifique la URL o su conexión a internet.'));
+          }
+          if (playingState == PlayingState.playing && !_postPlayApplied) {
+            _postPlayApplied = true;
+            try {
+              if (_lastAudioTrack != null && _lastAudioTrack! >= 0) {
+                controller!.setAudioTrack(_lastAudioTrack!);
+              }
+              if (_lastSubtitleTrack != null) {
+                controller!.setSpuTrack(_lastSubtitleTrack!);
+              }
+            } catch (_) {}
           }
         }
       } else if (controller != null && !controller!.value.isInitialized) {
@@ -702,6 +723,104 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     });
   }
 
+  // Helper: encontrar pista en español priorizando "Español" normal sobre "Español Europeo".
+  int? _findPreferredSpanishTrack(Map<int, String> tracks) {
+    int? bestKey;
+    int bestScore = -1;
+
+    String norm(String s) {
+      final t = s.toLowerCase();
+      return t
+          .replaceAll('á', 'a')
+          .replaceAll('à', 'a')
+          .replaceAll('ä', 'a')
+          .replaceAll('â', 'a')
+          .replaceAll('é', 'e')
+          .replaceAll('è', 'e')
+          .replaceAll('ë', 'e')
+          .replaceAll('ê', 'e')
+          .replaceAll('í', 'i')
+          .replaceAll('ì', 'i')
+          .replaceAll('ï', 'i')
+          .replaceAll('î', 'i')
+          .replaceAll('ó', 'o')
+          .replaceAll('ò', 'o')
+          .replaceAll('ö', 'o')
+          .replaceAll('ô', 'o')
+          .replaceAll('ú', 'u')
+          .replaceAll('ù', 'u')
+          .replaceAll('ü', 'u')
+          .replaceAll('û', 'u');
+    }
+
+    bool containsAny(String s, List<String> terms) {
+      for (final t in terms) {
+        if (s.contains(t)) return true;
+      }
+      return false;
+    }
+
+    bool isSpanishLabel(String s) {
+      final n = norm(s);
+      return containsAny(n, [
+        'spanish',
+        'espanol',
+        'castellano',
+        ' spa',
+        'spa ',
+        '(spa)',
+        '[spa]',
+        'spa-',
+        'es-es',
+      ]);
+    }
+
+    bool isLatAmLabel(String s) {
+      final n = norm(s);
+      return containsAny(n, [
+        'latino',
+        'latam',
+        'es-419',
+        'mexico',
+        'mx',
+        'argentina',
+        'ar',
+        'peru',
+        'pe',
+        'chile',
+        'cl',
+        'colombia',
+        'co',
+      ]);
+    }
+
+    bool isEuropeLabel(String s) {
+      final n = norm(s);
+      return containsAny(n, [
+        'europeo',
+        'europe',
+        'europa',
+        'spain',
+        'es-es',
+        'castellano',
+      ]);
+    }
+
+    for (final e in tracks.entries) {
+      final label = e.value;
+      if (!isSpanishLabel(label)) continue;
+      int score = 2;
+      if (isLatAmLabel(label)) score = 3;
+      if (isEuropeLabel(label)) score = score == 3 ? 3 : 1;
+      if (score > bestScore) {
+        bestScore = score;
+        bestKey = e.key;
+      }
+    }
+
+    return bestKey;
+  }
+
 // Método para aplicar pistas preferidas después de cargar video:
   Future<void> _applyPreferredTracks({Duration timeout = const Duration(seconds: 4)}) async {
     if (controller == null) return;
@@ -715,6 +834,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     }
 
     // Intenta recuperar y aplicar pista de audio si existe
+    bool audioSet = false;
     if (_lastAudioTrack != null && _lastAudioTrack! >= 0) {
       final audioStart = DateTime.now();
       bool applied = false;
@@ -737,9 +857,34 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         }
         await Future.delayed(const Duration(milliseconds: 200));
       }
+      audioSet = applied;
+    }
+
+    // Fallback: si no se pudo aplicar la última pista, seleccionar Español por defecto
+    if (!audioSet) {
+      try {
+        Map<int, String> audioTracksAll = {};
+        final waitStart = DateTime.now();
+        while (audioTracksAll.isEmpty && DateTime.now().difference(waitStart) <= timeout) {
+          audioTracksAll = await controller!.getAudioTracks();
+          if (audioTracksAll.isEmpty) {
+            await Future.delayed(const Duration(milliseconds: 200));
+          }
+        }
+        final preferredAudio = _findPreferredSpanishTrack(audioTracksAll);
+        if (preferredAudio != null && preferredAudio >= 0) {
+          await controller!.setAudioTrack(preferredAudio);
+          final currentState = state;
+          if (currentState is VideoPlayerStateLoaded) {
+            emit(currentState.copyWith(currentAudioIndex: preferredAudio));
+          }
+          _lastAudioTrack = preferredAudio;
+        }
+      } catch (_) {}
     }
 
     // Intenta recuperar y aplicar pista de subtítulo si existe
+    bool subtitleSet = false;
     if (_lastSubtitleTrack != null) {
       final subStart = DateTime.now();
       bool appliedSub = false;
@@ -768,6 +913,30 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         } catch (_) {}
         await Future.delayed(const Duration(milliseconds: 200));
       }
+      subtitleSet = appliedSub;
+    }
+
+    // Fallback: si no hay preferencia previa o no se pudo aplicar, seleccionar subtítulo en Español por defecto
+    if (!subtitleSet) {
+      try {
+        Map<int, String> spuTracksAll = {};
+        final waitStartSub = DateTime.now();
+        while (spuTracksAll.isEmpty && DateTime.now().difference(waitStartSub) <= timeout) {
+          spuTracksAll = await controller!.getSpuTracks();
+          if (spuTracksAll.isEmpty) {
+            await Future.delayed(const Duration(milliseconds: 200));
+          }
+        }
+        final preferredSub = _findPreferredSpanishTrack(spuTracksAll);
+        if (preferredSub != null) {
+          await controller!.setSpuTrack(preferredSub);
+          final currentState = state;
+          if (currentState is VideoPlayerStateLoaded) {
+            emit(currentState.copyWith(currentSubtitleIndex: preferredSub));
+          }
+          _lastSubtitleTrack = preferredSub;
+        }
+      } catch (_) {}
     }
   }
 }

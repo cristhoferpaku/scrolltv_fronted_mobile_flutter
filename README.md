@@ -243,10 +243,12 @@ flutter pub run flutter_native_splash:create --path=flutter_native_splash_movie_
 
 ```bash
 flutter build apk --release --flavor moviehomeMobile --dart-define=IS_TV=false --dart-define=VARIANT=moviehome
+
 ```
 
 ```bash
 flutter build apk --release --flavor moviehomeTv --dart-define=IS_TV=true --dart-define=VARIANT=moviehome --target-platform android-arm,android-arm64,android-x64
+
 
 ```
 
