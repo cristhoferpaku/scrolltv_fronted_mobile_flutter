@@ -38,8 +38,7 @@ class BlurBackground extends StatelessWidget {
       child: Transform.translate(
         offset: offset ?? Offset(0, 0),
         child: ImageFiltered(
-          imageFilter: ImageFilter.blur(
-              sigmaX: sigmaX ?? width!, sigmaY: sigmaY ?? height!),
+          imageFilter: ImageFilter.blur(sigmaX: sigmaX ?? width!, sigmaY: sigmaY ?? height!),
           child: Container(
             width: width ?? MediaQuery.of(context).size.width * 0.9,
             height: height ?? MediaQuery.of(context).size.width * 0.9,
