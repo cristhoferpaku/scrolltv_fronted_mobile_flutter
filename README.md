@@ -222,7 +222,7 @@ flutter build apk --release --flavor scrolltvMobile --dart-define=IS_TV=false --
 ```
 
 ```bash
-flutter build apk --release --flavor scrolltvTv --dart-define=IS_TV=true --dart-define=VARIANT=scrolltv --target-platform android-arm,android-arm64,android-x64
+flutter build apk --release --flavor scrolltvTv --dart-define=IS_TV=true --dart-define=VARIANT=scrolltv
 ```
 
 subir al drive de releases
@@ -247,7 +247,7 @@ flutter build apk --release --flavor moviehomeMobile --dart-define=IS_TV=false -
 ```
 
 ```bash
-flutter build apk --release --flavor moviehomeTv --dart-define=IS_TV=true --dart-define=VARIANT=moviehome --target-platform android-arm,android-arm64,android-x64
+flutter build apk --release --flavor moviehomeTv --dart-define=IS_TV=true --dart-define=VARIANT=moviehome
 
 
 ```

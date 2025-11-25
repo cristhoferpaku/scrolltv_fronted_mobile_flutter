@@ -172,6 +172,7 @@ class _SectionCardListState extends State<SectionCardList> {
             offset: Offset(ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2 * -1, ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2 * -1),
             width: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
             height: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+            color: ColorManager.primary300.withValues(alpha: 0.2),
           ),
         if (widget.hasBlurRight)
           BlurBackground(
@@ -180,6 +181,7 @@ class _SectionCardListState extends State<SectionCardList> {
             right: 0,
             width: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
             height: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+            color: ColorManager.primary300.withValues(alpha: 0.2),
           ),
       ],
     );
