@@ -17,10 +17,14 @@ class CollectionList extends StatelessWidget {
         ...collection.asMap().entries.map((entry) {
           // final index = entry.key;
           final e = entry.value;
+          final index = entry.key;
+
           return SectionCardList(
             title: e.collectionName ?? "",
             videos: e.content ?? [],
             id: e.collectionId ?? 0,
+            hasBlurLeft: index % 2 == 0,
+            hasBlurRight: index % 2 == 0,
           );
         }),
       ],

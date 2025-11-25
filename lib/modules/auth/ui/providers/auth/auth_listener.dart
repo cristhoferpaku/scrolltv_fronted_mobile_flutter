@@ -22,18 +22,16 @@ void authListener(BuildContext context, AuthState state, AuthBloc block) {
           ));
     }
     if (state.status == AuthStatus.loadingLogout) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
-          context: navigatorKey.currentContext!,
-          barrierDismissible: false,
-          builder: (context) => const Material(
-            type: MaterialType.transparency,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+      showDialog(
+        context: navigatorKey.currentContext!,
+        barrierDismissible: false,
+        builder: (context) => const Material(
+          type: MaterialType.transparency,
+          child: Center(
+            child: CircularProgressIndicator(),
           ),
-        );
-      });
+        ),
+      );
     }
     if (state.status == AuthStatus.logoutSuccess) {
       Navigator.pushNamedAndRemoveUntil(navigatorKey.currentContext!, Routes.inicioRoute, (route) => false);

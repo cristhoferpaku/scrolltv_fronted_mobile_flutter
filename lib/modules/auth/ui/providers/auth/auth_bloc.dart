@@ -44,16 +44,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     on<_AuthEventLogout>((event, emit) async {
-      add(_AuthEventStopValidate());
-      emit(AuthState.loaded(status: AuthStatus.loadingLogout));
       try {
+        add(_AuthEventStopValidate());
+        emit(AuthState.loaded(status: AuthStatus.loadingLogout));
         await authUseCase.logout();
         await userRepository.logoutUser();
         emit(AuthState.loaded(status: AuthStatus.logoutSuccess));
       } catch (e) {
         LoggerManager.log.i(e.toString());
-        await userRepository.logoutUser();
-        emit(AuthState.loaded(status: AuthStatus.logoutError));
+        try {
+          await userRepository.logoutUser();
+          emit(AuthState.loaded(status: AuthStatus.logoutError));
+        } catch (e) {
+          emit(AuthState.loaded(status: AuthStatus.logoutError));
+        }
       } finally {
         instance.popScope();
       }

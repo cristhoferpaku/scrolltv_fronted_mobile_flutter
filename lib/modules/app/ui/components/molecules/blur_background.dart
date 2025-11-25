@@ -10,8 +10,8 @@ class BlurBackground extends StatelessWidget {
   final double? right;
   final double? width;
   final double? height;
-  final double? sigmaX;
-  final double? sigmaY;
+  final double sigmaX;
+  final double sigmaY;
   final Offset? offset;
   final Color? color;
   const BlurBackground({
@@ -22,8 +22,8 @@ class BlurBackground extends StatelessWidget {
     this.right,
     this.width = 0,
     this.height = 0,
-    this.sigmaX = 200,
-    this.sigmaY = 200,
+    this.sigmaX = 50,
+    this.sigmaY = 50,
     this.offset,
     this.color,
   });
@@ -38,7 +38,7 @@ class BlurBackground extends StatelessWidget {
       child: Transform.translate(
         offset: offset ?? Offset(0, 0),
         child: ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: sigmaX ?? width!, sigmaY: sigmaY ?? height!),
+          imageFilter: ImageFilter.blur(sigmaX: sigmaX <= 50 ? sigmaX : 50, sigmaY: sigmaY <= 50 ? sigmaY : 50),
           child: Container(
             width: width ?? MediaQuery.of(context).size.width * 0.9,
             height: height ?? MediaQuery.of(context).size.width * 0.9,
