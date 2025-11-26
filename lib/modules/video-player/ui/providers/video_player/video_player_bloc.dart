@@ -750,7 +750,8 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           .replaceAll('ú', 'u')
           .replaceAll('ù', 'u')
           .replaceAll('ü', 'u')
-          .replaceAll('û', 'u');
+          .replaceAll('û', 'u')
+          .replaceAll('ñ', 'n');
     }
 
     bool containsAny(String s, List<String> terms) {
@@ -779,6 +780,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       final n = norm(s);
       return containsAny(n, [
         'latino',
+        'latinoamericano',
         'latam',
         'es-419',
         'mexico',
@@ -916,26 +918,15 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       subtitleSet = appliedSub;
     }
 
-    // Fallback: si no hay preferencia previa o no se pudo aplicar, seleccionar subtítulo en Español por defecto
+    // Fallback: si no hay preferencia previa o no se pudo aplicar, desactivar subtítulos
     if (!subtitleSet) {
       try {
-        Map<int, String> spuTracksAll = {};
-        final waitStartSub = DateTime.now();
-        while (spuTracksAll.isEmpty && DateTime.now().difference(waitStartSub) <= timeout) {
-          spuTracksAll = await controller!.getSpuTracks();
-          if (spuTracksAll.isEmpty) {
-            await Future.delayed(const Duration(milliseconds: 200));
-          }
+        await controller!.setSpuTrack(-1);
+        final currentState = state;
+        if (currentState is VideoPlayerStateLoaded) {
+          emit(currentState.copyWith(currentSubtitleIndex: -1));
         }
-        final preferredSub = _findPreferredSpanishTrack(spuTracksAll);
-        if (preferredSub != null) {
-          await controller!.setSpuTrack(preferredSub);
-          final currentState = state;
-          if (currentState is VideoPlayerStateLoaded) {
-            emit(currentState.copyWith(currentSubtitleIndex: preferredSub));
-          }
-          _lastSubtitleTrack = preferredSub;
-        }
+        _lastSubtitleTrack = -1;
       } catch (_) {}
     }
   }
