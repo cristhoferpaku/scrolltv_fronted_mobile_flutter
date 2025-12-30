@@ -51,6 +51,24 @@ class _SectionCardListState extends State<SectionCardList> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
+        if (widget.hasBlurLeft)
+          BlurBackground(
+            top: 0,
+            left: 0,
+            offset: Offset(ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2 * -1, ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2 * -1),
+            width: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+            height: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+            color: ColorManager.primary300.withValues(alpha: 0.2),
+          ),
+        if (widget.hasBlurRight)
+          BlurBackground(
+            offset: Offset(ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2, ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2),
+            bottom: 0,
+            right: 0,
+            width: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+            height: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
+            color: ColorManager.primary300.withValues(alpha: 0.2),
+          ),
         FocusTraversalGroup(
           policy: CustomGridSectionHorizontal(),
           child: Focus(
@@ -79,6 +97,7 @@ class _SectionCardListState extends State<SectionCardList> {
                   children: [
                     Expanded(
                       child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           Navigator.pushNamed(context, Routes.collectionRoute, arguments: CollectionPageArguments(collectionId: widget.id, collectionName: widget.title));
                         },
@@ -165,24 +184,6 @@ class _SectionCardListState extends State<SectionCardList> {
             ),
           ),
         ),
-        if (widget.hasBlurLeft)
-          BlurBackground(
-            top: 0,
-            left: 0,
-            offset: Offset(ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2 * -1, ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2 * -1),
-            width: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
-            height: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
-            color: ColorManager.primary300.withValues(alpha: 0.2),
-          ),
-        if (widget.hasBlurRight)
-          BlurBackground(
-            offset: Offset(ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2, ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500) / 2),
-            bottom: 0,
-            right: 0,
-            width: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
-            height: ResponsiveUtils.getSize(context, minSize: 200, maxSize: 500),
-            color: ColorManager.primary300.withValues(alpha: 0.2),
-          ),
       ],
     );
   }
