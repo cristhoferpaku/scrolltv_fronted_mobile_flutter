@@ -67,7 +67,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           autoPlay: true,
           options: VlcPlayerOptions(
             advanced: VlcAdvancedOptions([
-              '--network-caching=3000', // 3s cache para conexiones lentas
+              '--network-caching=1000', // 1s cache para conexiones lentas
               '--http-reconnect', // Reconectar automáticamente
             ]),
           ),
@@ -75,9 +75,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
 
         // Configurar listeners para posición y duración
         _setupPositionListeners();
-        await _applyPreferredTracks();
-        // Esperar un momento para que VLC intente cargar el video
-        await Future.delayed(const Duration(milliseconds: 500));
 
         // Verificar si el controlador se inicializó correctamente
         if (controller != null) {
@@ -172,7 +169,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
                 autoPlay: true,
                 // si tu versión lo soporta, puedes pasar opciones aquí
               );
-              await _applyPreferredTracks();
             } catch (e) {
               // fallback: si setMediaFromNetwork falla, recreamos de forma segura
               try {
@@ -537,10 +533,6 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   void _onVlcPlayerValueChanged() {
     try {
       if (controller != null && controller!.value.isInitialized) {
-        if (!_preferredAppliedOnce) {
-          _preferredAppliedOnce = true;
-          _applyPreferredTracks(timeout: const Duration(seconds: 6));
-        }
         final currentState = state;
         if (currentState is VideoPlayerStateLoaded) {
           final position = controller!.value.position;
@@ -580,14 +572,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
           }
           if (playingState == PlayingState.playing && !_postPlayApplied) {
             _postPlayApplied = true;
-            try {
-              if (_lastAudioTrack != null && _lastAudioTrack! >= 0) {
-                controller!.setAudioTrack(_lastAudioTrack!);
-              }
-              if (_lastSubtitleTrack != null) {
-                controller!.setSpuTrack(_lastSubtitleTrack!);
-              }
-            } catch (_) {}
+            _applyPreferredTracks(timeout: const Duration(seconds: 5));
           }
         }
       } else if (controller != null && !controller!.value.isInitialized) {
